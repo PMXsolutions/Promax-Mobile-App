@@ -22,6 +22,8 @@ const getBgVariantStyle = (variant: ButtonProps["bgVariant"]): ViewStyle => {
       return styles.bgSuccess;
     case "outline":
       return styles.bgOutline;
+    case "light":
+      return styles.bgLight;
     default:
       return styles.bgPrimary;
   }
@@ -87,15 +89,16 @@ export default CustomButton;
 
 const styles = StyleSheet.create({
   buttonBase: {
-    width: "100%",
-    borderRadius: normalize(6),
+    // width: "100%",
+    height: 48,
+    borderRadius: 5,
     padding: 12,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#A0A0A0",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.7,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
     shadowRadius: 4,
     elevation: 4,
   },
@@ -111,10 +114,14 @@ const styles = StyleSheet.create({
   bgSuccess: {
     backgroundColor: "#10B981", // green-500
   },
+  bgLight: {
+    backgroundColor: THEME.colors.light, // green-500
+  },
   bgOutline: {
-    backgroundColor: "transparent",
-    borderColor: "#D1D5DB", // neutral-300
+    // backgroundColor: "transparent",
+    borderColor: THEME.colors.primary, // neutral-300
     borderWidth: 0.5,
+    backgroundColor: THEME.colors.white,
   },
 
   textDefault: {

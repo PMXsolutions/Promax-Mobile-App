@@ -16,13 +16,18 @@ import { Platform } from "react-native";
 
 export default function Signin() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#e8ecf4" }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: "#fff",
+      }}
+    >
       <ScrollView style={styles.container}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.push("/")}>
+            <TouchableOpacity>
               <Image
                 alt="App Logo"
                 resizeMode="contain"
@@ -59,7 +64,7 @@ export default function Signin() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 24,
+    paddingTop: 30,
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
@@ -81,6 +86,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     alignSelf: "center",
-    marginBottom: 36,
+    marginBottom: 20,
   },
 });

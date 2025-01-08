@@ -60,6 +60,7 @@ const fontSize = {
   xs: normalize(7),
   sm: normalize(9),
   md: normalize(11),
+  base: normalize(12),
   lg: normalize(13),
   xl: 18,
   "2xl": 20,

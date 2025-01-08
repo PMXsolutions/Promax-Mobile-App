@@ -15,6 +15,7 @@ import ShiftReportCard from "@/components/shift/report/report-card";
 import EmptyData from "@/components/shared/empty-data";
 import Text from "@/components/shared/text";
 import Search from "@/components/shared/search-bar";
+import MiniLoader from "@/components/shared/mini-loader";
 
 const Report = () => {
   const { staff } = useAuthStore();
@@ -26,7 +27,7 @@ const Report = () => {
 
   const {
     data: report,
-    isError,
+    isError: error,
     isRefetching,
     isPending: isLoading,
     refetch,
@@ -63,12 +64,17 @@ const Report = () => {
     outputRange: [0, 40],
     extrapolate: "clamp",
   });
+
+  if (error) {
+    return <Text>Error fetching data</Text>;
+  }
   return (
     <ScreenWrapper
       statusBgColor={THEME.colors.brand}
       bgColor={THEME.colors.brand}
       barStyle="light-content"
     >
+      <MiniLoader visible={isLoading} />
       <View
         style={[
           // styles.header,

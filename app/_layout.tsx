@@ -22,6 +22,7 @@ import { queryClient } from "@/libs/query";
 import { StatusBar } from "react-native";
 import "react-native-get-random-values";
 import useAuthStore from "@/store/use-auth-store";
+import MiniLoader from "@/components/shared/mini-loader";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -71,7 +72,7 @@ export default function RootLayout() {
 
   // Show a loading state until fonts and onboarding status are resolved
   if (!fontLoaded || isOnboardingComplete === null) {
-    return null;
+    return <MiniLoader visible={true} />;
   }
   return (
     <>

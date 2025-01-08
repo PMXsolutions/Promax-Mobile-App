@@ -1,10 +1,10 @@
+import React, { useRef } from "react";
 import {
   ScrollView,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import React, { useRef } from "react";
 import useAuthStore from "@/store/use-auth-store";
 import { profileQuery } from "@/hooks/queries/profile";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
@@ -15,11 +15,18 @@ import Text from "@/components/shared/text";
 import ProfileHeader from "@/components/profile/profile-header";
 import { labelArr } from "@/constants/profile-data";
 import ProfileLabel from "@/components/profile/profile-label";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import Loader from "@/components/shared/loader";
+import {
+  FontAwesome6,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
+import MiniLoader from "@/components/shared/mini-loader";
+import ModalPop from "@/components/shared/modal";
+import CustomButton from "@/components/shared/custom-button";
 
 const Profile = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   const opacityTitle = scrollY.interpolate({
     inputRange: [0, 50],
@@ -31,7 +38,7 @@ const Profile = () => {
     outputRange: [0, 40],
     extrapolate: "clamp",
   });
-  const { staff, isAuthenticated, logout } = useAuthStore();
+  const { staff, logout } = useAuthStore();
 
   const {
     data: staffData,
@@ -39,15 +46,6 @@ const Profile = () => {
     error,
   } = profileQuery.useFetchStaffProfile(staff?.staffId as number);
 
-  if (isLoading) {
-    return (
-      <Loader
-        name="2-curves"
-        color={THEME.colors.secondary}
-        title="Loading Shift.."
-      />
-    );
-  }
   if (error) {
     return <Text>Error fetching data</Text>;
   }
@@ -57,6 +55,7 @@ const Profile = () => {
       bgColor={THEME.colors.brand}
       barStyle="light-content"
     >
+      <MiniLoader visible={isLoading} />
       <View
         style={[
           // styles.header,
@@ -77,7 +76,7 @@ const Profile = () => {
         >
           <ProfileHeader data={staffData!} />
 
-          <View style={{ paddingVertical: 15, rowGap: THEME.spacing.md }}>
+          <View style={{ paddingVertical: 8, rowGap: THEME.spacing.sm }}>
             {labelArr.map((item, index) => (
               <ProfileLabel
                 key={index} // Ensure a unique key for each item
@@ -87,18 +86,26 @@ const Profile = () => {
               />
             ))}
           </View>
-          <TouchableWithoutFeedback
-            // onPress={() => setLogOutModal(true)}
-            onPress={logout}
-          >
+          <TouchableWithoutFeedback onPress={() => setModalVisible(true)}>
             <View style={styles.butcontainer}>
               <View style={styles.label}>
-                <MaterialCommunityIcons
-                  name={"logout"}
-                  size={24}
-                  color={THEME.colors.red}
-                />
-                <Text style={styles.labelName} size="md" weight="regular">
+                <View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: THEME.colors.lightGray,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name={"door-open"}
+                    size={24}
+                    color={THEME.colors.primary}
+                  />
+                </View>
+                <Text style={styles.labelName} size="base" weight="semiBold">
                   {"Logout"}
                 </Text>
               </View>
@@ -111,6 +118,49 @@ const Profile = () => {
           </TouchableWithoutFeedback>
         </ScrollView>
       </View>
+      <ModalPop
+        modalVisible={modalVisible}
+        closeModal={() => setModalVisible(false)}
+        title="Logout"
+      >
+        <View style={{ rowGap: THEME.spacing.sm }}>
+          <View
+            style={{
+              justifyContent: "center",
+              flexDirection: "row",
+              padding: 20,
+              alignSelf: "center",
+              borderRadius: 90,
+              backgroundColor: THEME.colors.lightGray,
+              alignItems: "center",
+            }}
+          >
+            <FontAwesome6 name="door-open" size={40} />
+          </View>
+          <Text size="2xl" weight="extraBold" style={{ marginVertical: 5 }}>
+            Logout?
+          </Text>
+          <Text
+            size="md"
+            weight="medium"
+            style={{ marginBottom: 5, color: THEME.colors.neutral[300] }}
+          >
+            Are you sure you want to log out?
+          </Text>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <CustomButton
+              title="Nah, Just Kidding"
+              onPress={() => setModalVisible(false)}
+            />
+            <CustomButton
+              bgVariant="outline"
+              textVariant="primary"
+              title="Yes, Log me out"
+              onPress={logout}
+            />
+          </View>
+        </View>
+      </ModalPop>
     </ScreenWrapper>
   );
 };
@@ -127,15 +177,12 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.colors.white,
     paddingHorizontal: THEME.spacing.md,
     paddingVertical: 10,
+    paddingBottom: 5,
   },
   butcontainer: {
-    marginVertical: 1,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderColor: THEME.colors.lightGray,
   },
   label: {
     flexDirection: "row",

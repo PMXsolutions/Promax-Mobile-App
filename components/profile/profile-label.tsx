@@ -1,7 +1,6 @@
 import { StyleSheet, TouchableWithoutFeedback, View } from "react-native";
 import React from "react";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import Text from "../shared/text";
 import { THEME } from "@/constants/theme";
 import { ExternalPathString, RelativePathString, router } from "expo-router";
@@ -15,17 +14,27 @@ const ProfileLabel = ({
   label: string;
   link: RelativePathString | ExternalPathString;
 }) => {
-  const navigation = useNavigation();
   return (
     <TouchableWithoutFeedback onPress={() => router.push(link)}>
       <View style={styles.container}>
         <View style={styles.label}>
-          <MaterialCommunityIcons
-            name={iconName}
-            size={24}
-            color={THEME.colors.grayBg}
-          />
-          <Text weight="medium" size="md">
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: THEME.colors.lightGray,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <MaterialCommunityIcons
+              name={iconName}
+              size={24}
+              color={THEME.colors.primary}
+            />
+          </View>
+          <Text weight="semiBold" size="base">
             {label}
           </Text>
         </View>
@@ -46,7 +55,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderBottomWidth: 1,
     borderColor: THEME.colors.lightGray,
   },

@@ -471,7 +471,7 @@ export type StaffProfile = {
   profession: string | null;
   gender: string;
   imageUrl: string;
-  imageFile: string | null;
+  imageFile: string;
   country: string | null;
   state: string | null;
   city: string | null;

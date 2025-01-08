@@ -9,32 +9,32 @@ type labelArrProps = {
 export const labelArr: labelArrProps = [
   {
     title: "Identity Card",
-    iconName: "account-outline",
-    url: "/",
+    iconName: "account",
+    url: "/(root)/profile/identity",
   },
   {
     title: "Personal Information",
-    iconName: "book-account-outline",
-    url: "/",
+    iconName: "book-account",
+    url: "/(root)/profile/personal-info",
   },
   {
     title: "Emergency Contact",
-    iconName: "contacts-outline",
-    url: "/",
+    iconName: "contacts",
+    url: "/(root)/profile/emergency-info",
   },
   {
     title: "Bank Information",
-    iconName: "card-account-details-outline",
-    url: "/",
+    iconName: "card-account-details",
+    url: "/(root)/profile/bank-info",
   },
   {
     title: "Employment Details",
-    iconName: "briefcase-account-outline",
-    url: "/",
+    iconName: "briefcase-account",
+    url: "/(root)/profile/employment-info",
   },
   {
     title: "Other Information",
-    iconName: "information-outline",
-    url: "/",
+    iconName: "information",
+    url: "/(root)/profile/other-info",
   },
 ];

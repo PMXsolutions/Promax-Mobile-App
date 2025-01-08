@@ -57,7 +57,7 @@ const SelectLocation = () => {
         </View>
 
         <View style={{ marginTop: 20 }}>
-          <CustomButton title="Find Now" />
+          <CustomButton title="Continue" />
         </View>
       </TransportLayout>
     </>

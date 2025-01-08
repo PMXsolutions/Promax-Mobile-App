@@ -31,17 +31,11 @@ const ProfileHeaderContent = ({ data }: { data: StaffProfile }) => {
         </View>
 
         <View style={styles.contentContainer}>
-          <Text
-            weight="semiBold"
-            size="lg"
-            style={styles.title}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
+          <Text weight="bold" size="xl" numberOfLines={1} ellipsizeMode="tail">
             {data?.fullName || "********* *********"}
           </Text>
           <Text
-            weight="regular"
+            weight="semiBold"
             size="md"
             style={styles.subtitle}
             numberOfLines={1}
@@ -70,12 +64,11 @@ export default ProfileHeader;
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 10,
     backgroundColor: THEME.colors.white,
     flexDirection: "row",
     alignItems: "center",
     gap: 20,
-    padding: THEME.spacing.sm,
-    borderWidth: 1,
     borderRadius: 5,
     borderColor: THEME.colors.lightGray,
     borderCurve: "continuous",
@@ -99,9 +92,7 @@ const styles = StyleSheet.create({
     gap: 4,
     flex: 1,
   },
-  title: {
-    color: "#5C5C5C",
-  },
+
   subtitle: {
     color: "#5C5C5C",
   },

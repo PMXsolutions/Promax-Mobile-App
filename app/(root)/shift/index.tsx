@@ -100,9 +100,9 @@ const ShiftDetail = () => {
       )} */}
 
       <>
-        {shift && shiftActivities?.includes(" Transport") && (
-          <TransportButton shiftId={shift.shiftRosterId} />
-        )}
+        {/* {shift && shiftActivities?.includes(" Transport") && ( */}
+        <TransportButton shiftId={shift?.shiftRosterId!} />
+        {/* )} */}
       </>
     </ScreenWrapper>
   );
