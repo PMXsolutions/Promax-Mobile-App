@@ -14,7 +14,6 @@ import Animated, { ZoomIn, ZoomOut } from "react-native-reanimated";
 import Text from "./text";
 import normalize from "@/libs/normalize";
 import { THEME } from "@/constants/theme";
-import { useTheme } from "@react-navigation/native";
 
 type ButtonVariant = "primary" | "outline" | "secondary" | "inactive";
 
@@ -52,13 +51,11 @@ function Button({
   icon,
   ...others
 }: ButtonProps): JSX.Element {
-  const { colors } = useTheme();
-
   const dynamicStyles = useMemo(() => {
     const container = [
       styles.container,
       variant === "primary" && {
-        backgroundColor: colors.primary,
+        backgroundColor: THEME.colors.primary,
       },
       variant === "outline" && styles.outlineContainer,
       variant === "secondary" && styles.secondaryContainer,
@@ -69,13 +66,13 @@ function Button({
     const text = [
       styles.text,
       variant === "primary" && {
-        color: colors.card,
+        color: THEME.colors.white,
       },
       variant === "outline" && {
-        color: colors.text,
+        color: THEME.colors.primary,
       },
       variant === "secondary" && {
-        color: colors.text,
+        color: THEME.colors.black,
       },
       variant === "inactive" && styles.inactiveText,
       textStyle,

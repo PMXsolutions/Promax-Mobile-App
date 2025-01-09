@@ -66,8 +66,8 @@ const Header = ({ opacityTitle, translateTitle, name, image }: Props) => {
           alignItems: "center",
           justifyContent: "center",
           borderRadius: 52,
-          borderWidth: 1,
-          borderColor: THEME.colors.white,
+          // borderWidth: 1,
+          backgroundColor: THEME.colors.grayBg,
         }}
       >
         <Icons name="notifications" size={24} color={THEME.colors.white} />

@@ -22,7 +22,7 @@ import {
 } from "@expo/vector-icons";
 import MiniLoader from "@/components/shared/mini-loader";
 import ModalPop from "@/components/shared/modal";
-import CustomButton from "@/components/shared/custom-button";
+import Button from "@/components/shared/button";
 
 const Profile = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -147,17 +147,23 @@ const Profile = () => {
           >
             Are you sure you want to log out?
           </Text>
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <CustomButton
-              title="Nah, Just Kidding"
+
+          <View style={[styles.buttonContainer]}>
+            <Button
+              containerStyle={{ flex: 1 }}
+              variant="primary"
               onPress={() => setModalVisible(false)}
-            />
-            <CustomButton
-              bgVariant="outline"
-              textVariant="primary"
-              title="Yes, Log me out"
+            >
+              No
+            </Button>
+
+            <Button
+              containerStyle={{ flex: 1 }}
+              variant="secondary"
               onPress={logout}
-            />
+            >
+              Yes
+            </Button>
           </View>
         </View>
       </ModalPop>
@@ -168,6 +174,11 @@ const Profile = () => {
 export default Profile;
 
 const styles = StyleSheet.create({
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: THEME.spacing.sm,
+  },
   container: {
     flex: 1,
     backgroundColor: THEME.colors.white,
