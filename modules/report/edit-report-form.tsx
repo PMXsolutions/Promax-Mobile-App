@@ -9,13 +9,13 @@ import { ShiftReport } from "@/types/report";
 import Text from "@/components/shared/text";
 import CustomSwitch from "@/components/shift/report/report-setting";
 import CustomButton from "@/components/shared/custom-button";
-import { reportMutation } from "@/hooks/queries/report/mutation";
 import useAuthStore from "@/store/use-auth-store";
 import { useMutation } from "@tanstack/react-query";
 import { reportService } from "@/services/report";
 import { showMessage } from "react-native-flash-message";
 import { router } from "expo-router";
 import { queryClient } from "@/libs/query";
+import { shiftQuery } from "@/hooks/queries/shift";
 
 const EditReportForm = ({
   reportId,
@@ -29,6 +29,7 @@ const EditReportForm = ({
     Number(reportId),
     Number(rosterId)
   );
+  const { data: shift } = shiftQuery.useShiftDetail(Number(rosterId));
 
   // Update the `useState` to match the type
   const [form, setForm] = useState({
@@ -385,14 +386,13 @@ const EditReportForm = ({
               Signature
             </Text>
 
-            {data?.shiftRoster?.staff?.signatureUrl && (
+            {shift?.staff?.signatureUrl && (
               <Image
-                source={{ uri: data?.shiftRoster?.staff.signatureUrl }}
+                source={{ uri: shift?.staff.signatureUrl }}
                 style={{
                   height: 50,
                   width: 140,
                   resizeMode: "contain",
-                  marginHorizontal: 10,
                 }}
               />
             )}

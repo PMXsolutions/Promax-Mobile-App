@@ -7,6 +7,7 @@ import { customTheme, THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";
 import { AgendaProps, ShiftRosterType } from "@/types/shift";
 import ShiftItem from "@/components/shift/shift-item";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Props {
   shiftData: ShiftRosterType[];
@@ -18,7 +19,7 @@ interface AgendaItems {
   [date: string]: AgendaProps[];
 }
 
-const ShiftCalendar: React.FC<Props> = ({ shiftData, isError, isLoading }) => {
+const ShiftCalendar: React.FC<Props> = ({ shiftData, isLoading }) => {
   const [items, setItems] = React.useState<AgendaItems>({}); // Add proper typing to `items`.
 
   const aus_timezone = "Australia/Sydney";
@@ -97,6 +98,9 @@ const ShiftCalendar: React.FC<Props> = ({ shiftData, isError, isLoading }) => {
       //   minHeight: 100,
       //   flexGrow: 1,
       // }}
+      renderKnob={() => {
+        return <Ionicons name="chevron-down" size={25} />;
+      }}
       items={items}
       loadItemsForMonth={(day: DateData) => loadItems(new Date(day.dateString))} // Convert dateString to Date.
       selected={formattedTime(new Date())}
@@ -118,7 +122,7 @@ const styles = StyleSheet.create({
     padding: THEME.spacing.sm,
     marginTop: 20,
     borderRadius: 5,
-    marginRight: 20,
+    marginRight: THEME.spacing.sm,
     alignItems: "center",
     flex: 1,
     borderWidth: 1,

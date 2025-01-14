@@ -75,7 +75,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Shift Roster",
-          tabBarButton: (props) => <CustomTabButton {...props} />,
+          // tabBarButton: (props) => <CustomTabButton {...props} />,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "calendar-text" : "calendar-today"}
@@ -89,7 +89,7 @@ export default function TabLayout() {
         name="reports"
         options={{
           title: "Reports",
-          tabBarButton: (props) => <CustomTabButton {...props} />,
+          // tabBarButton: (props) => <CustomTabButton {...props} />,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name={
@@ -131,7 +131,7 @@ export default function TabLayout() {
         name="documents"
         options={{
           title: "Documents",
-          tabBarButton: (props) => <CustomTabButton {...props} />,
+          // tabBarButton: (props) => <CustomTabButton {...props} />,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "folder-open" : "folder-open-outline"}
@@ -145,7 +145,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarButton: (props) => <CustomTabButton {...props} />,
+          // tabBarButton: (props) => <CustomTabButton {...props} />,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "account" : "account-outline"}

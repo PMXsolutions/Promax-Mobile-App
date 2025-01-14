@@ -53,9 +53,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: THEME.colors.lightGray,
-    backgroundColor: THEME.colors.white,
-    height: 43,
-    borderRadius: 5,
+    backgroundColor: "#efefef",
+    height: 48,
+    borderRadius: 12,
   },
   searchIcon: {
     padding: 8,

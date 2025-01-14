@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     padding: THEME.spacing.sm,
     backgroundColor: "#fff",
     borderRadius: 5,
-    marginRight: 20,
+    marginRight: THEME.spacing.sm,
     marginTop: 20,
   },
   imageContainer: {

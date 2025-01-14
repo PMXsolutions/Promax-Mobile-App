@@ -18,7 +18,7 @@ const ProfileTag = ({
             {label}
           </Text>
           <Text weight="semiBold" size="base">
-            {value}
+            {value || "N/A"}
           </Text>
         </View>
       </View>

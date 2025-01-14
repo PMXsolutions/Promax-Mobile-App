@@ -63,7 +63,7 @@ const PersonalInfo = () => {
         <CustomButton
           title="Edit"
           onPress={() =>
-            router.push(`/(root)/profile/emergency-info/${staffData?.staffId}`)
+            router.push(`/(root)/profile/personal-info/${staffData?.staffId}`)
           }
         />
       </View>

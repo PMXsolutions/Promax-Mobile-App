@@ -213,7 +213,6 @@ const EditProfileForm = ({ id }: { id: string }) => {
                 },
               ]}
               placeholder={form?.gender}
-              // width={300}
               iconColor="#ccc"
               onValueChange={(value) =>
                 handleInputChange("gender", value?.value as string)

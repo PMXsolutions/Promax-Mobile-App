@@ -1,10 +1,3 @@
-import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
 import React from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import { useLocalSearchParams } from "expo-router";
@@ -30,5 +23,3 @@ const ReportDetail = () => {
 };
 
 export default ReportDetail;
-
-const styles = StyleSheet.create({});
