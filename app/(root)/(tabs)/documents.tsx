@@ -20,6 +20,7 @@ import Search from "@/components/shared/search-bar";
 import EmptyData from "@/components/shared/empty-data";
 import Text from "@/components/shared/text";
 import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 const Document = () => {
   const { staff } = useAuthStore();
@@ -167,7 +168,7 @@ const Document = () => {
 
         <TouchableOpacity
           style={styles.floatingButton}
-          // onPress={() => navigation.navigate("UploadDocument")}
+          onPress={() => router.push("/(root)/document/add-document")}
         >
           <MaterialIcons name="add" size={30} color="#fff" />
         </TouchableOpacity>

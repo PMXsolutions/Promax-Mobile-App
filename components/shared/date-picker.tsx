@@ -6,6 +6,7 @@ import DateTimePicker, {
 import TextInput from "./input";
 import { THEME } from "@/constants/theme";
 import Text from "./text";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface DatePickerProps {
   label: string;
@@ -60,6 +61,14 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange }) => {
           label={label}
           placeholder="dd/mm/yyyy"
           editable={false}
+          icon={
+            <MaterialCommunityIcons
+              name="calendar"
+              size={22}
+              color={THEME.colors.grayBg}
+            />
+          }
+          // inputStyle={{ backgroundColor: THEME.colors.light }}
           onPressIn={toggleDatePicker}
         />
       </Pressable>

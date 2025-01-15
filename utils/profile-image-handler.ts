@@ -1,6 +1,9 @@
 import { manipulateAsync, FlipType, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
+
 import { Alert } from "react-native";
+import { showMessage } from "react-native-flash-message";
 
 export const pickImageOrUseCamera = async (): Promise<string | undefined> => {
   // Ask the user if they want to pick from gallery or use camera
@@ -93,4 +96,30 @@ export const resizeImage = async (uri: string) => {
     format: SaveFormat.PNG,
   });
   return manipResult.uri;
+};
+
+export const uploadDoc = async () => {
+  try {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: [
+        "image/jpeg",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ],
+    });
+    if (!result.canceled) {
+      return result.assets[0];
+    } else {
+      showMessage({
+        type: "danger",
+        message: "Document selection cancelled",
+      });
+    }
+  } catch (error) {
+    showMessage({
+      type: "danger",
+      message: "Error selecting document: ",
+    });
+  }
 };

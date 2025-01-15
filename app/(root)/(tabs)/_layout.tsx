@@ -1,6 +1,6 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { THEME } from "@/constants/theme";
 import {
   Pressable,
@@ -38,7 +38,7 @@ export default function TabLayout() {
           },
           focused && {
             borderTopWidth: 2,
-            borderTopColor: THEME.colors.primary,
+            borderTopColor: THEME.colors.brand,
           },
         ]}
       >
@@ -62,7 +62,7 @@ export default function TabLayout() {
           shadowRadius: 5,
           elevation: 5,
         },
-        tabBarActiveTintColor: THEME.colors.primary,
+        tabBarActiveTintColor: THEME.colors.brand,
         tabBarInactiveTintColor: "#A1A1A1",
         tabBarLabelStyle: {
           fontSize: 12,
@@ -110,7 +110,7 @@ export default function TabLayout() {
               style={{
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: THEME.colors.primary,
+                backgroundColor: THEME.colors.brand,
                 width: 56,
                 height: 56,
                 borderRadius: 999,
@@ -122,7 +122,7 @@ export default function TabLayout() {
                 elevation: 5,
               }}
             >
-              <MaterialCommunityIcons name={"plus"} size={25} color={"white"} />
+              <FontAwesome6 name={"calendar-plus"} size={25} color={"white"} />
             </View>
           ),
         }}
