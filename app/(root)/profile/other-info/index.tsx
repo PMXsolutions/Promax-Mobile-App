@@ -18,7 +18,7 @@ const OtherInfo = () => {
 
   return (
     <ScreenWrapper barStyle="dark-content">
-      <HeaderWhite name={"Emergency Contact"} />
+      <HeaderWhite name={"Other Information"} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 3 }}
@@ -34,7 +34,7 @@ const OtherInfo = () => {
         <CustomButton
           title="Edit"
           onPress={() =>
-            router.push(`/(root)/profile/personal-info/${staffData?.staffId}`)
+            router.push(`/(root)/profile/other-info/${staffData?.staffId}`)
           }
         />
       </View>

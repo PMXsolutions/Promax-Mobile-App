@@ -72,6 +72,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderColor: THEME.colors.lightGray,
     borderCurve: "continuous",
+    borderWidth: 1,
+    padding: 8,
     // elevation: 1,
     // shadowColor: "#000",
     // shadowOffset: { width: 0, height: 1 },

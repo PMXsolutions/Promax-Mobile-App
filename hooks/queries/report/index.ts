@@ -1,5 +1,5 @@
 import { reportService } from "@/services/report";
-import { ShiftReport } from "@/types/report";
+import { DocumentData, ShiftReport } from "@/types/report";
 import { useQuery } from "@tanstack/react-query";
 
 const useFetchStaffReport = (staffId: number) => {
@@ -18,7 +18,17 @@ const useFetchReportInfo = (reportId: number, shiftId: number) => {
   });
 };
 
+const useFetchStaffDocument = (staffId: number) => {
+  return useQuery<DocumentData[]>({
+    queryKey: ["staffDocument", staffId],
+    queryFn: () => reportService.fetchStaffDocument(staffId),
+    refetchOnWindowFocus: false,
+    enabled: !!staffId, // Only run the query if staffId is defined
+  });
+};
+
 export const reportQuery = {
   useFetchStaffReport,
   useFetchReportInfo,
+  useFetchStaffDocument,
 };

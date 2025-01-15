@@ -116,10 +116,10 @@ const Report = () => {
           />
         )}
 
-        {reportData?.length <= 0 && searchTerm.trim().length < 1 && (
-          <EmptyData />
-        )}
-        {reportData && searchTerm.trim().length > 1 && (
+        {reportData?.length <= 0 &&
+          searchTerm.trim().length < 1 &&
+          !isLoading && <EmptyData />}
+        {reportData?.length <= 0 && searchTerm.trim().length > 1 && (
           <View
             style={{
               flex: 1,

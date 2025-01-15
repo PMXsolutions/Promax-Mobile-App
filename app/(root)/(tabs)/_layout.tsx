@@ -53,7 +53,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: "#ffffff",
-          // paddingHorizontal: 10,
+          paddingTop: 5,
           paddingBottom: -insets.bottom, // Add safe area padding
           height: Platform.OS === "android" ? 65 : 80, // Adjust height for iOS
           shadowColor: "#000",

@@ -27,3 +27,26 @@ export interface ShiftReport {
   dateModified: Date;
   userModified: string | null;
 }
+
+export interface DocumentData {
+  company: string;
+  companyId: number;
+  dateCreated: string;
+  dateModified: string;
+  documentFile: string;
+  documentId: number;
+  documentName: string;
+  documentUrl: string;
+  expirationDate: string;
+  implementationDate: string;
+  isArchived: boolean;
+  rejectDeadline: string;
+  rejectReason: string;
+  status: string;
+  user: string;
+  userCreated: string;
+  userId: number;
+  userModified: string;
+  userRole: string;
+  verify: boolean;
+}

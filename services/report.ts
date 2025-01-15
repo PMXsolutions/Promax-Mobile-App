@@ -33,9 +33,20 @@ const handleEditShiftForm = async (
     formInfo
   );
 };
+const fetchStaffDocument = async (staffId: number) => {
+  try {
+    const { data } = await axiosInstance.get(
+      `/Documents/get_all_staff_documents?staffId=${staffId}`
+    );
+    return data.staffDocuments;
+  } catch (error) {
+    throw new Error("Unable to fetch shift documents");
+  }
+};
 
 export const reportService = {
   fetchStaffReport,
   fetchReportInfo,
   handleEditShiftForm,
+  fetchStaffDocument,
 };

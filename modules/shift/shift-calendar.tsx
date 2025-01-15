@@ -7,7 +7,7 @@ import { customTheme, THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";
 import { AgendaProps, ShiftRosterType } from "@/types/shift";
 import ShiftItem from "@/components/shift/shift-item";
-import { Ionicons } from "@expo/vector-icons";
+import { Fontisto } from "@expo/vector-icons";
 
 interface Props {
   shiftData: ShiftRosterType[];
@@ -99,7 +99,9 @@ const ShiftCalendar: React.FC<Props> = ({ shiftData, isLoading }) => {
       //   flexGrow: 1,
       // }}
       renderKnob={() => {
-        return <Ionicons name="chevron-down" size={25} />;
+        return (
+          <Fontisto name="caret-down" size={20} color={THEME.colors.grayBg} />
+        );
       }}
       items={items}
       loadItemsForMonth={(day: DateData) => loadItems(new Date(day.dateString))} // Convert dateString to Date.

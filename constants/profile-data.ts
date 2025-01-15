@@ -38,3 +38,13 @@ export const labelArr: labelArrProps = [
     url: "/(root)/profile/other-info",
   },
 ];
+
+export const documentNames = [
+  "Current first aid certificate",
+  "Current Police check",
+  "NDIS orientation module certificate",
+  "Working with vulnerable Peoples card",
+  "Australian Driver's license",
+  "Comprehensive Car Insurance Certificate",
+  "Relevant academic certificate",
+];

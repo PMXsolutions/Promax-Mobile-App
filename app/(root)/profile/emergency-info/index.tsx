@@ -28,6 +28,7 @@ const EmergencyInfo = () => {
         <ProfileTag label={"Phone Number"} value={staffData?.kinPhoneNumber!} />
         <ProfileTag label={"Relationship"} value={staffData?.relationship!} />
         <ProfileTag label={"Nationality"} value={staffData?.kinCountry!} />
+        <ProfileTag label={"State"} value={staffData?.kinState!} />
         <ProfileTag label={"City"} value={staffData?.kinCity!} />
         <ProfileTag label={"Address"} value={staffData?.kinAddress!} />
         <ProfileTag label={"Postcode"} value={staffData?.kinPostcode!} />
@@ -36,7 +37,7 @@ const EmergencyInfo = () => {
         <CustomButton
           title="Edit"
           onPress={() =>
-            router.push(`/(root)/profile/personal-info/${staffData?.staffId}`)
+            router.push(`/(root)/profile/emergency-info/${staffData?.staffId}`)
           }
         />
       </View>

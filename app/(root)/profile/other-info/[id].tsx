@@ -4,7 +4,7 @@ import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
 import KeyboardWrapper from "@/components/shared/keyboard-wrapper";
 import { View } from "react-native";
-import EditEmergencyForm from "@/modules/profile/edit-emergency-form";
+import EditInfoForm from "@/modules/profile/edit-otherinfo-form";
 
 const EditPersonalInfo = () => {
   const query = useLocalSearchParams();
@@ -13,9 +13,9 @@ const EditPersonalInfo = () => {
 
   return (
     <ScreenWrapper barStyle="dark-content">
-      <HeaderWhite name={"Edit Emergency Contact"} />
+      <HeaderWhite name={"Edit Other Information"} />
       <KeyboardWrapper>
-        <EditEmergencyForm id={id} />
+        <EditInfoForm id={id} />
       </KeyboardWrapper>
     </ScreenWrapper>
   );
