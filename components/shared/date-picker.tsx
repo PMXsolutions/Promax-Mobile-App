@@ -76,7 +76,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, value, onChange }) => {
       {showPicker && (
         <DateTimePicker
           mode="date"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
+          display={Platform.OS === "ios" ? "calendar" : "default"}
           value={new Date(value)}
           onChange={handleDateChange}
           style={styles.datePicker}

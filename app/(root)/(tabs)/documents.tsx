@@ -14,7 +14,6 @@ import { reportQuery } from "@/hooks/queries/report";
 import { DocumentData } from "@/types/report";
 import { documentNames } from "@/constants/profile-data";
 import { DocumentLabel } from "@/components/document/document-label";
-import { ScrollView } from "react-native";
 import MiniLoader from "@/components/shared/mini-loader";
 import Search from "@/components/shared/search-bar";
 import EmptyData from "@/components/shared/empty-data";
@@ -125,24 +124,16 @@ const Document = () => {
             onSearch={handleSearch}
           />
         </View>
-        {/* {filteredData?.length > 0 && (
+        {filteredData?.length > 0 && (
           <FlatList
             data={filteredData}
-            keyExtractor={(item) => item.documentId!.toString()}
+            keyExtractor={(_, index) => index.toString()}
             renderItem={({ item }) => <DocumentLabel item={item} />}
-            contentContainerStyle={styles.content}
+            contentContainerStyle={{ ...styles.content, paddingBottom: 10 }}
             showsVerticalScrollIndicator={false}
-            
           />
-        )} */}
-        <ScrollView
-          contentContainerStyle={{ ...styles.content, paddingBottom: 5 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {docData.map((item, index) => (
-            <DocumentLabel key={index} item={item} />
-          ))}
-        </ScrollView>
+        )}
+
         {docData?.length <= 0 && searchTerm.trim().length < 1 && !isLoading && (
           <EmptyData />
         )}

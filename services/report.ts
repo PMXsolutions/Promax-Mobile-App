@@ -1,5 +1,14 @@
 import axiosInstance from "@/libs/axiosInstance";
 import { ShiftReport } from "@/types/report";
+import { DocumentPickerAsset } from "expo-document-picker";
+
+interface reqBodyType {
+  docFile: DocumentPickerAsset | null;
+  companyId: number | undefined;
+  docuName: string;
+  expirationDate: string;
+  staffName: string | undefined;
+}
 
 const fetchStaffReport = async (staffId: number) => {
   try {
@@ -44,9 +53,41 @@ const fetchStaffDocument = async (staffId: number) => {
   }
 };
 
+const handleUploadStaffDocument = async (
+  staffId: number,
+  userId: string,
+  formInfo: reqBodyType
+) => {
+  const formData = new FormData();
+
+  console.log(formInfo);
+
+  if (formInfo?.docFile) {
+    formData.append("DocumentFile", formInfo?.docFile.file as Blob);
+  }
+  formData.append("CompanyId", formInfo.companyId?.toString() as string); // Using optional chaining and nullish coalescing
+  formData.append("DocumentName", formInfo.docuName);
+  formData.append("ExpirationDate", formInfo.expirationDate);
+  formData.append("User", formInfo?.staffName as string);
+  formData.append("Status", "Pending");
+  formData.append("UserRole", "Staff");
+  formData.append("UserId", staffId.toString());
+
+  return axiosInstance.post(
+    `/Documents/add_document?userId=${userId}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
 export const reportService = {
   fetchStaffReport,
   fetchReportInfo,
   handleEditShiftForm,
   fetchStaffDocument,
+  handleUploadStaffDocument,
 };

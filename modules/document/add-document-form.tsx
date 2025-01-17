@@ -8,7 +8,6 @@ import {
 import React, { useState } from "react";
 import { THEME } from "@/constants/theme";
 import Select from "@/components/shared/select";
-import useAuthStore from "@/store/use-auth-store";
 import { documentNames } from "@/constants/profile-data";
 import { uploadDoc } from "@/utils/profile-image-handler";
 import { showMessage } from "react-native-flash-message";
@@ -16,20 +15,19 @@ import Text from "@/components/shared/text";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { Feather } from "@expo/vector-icons";
 import TextInput from "@/components/shared/input";
-import DatePicker from "@/components/shared/date-picker";
 import CustomButton from "@/components/shared/custom-button";
-
-interface DocType {
-  label: string;
-  value: string;
-}
+import DateModal from "@/components/shared/date-modal";
+import useAuthStore from "@/store/use-auth-store";
+import { reportService } from "@/services/report";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/libs/query";
+import { router } from "expo-router";
 
 const AddForm = () => {
-  const { staff, user } = useAuthStore();
-  const [selectedValue, setSelectedValue] = useState("");
+  const { user, staff } = useAuthStore();
   const [docName, setDocName] = useState("");
+  const [otherDocName, setOtherDocName] = useState(""); // Separate state for "Other Name"
   const [expiryDate, setExpiryDate] = useState(" ");
-
   const [uploadedDocument, setUploadedDocument] =
     useState<DocumentPickerAsset | null>(null);
 
@@ -39,16 +37,6 @@ const AddForm = () => {
     value: item,
   }));
   docArr.push({ label: "Others", value: "others" });
-
-  // Handle dropdown change
-  const handleDropdownChange = (item: DocType) => {
-    setSelectedValue(item.value);
-    if (item.value === "others") {
-      setDocName(""); // Reset docName for manual entry
-    } else {
-      setDocName(item.value); // Automatically set the selected value
-    }
-  };
 
   // Handle document picker
   const handleImagePick = async () => {
@@ -68,6 +56,68 @@ const AddForm = () => {
   // Check if "Others" is selected
   const isOtherSelected = docName === "others";
 
+  // const handleSubmit = () => {
+  //   const finalDocName = docName === "others" ? otherDocName : docName;
+  //   console.log("Document Name:", finalDocName, expiryDate);
+  // };
+
+  const { mutate: onSubmit, isPending } = useMutation({
+    mutationFn: async () => {
+      const reqBody = {
+        docFile: uploadedDocument,
+        companyId: user?.companyId,
+        docuName: docName,
+        expirationDate: expiryDate,
+        staffName: staff?.fullName,
+      };
+      return reportService.handleUploadStaffDocument(
+        Number(staff?.staffId),
+        user?.userId as string,
+        reqBody
+      ); // Ensure this API call works
+    },
+    onSuccess: ({ data }) => {
+      showMessage({
+        message: data?.message,
+        description: "Profile Edited Successfully",
+        type: "success",
+      });
+
+      router.back();
+      return queryClient.invalidateQueries({
+        queryKey: ["staffDocument", { id: staff?.staffId }],
+      });
+    },
+
+    onError: (error: any) => {
+      console.log(error);
+
+      // showMessage({
+      //   message: error.response?.data?.message,
+      //   type: "danger",
+      // });
+    },
+  });
+
+  const handleFormSubmit = () => {
+    if (!docName || docName === "") {
+      showMessage({
+        message: "Please select or enter a document name",
+        type: "info",
+      });
+      return;
+    }
+    if (!uploadedDocument) {
+      showMessage({
+        message: "Please upload a document",
+        type: "info",
+      });
+
+      return;
+    }
+    onSubmit(); // Should call the mutation function
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -81,25 +131,26 @@ const AddForm = () => {
             options={docArr}
             placeholder="Select a Document"
             iconColor="#ccc"
-            //   onChange={(value)=>setDocName(value)}
             onValueChange={(value) => setDocName(value?.value as string)}
-            value={selectedValue}
+            value={docName}
           />
         </View>
 
         {/* Manual Document Name Input */}
         {isOtherSelected && (
           <TextInput
+            required
             label="Enter Document Name"
             placeholder="Enter Document Name"
-            value={docName}
-            onChangeText={(value) => setDocName(value)}
+            value={otherDocName} // Use the separate state here
+            onChangeText={(value) => setOtherDocName(value)} // Update the separate state
           />
         )}
-        <DatePicker
+
+        <DateModal
+          label="Expiration Date"
           value={expiryDate}
           onChange={setExpiryDate}
-          label="Expiration Date"
         />
 
         {/* Document Upload Section */}
@@ -127,10 +178,12 @@ const AddForm = () => {
             </TouchableWithoutFeedback>
           </View>
         )}
+
         <CustomButton
           title={"Submit"}
-          //   onPress={() => handleFormSubmit()}
-          loading={false}
+          onPress={handleFormSubmit}
+          // Handle submission logic here
+          loading={isPending}
         />
       </View>
     </ScrollView>
@@ -138,7 +191,6 @@ const AddForm = () => {
 };
 
 export default AddForm;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

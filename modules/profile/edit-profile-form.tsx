@@ -12,11 +12,9 @@ import { Feather } from "@expo/vector-icons";
 import { THEME } from "@/constants/theme";
 import { StaffProfile } from "@/types/auth";
 import TextInput from "@/components/shared/input";
-import KeyboardWrapper from "@/components/shared/keyboard-wrapper";
 import CustomButton from "@/components/shared/custom-button";
 import Select from "@/components/shared/select";
 import Text from "@/components/shared/text";
-import DatePicker from "@/components/shared/date-picker";
 import { showMessage } from "react-native-flash-message";
 import { queryClient } from "@/libs/query";
 import { router } from "expo-router";
@@ -27,6 +25,7 @@ import {
   pickImageOrUseCamera,
   resizeImage,
 } from "@/utils/profile-image-handler";
+import DateModal from "@/components/shared/date-modal";
 
 const EditProfileForm = ({ id }: { id: string }) => {
   const { data: staffData } = profileQuery.useFetchStaffProfile(Number(id));
@@ -219,7 +218,8 @@ const EditProfileForm = ({ id }: { id: string }) => {
               }
             />
           </View>
-          <DatePicker
+
+          <DateModal
             value={dateOfBirth}
             onChange={setDateOfBirth}
             label="Date of Birth"

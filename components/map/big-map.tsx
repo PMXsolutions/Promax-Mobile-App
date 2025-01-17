@@ -17,11 +17,8 @@ const directionsAPI = process.env.EXPO_PUBLIC_DIRECTIONS_API_KEY;
 
 const Map = () => {
   const mapRef = useRef<MapViewProps>(null);
+  const [tracking, setTracking] = useState<boolean>(false);
 
-  //   const [latlng, setLatLng] = useState<LatLng>({
-  //     latitude: -33.86882,
-  //     longitude: 151.20929,
-  //   });
   const {
     userLongitude,
     userLatitude,
@@ -29,13 +26,6 @@ const Map = () => {
     destinationLongitude,
     setUserLocation,
   } = useLocationStore();
-
-  //   const coordinates = destination
-  //     ? [
-  //         { latitude: latlng.latitude, longitude: latlng.longitude },
-  //         { latitude: destination.lat, longitude: destination.lng },
-  //       ]
-  //     : [];
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -52,11 +42,8 @@ const Map = () => {
         setUserLocation({
           latitude,
           longitude,
-          //   address: address[0].formattedAddress as string,
-          address: `${address[0].name}, ${address[0].region}`,
+          address: ``,
         });
-
-        // console.log(address);
 
         if (mapRef.current) {
           (mapRef.current as any).animateToRegion({
@@ -72,7 +59,7 @@ const Map = () => {
   }, []);
 
   const coordinates =
-    destinationLatitude && destinationLongitude
+    userLatitude && userLongitude && destinationLatitude && destinationLongitude
       ? [
           { latitude: userLatitude, longitude: userLongitude },
           { latitude: destinationLatitude, longitude: destinationLongitude },
@@ -86,32 +73,24 @@ const Map = () => {
         animated: true,
       });
     }
-  }, [destinationLatitude, destinationLongitude]);
-
-  const regional =
-    userLatitude && userLongitude
-      ? {
-          latitude: userLatitude,
-          longitude: userLongitude,
-          latitudeDelta: 0.012,
-          longitudeDelta: 0.012,
-        }
-      : undefined; // Use `undefined` instead of `null`
-
-  console.log();
+  }, [userLatitude, userLongitude, destinationLatitude, destinationLongitude]);
 
   return (
     <MapView
-      // provider={PROVIDER_DEFAULT}
+      provider={PROVIDER_DEFAULT}
       ref={mapRef as any}
       style={styles.map}
-      tintColor="black"
-      mapType="standard"
-      showsPointsOfInterest={false}
-      initialRegion={regional}
+      initialRegion={
+        userLatitude && userLongitude
+          ? {
+              latitude: userLatitude,
+              longitude: userLongitude,
+              latitudeDelta: 0.012,
+              longitudeDelta: 0.012,
+            }
+          : undefined
+      }
       showsUserLocation={true}
-      userInterfaceStyle="light"
-      region={regional}
     >
       {userLatitude && userLongitude && (
         <Marker
@@ -128,40 +107,24 @@ const Map = () => {
           />
         </Marker>
       )}
+
       {destinationLatitude && destinationLongitude && (
-        <>
-          <Marker
-            key="destination"
-            coordinate={{
-              latitude: destinationLatitude,
-              longitude: destinationLongitude,
-            }}
-            title="Destination"
-            pinColor="red"
-            // image={icons.pin}
-          />
+        <Marker
+          coordinate={{
+            latitude: destinationLatitude,
+            longitude: destinationLongitude,
+          }}
+          title="Destination"
+          pinColor="red"
+        />
+      )}
 
-          <Polyline
-            coordinates={coordinates}
-            strokeColor={THEME.colors.primary}
-            strokeWidth={1.5}
-            lineDashPattern={[1, 5]}
-          />
-
-          {/* <MapViewDirections
-            origin={{
-              latitude: userLatitude,
-              longitude: userLongitude,
-            }}
-            destination={{
-              latitude: destinationLatitude,
-              longitude: destinationLongitude,
-            }}
-            apikey={directionsAPI}
-            strokeColor="#0286FF"
-            strokeWidth={2}
-          /> */}
-        </>
+      {coordinates.length > 0 && (
+        <Polyline
+          coordinates={coordinates}
+          strokeColor={THEME.colors.primary}
+          strokeWidth={1.5}
+        />
       )}
     </MapView>
   );
@@ -185,8 +148,8 @@ const styles = StyleSheet.create({
   },
   map: {
     width: "100%",
-    height: "100%",
-    borderRadius: 16, // To mimic `rounded-2xl` style
+    height: "55%",
+    // borderRadius: 16, // To mimic `rounded-2xl` style
   },
 });
 

@@ -20,7 +20,7 @@ const useFetchReportInfo = (reportId: number, shiftId: number) => {
 
 const useFetchStaffDocument = (staffId: number) => {
   return useQuery<DocumentData[]>({
-    queryKey: ["staffDocument", staffId],
+    queryKey: ["staffDocument", { id: staffId }],
     queryFn: () => reportService.fetchStaffDocument(staffId),
     refetchOnWindowFocus: false,
     enabled: !!staffId, // Only run the query if staffId is defined

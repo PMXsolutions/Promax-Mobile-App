@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,7 +14,6 @@ import {
   Inter_800ExtraBold,
   Inter_900Black,
 } from "@expo-google-fonts/inter";
-import { useEffect, useState } from "react";
 import { PortalHost } from "@rn-primitives/portal";
 import FlashMessage from "react-native-flash-message";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -74,11 +74,7 @@ export default function RootLayout() {
   if (!fontLoaded || isOnboardingComplete === null) {
     return <MiniLoader visible={true} />;
   }
-  return (
-    <>
-      <Root />
-    </>
-  );
+  return <Root />;
 }
 function Root() {
   const { isAuthenticated } = useAuthStore();

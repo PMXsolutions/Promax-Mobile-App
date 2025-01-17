@@ -22,8 +22,8 @@ const SelectLocation = () => {
 
   return (
     <>
-      <LocationTrackingScreen />
-      {/* <TransportLayout title="" snapPoints={["45%", "65%"]}>
+      {/* <LocationTrackingScreen /> */}
+      <TransportLayout title="" snapPoints={["45%", "65%"]}>
         <View style={{ marginBottom: 12 }}>
           <Text size="lg" weight="semiBold" style={{ marginBottom: 12 }}>
             From
@@ -59,7 +59,7 @@ const SelectLocation = () => {
         <View style={{ marginTop: 20 }}>
           <CustomButton title="Continue" />
         </View>
-      </TransportLayout> */}
+      </TransportLayout>
     </>
   );
 };
