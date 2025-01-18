@@ -9,15 +9,14 @@ import Header from "@/components/shared/header";
 
 const Activity = () => {
   const { staff, user } = useAuthStore();
-  const { data, isLoading, isError } = shiftQuery.useShiftRoster(
-    staff?.staffId!
-  );
+  const { data, isLoading, isError, refetch, isRefetching } =
+    shiftQuery.useShiftRoster(staff?.staffId!);
+  const onRefresh = async () => {
+    await refetch();
+  };
+
   const scrollY = useRef(new Animated.Value(0)).current;
-  const translateHeader = scrollY.interpolate({
-    inputRange: [0, 80],
-    outputRange: [0, -80],
-    extrapolate: "clamp",
-  });
+
   const opacityTitle = scrollY.interpolate({
     inputRange: [0, 50],
     outputRange: [1, 0],
@@ -58,6 +57,8 @@ const Activity = () => {
           isError={isError}
           isLoading={isLoading}
           shiftData={data || []}
+          isRefetching={isRefetching}
+          onRefresh={onRefresh}
         />
       </View>
     </ScreenWrapper>

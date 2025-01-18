@@ -42,21 +42,18 @@ const Map = () => {
         setUserLocation({
           latitude,
           longitude,
-          address: ``,
+          address: `${address[0]?.name || "Unknown"}, ${
+            address[0]?.region || "Unknown"
+          }`,
         });
 
         if (mapRef.current) {
-          (mapRef.current as any).animateToRegion({
-            latitude,
-            longitude,
-            latitudeDelta: 0.012,
-            longitudeDelta: 0.012,
-          });
+          (mapRef.current as any).animateToRegion(calculateRegion);
         }
       }
     };
     fetchLocation();
-  }, []);
+  }, [userLatitude, userLongitude]);
 
   const coordinates =
     userLatitude && userLongitude && destinationLatitude && destinationLongitude
@@ -105,26 +102,25 @@ const Map = () => {
             style={{ width: 30 }}
             resizeMode="cover"
           />
+          {destinationLatitude && destinationLongitude && (
+            <Marker
+              coordinate={{
+                latitude: destinationLatitude,
+                longitude: destinationLongitude,
+              }}
+              title="Destination"
+              pinColor="red"
+            />
+          )}
+
+          {coordinates.length > 0 && (
+            <Polyline
+              coordinates={coordinates}
+              strokeColor={THEME.colors.primary}
+              strokeWidth={1.5}
+            />
+          )}
         </Marker>
-      )}
-
-      {destinationLatitude && destinationLongitude && (
-        <Marker
-          coordinate={{
-            latitude: destinationLatitude,
-            longitude: destinationLongitude,
-          }}
-          title="Destination"
-          pinColor="red"
-        />
-      )}
-
-      {coordinates.length > 0 && (
-        <Polyline
-          coordinates={coordinates}
-          strokeColor={THEME.colors.primary}
-          strokeWidth={1.5}
-        />
       )}
     </MapView>
   );

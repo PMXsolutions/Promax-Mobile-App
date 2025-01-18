@@ -89,6 +89,32 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
           }
         />
       )}
+      {shift.description && (
+        <ListDisplay
+          iconName={"description"}
+          title={"Description"}
+          children={
+            <View
+              style={{
+                ...styles.section,
+                borderRadius: 5,
+                borderWidth: 1,
+                padding: 10,
+                borderColor: THEME.colors.lightGray,
+              }}
+            >
+              <Text
+                weight="medium"
+                size="md"
+                style={[styles.sectionItem, { color: THEME.colors.inactive }]}
+              >
+                {shift?.description ||
+                  "If there's additional description for shift, it will appear in this text box, do well to ignore when there is no description."}
+              </Text>
+            </View>
+          }
+        />
+      )}
       {shift && (
         <ListDisplay
           iconName={"description"}

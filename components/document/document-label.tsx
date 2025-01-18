@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TouchableWithoutFeedback } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { formatInTimeZone } from "date-fns-tz";
 import { CollapsableContainer } from "../wrapper/collapsible-wrapper";
 import { DocumentData } from "@/types/report";
@@ -7,12 +13,27 @@ import { THEME } from "@/constants/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { formattedTime } from "@/helpers/shift-service";
 import Text from "../shared/text";
+import { downloadAndSaveDocument } from "@/utils/file-utils";
 
 export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
   const [expanded, setExpanded] = useState(false);
 
   const onItemPress = () => {
     setExpanded(!expanded);
+  };
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+
+  const handleDownload = async () => {
+    setLoading(true);
+    if (item) {
+      await downloadAndSaveDocument(
+        item.documentUrl || "https://pdfobject.com/pdf/sample.pdf",
+        `${item.documentName}.pdf`,
+        setStatusMessage // Pass the status updater function
+      );
+    }
+    setLoading(false);
   };
 
   const aus_timezone = "Australia/Sydney";
@@ -89,11 +110,15 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
             </View>
           </View>
           <View style={styles.iconButton}>
-            <MaterialIcons
-              name={expanded ? "keyboard-arrow-down" : "keyboard-arrow-right"}
-              size={20}
-              color={THEME.colors.grayBg}
-            />
+            {loading ? (
+              <ActivityIndicator color={THEME.colors.white} />
+            ) : (
+              <MaterialIcons
+                name={expanded ? "keyboard-arrow-down" : "keyboard-arrow-right"}
+                size={20}
+                color={THEME.colors.grayBg}
+              />
+            )}
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -109,6 +134,21 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
             <Text style={[styles.details, styles.text]}>
               Reason: {item?.rejectReason}
             </Text>
+          )}
+
+          {item?.documentUrl && (
+            <View style={styles.downloadContainer}>
+              <TouchableOpacity
+                onPress={handleDownload}
+                style={styles.downloadButton}
+              >
+                <MaterialIcons
+                  name="download"
+                  size={24}
+                  color={THEME.colors.white}
+                />
+              </TouchableOpacity>
+            </View>
           )}
         </View>
       </CollapsableContainer>
@@ -174,5 +214,21 @@ const styles = StyleSheet.create({
     width: 150,
     paddingHorizontal: 10,
     backgroundColor: "#000",
+  },
+  downloadContainer: {
+    flexDirection: "row",
+    // justifyContent: "flex-end", // Aligns the button to the right
+    alignItems: "center", // Vertically aligns the button
+    paddingHorizontal: 10, // Optional: Adjust spacing
+    marginTop: 5,
+  },
+
+  downloadButton: {
+    width: 40,
+    aspectRatio: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20, // Makes it a circular button
+    backgroundColor: THEME.colors.grayBg,
   },
 });

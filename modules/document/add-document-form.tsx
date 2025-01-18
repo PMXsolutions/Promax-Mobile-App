@@ -9,7 +9,7 @@ import React, { useState } from "react";
 import { THEME } from "@/constants/theme";
 import Select from "@/components/shared/select";
 import { documentNames } from "@/constants/profile-data";
-import { uploadDoc } from "@/utils/profile-image-handler";
+import { convertImageToBase64, uploadDoc } from "@/utils/profile-image-handler";
 import { showMessage } from "react-native-flash-message";
 import Text from "@/components/shared/text";
 import { DocumentPickerAsset } from "expo-document-picker";
@@ -28,7 +28,8 @@ const AddForm = () => {
   const [docName, setDocName] = useState("");
   const [otherDocName, setOtherDocName] = useState(""); // Separate state for "Other Name"
   const [expiryDate, setExpiryDate] = useState(" ");
-  const [uploadedDocument, setUploadedDocument] =
+  const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
+  const [selectedDocument, setSelectedDocument] =
     useState<DocumentPickerAsset | null>(null);
 
   // Prepare document options
@@ -43,7 +44,9 @@ const AddForm = () => {
     try {
       const docUri = await uploadDoc();
       if (docUri) {
-        setUploadedDocument(docUri);
+        setSelectedDocument(docUri);
+        const baseFile = await convertImageToBase64(docUri.uri);
+        setUploadedDocument(docUri.uri);
       }
     } catch (error) {
       showMessage({
@@ -63,10 +66,11 @@ const AddForm = () => {
 
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
+      const finalDocName = docName === "others" ? otherDocName : docName;
       const reqBody = {
-        docFile: uploadedDocument,
+        docFile: selectedDocument,
         companyId: user?.companyId,
-        docuName: docName,
+        docuName: finalDocName,
         expirationDate: expiryDate,
         staffName: staff?.fullName,
       };
@@ -78,8 +82,7 @@ const AddForm = () => {
     },
     onSuccess: ({ data }) => {
       showMessage({
-        message: data?.message,
-        description: "Profile Edited Successfully",
+        message: "Document Submitted Successfully",
         type: "success",
       });
 
@@ -90,12 +93,10 @@ const AddForm = () => {
     },
 
     onError: (error: any) => {
-      console.log(error);
-
-      // showMessage({
-      //   message: error.response?.data?.message,
-      //   type: "danger",
-      // });
+      showMessage({
+        message: "Document Submission failed",
+        type: "danger",
+      });
     },
   });
 
@@ -154,7 +155,13 @@ const AddForm = () => {
         />
 
         {/* Document Upload Section */}
-        <Pressable style={styles.uploadBloc} onPress={handleImagePick}>
+        <Pressable
+          style={[
+            styles.uploadBloc,
+            { borderColor: THEME.colors.grayBg, borderStyle: "dashed" },
+          ]}
+          onPress={handleImagePick}
+        >
           <View style={styles.uploadButton}>
             <Text weight="regular" style={styles.uploadButtonText}>
               Tap to select file
@@ -171,7 +178,7 @@ const AddForm = () => {
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {uploadedDocument.name}
+              {selectedDocument?.name}
             </Text>
             <TouchableWithoutFeedback onPress={() => setUploadedDocument(null)}>
               <Feather name="x" color="red" size={20} />
@@ -196,6 +203,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: THEME.spacing.md,
     paddingVertical: 20,
+    color: THEME.colors.white,
   },
   inputLabel: {
     fontSize: THEME.fontSize.md,
@@ -207,9 +215,9 @@ const styles = StyleSheet.create({
     marginVertical: 2,
     padding: 15,
     borderWidth: 2,
-    borderColor: THEME.colors.grayBg,
+
     borderRadius: 10,
-    borderStyle: "dashed",
+
     gap: 15,
     alignItems: "center",
   },

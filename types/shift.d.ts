@@ -22,6 +22,7 @@ export interface ShiftRosterType {
   isExceptionalShift: boolean;
   isShiftReportSigned: boolean;
   repeat: boolean;
+  description: string;
   attendId: number;
   companyID: number;
   dateCreated: Date;

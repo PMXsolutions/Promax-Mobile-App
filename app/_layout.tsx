@@ -105,7 +105,7 @@ function Root() {
           </Stack>
         </GestureHandlerRootView>
       </QueryClientProvider>
-      <FlashMessage position="top" />
+      <FlashMessage position="bottom" />
       <PortalHost />
     </>
   );

@@ -13,18 +13,13 @@ const SelectLocation = () => {
   const query = useLocalSearchParams();
 
   const id = query.id as unknown as string;
-  const {
-    userAddress,
-    destinationAddress,
-    setDestinationLocation,
-    setUserLocation,
-  } = useLocationStore();
+  const { destinationAddress, setDestinationLocation } = useLocationStore();
 
   return (
     <>
       {/* <LocationTrackingScreen /> */}
       <TransportLayout title="" snapPoints={["45%", "65%"]}>
-        <View style={{ marginBottom: 12 }}>
+        {/* <View style={{ marginBottom: 12 }}>
           <Text size="lg" weight="semiBold" style={{ marginBottom: 12 }}>
             From
           </Text>
@@ -38,11 +33,11 @@ const SelectLocation = () => {
             textInputBackgroundColor="#f5f5f5"
             handlePress={(location) => setUserLocation(location)}
           />
-        </View>
+        </View> */}
 
         <View style={{ marginVertical: 12 }}>
           <Text size="lg" weight="semiBold" style={{ marginBottom: 12 }}>
-            To
+            Destination
           </Text>
 
           <GoogleTextInput
@@ -56,7 +51,7 @@ const SelectLocation = () => {
           />
         </View>
 
-        <View style={{ marginTop: 20 }}>
+        <View style={{ marginTop: 50 }}>
           <CustomButton title="Continue" />
         </View>
       </TransportLayout>

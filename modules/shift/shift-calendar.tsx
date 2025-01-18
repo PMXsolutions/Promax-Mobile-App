@@ -8,18 +8,26 @@ import Text from "@/components/shared/text";
 import { AgendaProps, ShiftRosterType } from "@/types/shift";
 import ShiftItem from "@/components/shift/shift-item";
 import { Fontisto } from "@expo/vector-icons";
+import { RefreshControl } from "react-native";
 
 interface Props {
   shiftData: ShiftRosterType[];
   isLoading: boolean;
   isError: boolean;
+  isRefetching: boolean;
+  onRefresh: () => Promise<void>;
 }
 
 interface AgendaItems {
   [date: string]: AgendaProps[];
 }
 
-const ShiftCalendar: React.FC<Props> = ({ shiftData, isLoading }) => {
+const ShiftCalendar: React.FC<Props> = ({
+  shiftData,
+  isLoading,
+  isRefetching,
+  onRefresh,
+}) => {
   const [items, setItems] = React.useState<AgendaItems>({}); // Add proper typing to `items`.
 
   const aus_timezone = "Australia/Sydney";
@@ -113,6 +121,14 @@ const ShiftCalendar: React.FC<Props> = ({ shiftData, isLoading }) => {
       displayLoadingIndicator={isLoading}
       ListEmptyComponent={renderEmptyDate}
       theme={customTheme}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetching}
+          progressBackgroundColor={"#fff"}
+          colors={[THEME.colors.primary]}
+          onRefresh={onRefresh}
+        />
+      }
     />
   );
 };

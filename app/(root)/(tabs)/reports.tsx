@@ -21,7 +21,7 @@ const Report = () => {
   const { staff } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState("");
   const handleSearch = (text: string) => {
-    setSearchTerm(text);
+    setSearchTerm(text.trim());
     // You can fetch or filter results here based on `text`
   };
 
@@ -48,7 +48,7 @@ const Report = () => {
     return reportSorted.filter((item) =>
       item?.shiftRoster?.clients
         .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+        .includes(searchTerm.trim().toLowerCase())
     );
   }, [searchTerm, report]);
 
@@ -119,7 +119,7 @@ const Report = () => {
         {reportData?.length <= 0 &&
           searchTerm.trim().length < 1 &&
           !isLoading && <EmptyData />}
-        {reportData?.length <= 0 && searchTerm.trim().length > 1 && (
+        {reportData?.length <= 0 && searchTerm.trim().length > 0 && (
           <View
             style={{
               flex: 1,

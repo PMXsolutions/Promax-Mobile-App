@@ -1,6 +1,7 @@
 import {
   Animated,
   FlatList,
+  RefreshControl,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -25,7 +26,7 @@ const Document = () => {
   const { staff } = useAuthStore();
   const [searchTerm, setSearchTerm] = React.useState("");
   const handleSearch = (text: string) => {
-    setSearchTerm(text);
+    setSearchTerm(text.trim());
     // You can fetch or filter results here based on `text`
   };
 
@@ -33,8 +34,12 @@ const Document = () => {
     data: documentData,
     isError,
     isRefetching,
+    refetch,
     isPending: isLoading,
   } = reportQuery.useFetchStaffDocument(staff?.staffId as number);
+  const onRefresh = async () => {
+    await refetch();
+  };
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -124,20 +129,29 @@ const Document = () => {
             onSearch={handleSearch}
           />
         </View>
-        {filteredData?.length > 0 && (
+        {docData?.length > 0 && (
           <FlatList
-            data={filteredData}
+            data={docData}
             keyExtractor={(_, index) => index.toString()}
             renderItem={({ item }) => <DocumentLabel item={item} />}
             contentContainerStyle={{ ...styles.content, paddingBottom: 10 }}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching}
+                progressBackgroundColor={"#fff"}
+                colors={[THEME.colors.primary]}
+                onRefresh={onRefresh}
+              />
+            }
           />
         )}
 
-        {docData?.length <= 0 && searchTerm.trim().length < 1 && !isLoading && (
-          <EmptyData />
-        )}
-        {docData?.length <= 0 && searchTerm.trim().length > 1 && (
+        {!isLoading &&
+          documentData &&
+          documentData?.length <= 0 &&
+          searchTerm.trim().length < 1 && <EmptyData />}
+        {docData?.length <= 0 && searchTerm.trim().length > 0 && (
           <View
             style={{
               flex: 1,
@@ -152,7 +166,7 @@ const Document = () => {
                 color: THEME.colors.grayBg,
               }}
             >
-              No Report found for "{searchTerm}"
+              No Document found for "{searchTerm}"
             </Text>
           </View>
         )}

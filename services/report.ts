@@ -63,7 +63,11 @@ const handleUploadStaffDocument = async (
   console.log(formInfo);
 
   if (formInfo?.docFile) {
-    formData.append("DocumentFile", formInfo?.docFile.file as Blob);
+    formData.append("DocumentFile", {
+      uri: formInfo.docFile.uri, // Use the URI of the file
+      name: formInfo.docFile.name, // Use the filename
+      type: formInfo.docFile.mimeType, // Use the MIME type
+    } as unknown as Blob);
   }
   formData.append("CompanyId", formInfo.companyId?.toString() as string); // Using optional chaining and nullish coalescing
   formData.append("DocumentName", formInfo.docuName);
