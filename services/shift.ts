@@ -3,7 +3,12 @@ import axiosInstance from "@/libs/axiosInstance";
 const fetchStaffShift = async (uid: number) => {
   try {
     const { data } = await axiosInstance.get(
-      `/ShiftRosters/get_shifts_by_user?client=&staff=${uid}`
+      `/ShiftRosters/get_shifts_by_user?client=&staff=${uid}`,
+      {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      }
     );
 
     return data?.shiftRoster;
@@ -13,7 +18,11 @@ const fetchStaffShift = async (uid: number) => {
 };
 const fetchShiftDetails = async (shiftId: number) => {
   try {
-    const response = await axiosInstance.get(`/ShiftRosters/${shiftId}`);
+    const response = await axiosInstance.get(`/ShiftRosters/${shiftId}`, {
+      headers: {
+        "Cache-Control": "no-cache",
+      },
+    });
     return response.data;
   } catch (error) {
     throw new Error("Unable to fetch shift details");
@@ -21,7 +30,7 @@ const fetchShiftDetails = async (shiftId: number) => {
 };
 
 const clockIn = async (
-  userId: number,
+  userId: string,
   shiftId: number,
   latitude: number,
   longitude: number
@@ -30,7 +39,7 @@ const clockIn = async (
     `/Attendances/clock_in?userId=${userId}&shiftId=${shiftId}&lat=${latitude}&lng=${longitude}`
   );
 };
-const clockOut = async (userId: number, shiftId: number) => {
+const clockOut = async (userId: string, shiftId: number) => {
   return axiosInstance.get(
     `/Attendances/clock_out?userId=${userId}&shiftId=${shiftId}`
   );

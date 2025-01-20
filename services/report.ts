@@ -1,5 +1,5 @@
 import axiosInstance from "@/libs/axiosInstance";
-import { ShiftReport } from "@/types/report";
+import { ReportFormState, ShiftReport } from "@/types/report";
 import { DocumentPickerAsset } from "expo-document-picker";
 
 interface reqBodyType {
@@ -23,13 +23,25 @@ const fetchStaffReport = async (staffId: number) => {
 const fetchReportInfo = async (reportId: number, shiftId: number) => {
   try {
     const response = await axiosInstance.get(
-      `/ShiftReports/get_shiftreport_details/${reportId}?shiftId=${shiftId}`
+      `/ShiftReports/get_shiftreport_details/${reportId}?shiftId=${shiftId}`,
+      {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      }
     );
 
     return response.data;
   } catch (error) {
     throw new Error("Unable to fetch report details");
   }
+};
+
+const submitShiftForm = async (userId: string, formInfo: ReportFormState) => {
+  return axiosInstance.post(
+    `/ShiftReports/add_shiftreport?userId=${userId}`,
+    formInfo
+  );
 };
 
 const handleEditShiftForm = async (
@@ -59,8 +71,6 @@ const handleUploadStaffDocument = async (
   formInfo: reqBodyType
 ) => {
   const formData = new FormData();
-
-  console.log(formInfo);
 
   if (formInfo?.docFile) {
     formData.append("DocumentFile", {
@@ -94,4 +104,5 @@ export const reportService = {
   handleEditShiftForm,
   fetchStaffDocument,
   handleUploadStaffDocument,
+  submitShiftForm,
 };

@@ -16,6 +16,7 @@ import useAuthStore from "@/store/use-auth-store";
 import BottomModal from "@/components/shared/bottom-modal";
 import ShiftMessage from "@/components/shift/shift-message";
 import TransportButton from "@/components/shift/transport-button";
+import ModalPop from "@/components/shared/modal";
 
 const ShiftDetail = () => {
   const { user } = useAuthStore();
@@ -24,7 +25,6 @@ const ShiftDetail = () => {
   const id = query.id as unknown as string;
   const clients = query.clients as unknown as string;
   const { data: shift, isLoading } = shiftQuery.useShiftDetail(Number(id));
-  const shiftActivities = shift?.activities.split(",");
   const {
     clockInPending,
     handleClock,
@@ -32,13 +32,13 @@ const ShiftDetail = () => {
     setModalVisible,
     distanceCheckLoading,
   } = useClockIn(
-    Number(user?.userId),
+    user?.userId as string,
     shift?.shiftRosterId!,
     shift?.profile?.latitude!,
     shift?.profile?.longitude!
   );
   const { mutate: clockOut, isPending: clockOutPending } = useClockOut(
-    Number(user?.userId),
+    user?.userId as string,
     shift?.shiftRosterId!
   );
 
@@ -83,14 +83,13 @@ const ShiftDetail = () => {
         />
       )}
       {/*  */}
-      {modalVisible && (
-        <BottomModal
-          setStatus={setModalVisible}
-          title={`Good Job, ${shift?.staff?.firstName}`}
-        >
-          <ShiftMessage shift={shift!} />
-        </BottomModal>
-      )}
+      <ModalPop
+        modalVisible={modalVisible}
+        closeModal={() => setModalVisible(false)}
+        title={`Good Job, ${shift?.staff?.firstName}`}
+      >
+        <ShiftMessage shift={shift!} />
+      </ModalPop>
       {/* {shiftInfo && getActivityStatus(shiftInfo) === "Shift In progress" && (
         <>
           {shiftInfo && shiftActivities.includes(" Transport") && (

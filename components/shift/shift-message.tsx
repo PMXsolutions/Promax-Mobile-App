@@ -24,15 +24,14 @@ const ShiftMessage = ({ shift }: { shift: ShiftRosterType }) => {
     (differenceInMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
   );
   return (
-    <View>
+    <View style={{ width: "90%" }}>
       <Text
-        size="lg"
+        size="base"
         weight="regular"
         style={{
           lineHeight: 24,
         }}
       >
-        <Text weight="bold"></Text>
         {"\n"} You have successfully clocked into this shift that last for{" "}
         <Text weight="bold">
           {" "}

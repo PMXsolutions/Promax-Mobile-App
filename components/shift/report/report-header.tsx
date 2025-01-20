@@ -2,18 +2,19 @@ import React from "react";
 import FormTableDisp from "@/components/shared/form-table-display";
 import { formattedTime } from "@/helpers/shift-service";
 import { ShiftReport } from "@/types/report";
+import { ShiftRosterType } from "@/types/shift";
 
-const ReportFormHeader = ({ item }: { item: ShiftReport }) => {
+const ReportFormHeader = ({ item }: { item: ShiftRosterType }) => {
   return (
     <>
-      <FormTableDisp label="Client’s Name" value={item?.shiftRoster.clients} />
+      <FormTableDisp label="Client’s Name" value={item?.clients} />
       <FormTableDisp
         label="Shift Start Time"
-        value={formattedTime(item?.shiftRoster.dateFrom, "d MMMM, yyyy h:mm a")}
+        value={formattedTime(item?.dateFrom, "d MMMM, yyyy h:mm a")}
       />
       <FormTableDisp
         label="Shift End Time"
-        value={formattedTime(item?.shiftRoster.dateTo, "d MMMM, yyyy h:mm a")}
+        value={formattedTime(item?.dateTo, "d MMMM, yyyy h:mm a")}
       />
       <FormTableDisp
         label="Date"

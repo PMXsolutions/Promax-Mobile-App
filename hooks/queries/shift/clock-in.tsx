@@ -12,7 +12,7 @@ interface StaffLocationProps {
   longitude: number;
 }
 const useClockIn = (
-  userId: number,
+  userId: string,
   shiftRosterId: number,
   clientLat: number,
   clientLng: number
@@ -89,7 +89,7 @@ const useClockIn = (
         ["shift", { id: shiftRosterId }],
         ["shifts"],
       ];
-      queriesToInvalidate.forEach((query) =>
+      return queriesToInvalidate.forEach((query) =>
         queryClient.invalidateQueries({ queryKey: query })
       );
     },

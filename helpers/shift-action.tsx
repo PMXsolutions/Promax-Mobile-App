@@ -54,7 +54,7 @@ const ShiftAction = ({
               </Text>
             </View>
           ) : getActivityDetailStatus(activity) === "Clock-In" ? (
-            <View style={{ gap: THEME.spacing.md }}>
+            <View style={styles.footer}>
               <CustomButton
                 bgVariant="light"
                 onPress={() =>
@@ -79,14 +79,6 @@ const ShiftAction = ({
             <>
               <View
                 style={{
-                  // backgroundColor:
-                  //   getActivityDetailStatus(activity) === "Absent"
-                  //     ? "#fee2e2"
-                  //     : getActivityDetailStatus(activity) === "Present"
-                  //     ? "#f0fdf4"
-                  //     : "transparent",
-                  // borderWidth: 1,
-
                   backgroundColor:
                     getActivityDetailStatus(activity) === "Absent"
                       ? "#b91c1c"
@@ -134,20 +126,23 @@ const ShiftAction = ({
               {getActivityDetailStatus(activity) === "Shift In progress" && (
                 <>
                   {!activity?.isShiftReportSigned && (
-                    <TouchableOpacity
-                      style={styles.clockInButton}
-                      // onPress={() =>
-                      //   navigation.navigate("ReportForm", { shift: activity })
-                      // }
-                    >
-                      <Text style={styles.clockInButtonText}>
-                        Fill Shift Report
-                      </Text>
-                    </TouchableOpacity>
+                    <View style={styles.footer}>
+                      <CustomButton
+                        onPress={() =>
+                          router.push({
+                            pathname: "/(root)/report/create",
+                            params: {
+                              rosterId: activity?.shiftRosterId,
+                            },
+                          })
+                        }
+                        title="Fill Shift Report"
+                      />
+                    </View>
                   )}
 
                   {activity?.isShiftReportSigned && (
-                    <>
+                    <View style={styles.footer}>
                       <CustomButton
                         bgVariant="light"
                         onPress={() =>
@@ -169,7 +164,7 @@ const ShiftAction = ({
                         loading={clockOutPending}
                         title="Clock Out"
                       />
-                    </>
+                    </View>
                   )}
                 </>
               )}
@@ -206,5 +201,11 @@ const styles = StyleSheet.create({
     padding: 30,
     borderRadius: 10,
     alignItems: "center",
+  },
+
+  footer: {
+    paddingHorizontal: THEME.spacing.xs,
+    paddingVertical: THEME.spacing.md,
+    gap: THEME.spacing.md,
   },
 });

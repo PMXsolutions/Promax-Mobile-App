@@ -1,11 +1,9 @@
 import { Image, ScrollView, StyleSheet, Switch, View } from "react-native";
-import React, { useEffect, useState } from "react";
-import { reportQuery } from "@/hooks/queries/report";
-import Loader from "@/components/shared/loader";
+import React, { useState } from "react";
 import { THEME } from "@/constants/theme";
 import ReportFormHeader from "@/components/shift/report/report-header";
 import TextInput from "@/components/shared/input";
-import { ShiftReport } from "@/types/report";
+import { ReportFormState } from "@/types/report";
 import Text from "@/components/shared/text";
 import CustomSwitch from "@/components/shift/report/report-setting";
 import CustomButton from "@/components/shared/custom-button";
@@ -16,20 +14,14 @@ import { showMessage } from "react-native-flash-message";
 import { router } from "expo-router";
 import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
+import MiniLoader from "@/components/shared/mini-loader";
 
-const EditReportForm = ({
-  reportId,
-  rosterId,
-}: {
-  reportId: string;
-  rosterId: string;
-}) => {
+const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   const { user } = useAuthStore();
-  const { data, isLoading } = reportQuery.useFetchReportInfo(
-    Number(reportId),
+
+  const { data: shift, isLoading } = shiftQuery.useShiftDetail(
     Number(rosterId)
   );
-  const { data: shift } = shiftQuery.useShiftDetail(Number(rosterId));
 
   // Update the `useState` to match the type
   const [form, setForm] = useState({
@@ -38,7 +30,7 @@ const EditReportForm = ({
     medicationSigned: "",
     medicationAvailable: "",
     medicatioErrors: "",
-    isMealManagementPlan: false,
+    isMealManagementPlan: true,
     details_IfNotMealMaganementPlan: "",
     isDrinkingProblem: false,
     details_IfProblemExist: "",
@@ -51,35 +43,10 @@ const EditReportForm = ({
     isBehaviourConcerned: false,
     details_ifIsBehaviourConcerned: "",
   });
-  useEffect(() => {
-    if (data) {
-      setForm({
-        urgentMatters: data.urgentMatters || "",
-        medicationGiven: data.medicationGiven || "",
-        medicationSigned: data.medicationSigned || "",
-        medicationAvailable: data.medicationAvailable || "",
-        medicatioErrors: data.medicatioErrors || "",
-        isMealManagementPlan: data.isMealManagementPlan,
-        details_IfNotMealMaganementPlan:
-          data.details_IfNotMealMaganagementPlan || "",
-        isDrinkingProblem: data.isDrinkingProblem,
-        details_IfProblemExist: data.details_IfProblemExist || "",
-        isHealthIssues: data.isHealthIssues,
-        details_IfHealthIssuesExist: data.details_IfHealthIssuesExist || "",
-        goal_Progress: data.goal_Progress || "",
-        contactFamily: data.contactFamily || "",
-        isIncident: data.isIncident,
-        details_IfIsIncipient: data.details_IfIsIncipient || "",
-        isBehaviourConcerned: data.isBehaviourConcerned,
-        details_ifIsBehaviourConcerned:
-          data.details_ifIsBehaviourConcerned || "",
-      });
-    }
-  }, [data]);
 
-  const handleInputChange = <K extends keyof ShiftReport>(
+  const handleInputChange = <K extends keyof ReportFormState>(
     name: K,
-    value: ShiftReport[K]
+    value: ReportFormState[K]
   ) => {
     setForm((prevState) => ({
       ...prevState,
@@ -90,25 +57,23 @@ const EditReportForm = ({
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
       const reqBody = {
-        ...data,
+        companyID: user?.companyId,
+        shiftRosterId: rosterId,
         ...form,
       };
-      return reportService.handleEditShiftForm(
-        Number(data?.shiftReportId),
+      return await reportService.submitShiftForm(
         user?.userId as string,
-        reqBody as ShiftReport
-      ); // Ensure this API call works
+        reqBody
+      );
     },
     onSuccess: ({ data }) => {
       showMessage({
         message: data.message,
-        description: "Report Edited Successfully",
         type: "success",
       });
-
-      router.back();
+      router.push("/(root)/(tabs)");
       return queryClient.invalidateQueries({
-        queryKey: ["staffReports", user?.userId],
+        queryKey: ["shifts"],
       });
     },
 
@@ -124,22 +89,12 @@ const EditReportForm = ({
     onSubmit(); // Should call the mutation function
   };
 
-  // const load = true;
-  if (isLoading) {
-    return (
-      <Loader
-        name="2-curves"
-        color={THEME.colors.secondary}
-        title="Loading Report.."
-      />
-    );
-  }
-
   return (
     <ScrollView
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
+      <MiniLoader visible={isLoading} title="Loading Report.." />
       {shift && <ReportFormHeader item={shift} />}
       <View style={{ gap: THEME.spacing.sm, marginVertical: 10 }}>
         <Text size="md" weight="bold" style={{ color: THEME.colors.red }}>
@@ -231,7 +186,7 @@ const EditReportForm = ({
                 label="Details if Not Meal Management Plan"
                 value={form.details_IfNotMealMaganementPlan}
                 onChangeText={(value) =>
-                  handleInputChange("details_IfNotMealMaganagementPlan", value)
+                  handleInputChange("details_IfNotMealMaganementPlan", value)
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
@@ -410,7 +365,7 @@ const EditReportForm = ({
   );
 };
 
-export default EditReportForm;
+export default AddReportForm;
 
 const styles = StyleSheet.create({
   content: {

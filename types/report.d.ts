@@ -50,3 +50,23 @@ export interface DocumentData {
   userRole: string;
   verify: boolean;
 }
+
+export type ReportFormState = {
+  urgentMatters: string;
+  medicationGiven: string;
+  medicationSigned: string;
+  medicationAvailable: string;
+  medicatioErrors: string;
+  isMealManagementPlan: boolean;
+  details_IfNotMealMaganementPlan: string;
+  isDrinkingProblem: boolean;
+  details_IfProblemExist: string;
+  isHealthIssues: boolean;
+  details_IfHealthIssuesExist: string;
+  goal_Progress: string;
+  contactFamily: string;
+  isIncident: boolean;
+  details_IfIsIncipient: string;
+  isBehaviourConcerned: boolean;
+  details_ifIsBehaviourConcerned: string;
+};

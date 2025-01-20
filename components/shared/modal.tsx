@@ -3,18 +3,14 @@ import { View, TouchableWithoutFeedback, Modal } from "react-native";
 import { ModalProps } from "react-native";
 import { THEME } from "@/constants/theme";
 import { StyleSheet } from "react-native";
+import Text from "./text";
 
 interface Props extends ModalProps {
   modalVisible: boolean;
   closeModal: () => void;
   title?: string;
 }
-const ModalPop = ({
-  title = "Title",
-  modalVisible,
-  closeModal,
-  children,
-}: Props) => (
+const ModalPop = ({ title, modalVisible, closeModal, children }: Props) => (
   <Modal
     transparent={true}
     animationType="fade"
@@ -25,7 +21,7 @@ const ModalPop = ({
       <View style={styles.overlay}>
         <TouchableWithoutFeedback>
           <View style={styles.modalContent}>
-            {/* <View
+            <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
@@ -35,10 +31,10 @@ const ModalPop = ({
               <Text weight="semiBold" size="lg">
                 {title}
               </Text>
-              <TouchableOpacity onPress={closeModal}>
+              {/* <TouchableOpacity onPress={closeModal}>
                 <MaterialIcons name="cancel" width={22} />
-              </TouchableOpacity>
-            </View> */}
+              </TouchableOpacity> */}
+            </View>
 
             {children}
           </View>
@@ -58,7 +54,7 @@ const styles = StyleSheet.create({
   modalContent: {
     minWidth: 320,
     padding: 20,
-    gap: 18,
+    // gap: 18,
     backgroundColor: "#fff",
     borderRadius: 10,
   },

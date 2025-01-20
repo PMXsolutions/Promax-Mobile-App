@@ -121,7 +121,7 @@ const Profile = () => {
       <ModalPop
         modalVisible={modalVisible}
         closeModal={() => setModalVisible(false)}
-        title="Logout"
+        title=""
       >
         <View style={{ rowGap: THEME.spacing.sm }}>
           <View

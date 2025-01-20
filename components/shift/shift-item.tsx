@@ -5,6 +5,7 @@ import {
   TouchableWithoutFeedback,
   Image,
   ImageBackground,
+  Alert,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -30,15 +31,21 @@ const ShiftItem = ({ item }: { item: AgendaProps }) => {
   const isPending = item.status === "Pending";
   const isCancelled = item.status === "Cancelled";
 
+  const handleShiftAction = () => {
+    if (isPending) {
+      Alert.alert("Pending", "Awaiting feedback from Admin on your request");
+    } else if (isCancelled) {
+      Alert.alert("Cancelled", "This shift has been cancelled");
+    } else {
+      router.push({
+        pathname: "/(root)/shift",
+        params: { id: item.shiftRosterId, clients: item.client },
+      });
+    }
+  };
+
   return (
-    <TouchableWithoutFeedback
-      onPress={() =>
-        router.push({
-          pathname: "/(root)/shift",
-          params: { id: item.shiftRosterId, clients: item.client },
-        })
-      }
-    >
+    <TouchableWithoutFeedback onPress={handleShiftAction}>
       <View style={styles.item}>
         <View style={styles.imageContainer}>
           <View style={styles.avatarContainer}>
@@ -91,7 +98,7 @@ const ShiftItem = ({ item }: { item: AgendaProps }) => {
           <View style={styles.btnContainer}>
             {isShiftInProgress && (
               <View style={styles.inProgressBadge}>
-                <Text size="md" weight="regular">
+                <Text size="sm" weight="bold">
                   Shift In Progress
                 </Text>
               </View>

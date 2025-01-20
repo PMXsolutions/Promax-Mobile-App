@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { showMessage } from "react-native-flash-message";
 
-export const useClockOut = (user: number, shiftRosterId: number) => {
+export const useClockOut = (user: string, shiftRosterId: number) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
@@ -17,18 +17,18 @@ export const useClockOut = (user: number, shiftRosterId: number) => {
         description: "Well done!",
         type: "success",
       });
-      queryClient.invalidateQueries({
-        queryKey: ["shift", { id: shiftRosterId }],
-      });
-      queryClient.invalidateQueries({ queryKey: ["shifts"] });
-      // const queriesToInvalidate = [
-      //   ["shift", { id: shiftRosterId }],
-      //   ["shifts"],
-      // ];
+      // queryClient.invalidateQueries({
+      //   queryKey: ["shift", { id: shiftRosterId }],
+      // });
+      // queryClient.invalidateQueries({ queryKey: ["shifts"] });
+      const queriesToInvalidate = [
+        ["shift", { id: shiftRosterId }],
+        ["shifts"],
+      ];
 
-      // queriesToInvalidate.forEach((query) =>
-      //   queryClient.invalidateQueries({ queryKey: query })
-      // );
+      return queriesToInvalidate.forEach((query) =>
+        queryClient.invalidateQueries({ queryKey: query })
+      );
       // return queryClient.invalidateQueries({
       //   queryKey: ["shift", { id: shiftRosterId }],
       // });
