@@ -85,7 +85,7 @@ export default Loader;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: THEME.colors.primary || "black",
+    backgroundColor: THEME.colors.brand || "black",
     justifyContent: "center",
     position: "absolute",
     alignItems: "center",

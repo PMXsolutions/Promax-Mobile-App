@@ -114,7 +114,10 @@ export default function TabLayout() {
                 width: 56,
                 height: 56,
                 borderRadius: 999,
-                // marginTop: -20, // Ensure central alignment on iOS
+                borderWidth: 2,
+                borderColor: "#fff",
+
+                marginTop: -20, // Ensure central alignment on iOS
                 shadowColor: "#000",
                 shadowOpacity: 0.2,
                 shadowOffset: { width: 0, height: 2 },

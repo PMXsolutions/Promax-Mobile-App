@@ -1,9 +1,4 @@
-import {
-  ActivityIndicator,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { getActivityDetailStatus } from "./shift-service";
 import { ShiftRosterType } from "@/types/shift";
@@ -11,6 +6,8 @@ import { THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";
 import { UseMutateFunction } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
+import CustomButton from "@/components/shared/custom-button";
+import { router } from "expo-router";
 
 interface ShiftProps {
   activity: ShiftRosterType;
@@ -57,42 +54,27 @@ const ShiftAction = ({
               </Text>
             </View>
           ) : getActivityDetailStatus(activity) === "Clock-In" ? (
-            <>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                //   onPress={() =>
-                //     navigation.navigate("ShiftCancel", {
-                //       shiftId: activity.shiftRosterId,
-                //     })
-                //   }
-              >
-                <Text
-                  style={[
-                    styles.cancelButtonText,
-                    { color: THEME.colors.error },
-                  ]}
-                >
-                  Request to Cancel Shift
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+            <View style={{ gap: THEME.spacing.md }}>
+              <CustomButton
+                bgVariant="light"
+                onPress={() =>
+                  router.push({
+                    pathname: "/(root)/shift/cancel",
+                    params: {
+                      id: activity?.shiftRosterId,
+                    },
+                  })
+                }
+                title="Request to Cancel Shift"
+                textVariant="primary"
+              />
+              <CustomButton
                 onPress={clockIn}
                 disabled={clockInPending}
-                style={styles.clockInButton}
-              >
-                {clockInPending ? (
-                  <ActivityIndicator size={"small"} />
-                ) : (
-                  <Text
-                    size="lg"
-                    weight="semiBold"
-                    style={styles.clockInButtonText}
-                  >
-                    Clock In
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </>
+                loading={clockInPending}
+                title="Clock In"
+              />
+            </View>
           ) : (
             <>
               <View
@@ -166,33 +148,27 @@ const ShiftAction = ({
 
                   {activity?.isShiftReportSigned && (
                     <>
-                      <TouchableOpacity
-                        style={styles.cancelButton}
-                        //   onPress={() =>
-                        //     navigation.navigate("EditReportForm", {
-                        //       shift: activity,
-                        //     })
-                        //   }
-                      >
-                        <Text style={styles.cancelButtonText}>
-                          Edit Shift Report
-                        </Text>
-                      </TouchableOpacity>
+                      <CustomButton
+                        bgVariant="light"
+                        onPress={() =>
+                          router.push({
+                            pathname: "/(root)/report",
+                            params: {
+                              reportId: 0,
+                              rosterId: activity?.shiftRosterId,
+                            },
+                          })
+                        }
+                        title="Edit Shift Report"
+                        textVariant="primary"
+                      />
 
-                      {/* <Button title={" Clock Out"} loading={clockOutPending} /> */}
-                      <TouchableOpacity
-                        style={styles.clockInButton}
+                      <CustomButton
                         onPress={() => clockOut()}
                         disabled={clockOutPending}
-                      >
-                        {clockOutPending ? (
-                          <ActivityIndicator size={"small"} />
-                        ) : (
-                          <Text style={styles.clockInButtonText}>
-                            Clock Out
-                          </Text>
-                        )}
-                      </TouchableOpacity>
+                        loading={clockOutPending}
+                        title="Clock Out"
+                      />
                     </>
                   )}
                 </>

@@ -48,7 +48,7 @@ const ShiftCalendar: React.FC<Props> = ({
     if (shiftData && Array.isArray(shiftData)) {
       // Populate shifts into the items structure
       shiftData.forEach((shift) => {
-        const date = formattedTime(new Date(shift.dateFrom)); // Ensure `dateFrom` is a Date object.
+        const date = formattedTime(shift.dateFrom); // Ensure `dateFrom` is a Date object.
         if (!newItems[date]) {
           newItems[date] = [];
         }

@@ -35,10 +35,20 @@ const clockOut = async (userId: number, shiftId: number) => {
     `/Attendances/clock_out?userId=${userId}&shiftId=${shiftId}`
   );
 };
+const submitCancellationReason = async (
+  user: string,
+  reason: string,
+  shiftid: number
+) => {
+  return axiosInstance.get(
+    `/ShiftRosters/shift_cancellation?userId=${user}&reason=${reason}&shiftid=${shiftid}`
+  );
+};
 
 export const ShiftRosterService = {
   fetchStaffShift,
   fetchShiftDetails,
   clockIn,
   clockOut,
+  submitCancellationReason,
 };

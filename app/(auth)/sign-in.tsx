@@ -1,5 +1,4 @@
 import Text from "@/components/shared/text";
-import { router } from "expo-router";
 import React from "react";
 
 import {
@@ -13,6 +12,7 @@ import {
 import SignInForm from "@/modules/auth/sign-in-form";
 import { KeyboardAvoidingView } from "react-native";
 import { Platform } from "react-native";
+import { THEME } from "@/constants/theme";
 
 export default function Signin() {
   return (
@@ -23,17 +23,23 @@ export default function Signin() {
       }}
     >
       <ScrollView style={styles.container}>
-        
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
           <View style={styles.header}>
-            <TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                backgroundColor: THEME.colors.lightGray,
+                padding: 5,
+                borderRadius: 10,
+                marginBottom: 10,
+              }}
+            >
               <Image
                 alt="App Logo"
                 resizeMode="contain"
                 style={styles.headerImg}
-                source={require("@/assets/images/icon.png")}
+                source={require("@/assets/images/splash-icon1.png")}
               />
             </TouchableOpacity>
 
@@ -87,6 +93,5 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     alignSelf: "center",
-    marginBottom: 20,
   },
 });

@@ -44,7 +44,7 @@ const Activity = () => {
         ]}
       >
         <Header
-          name={`Welcome, ${staff?.firstName} ${staff?.surName}`}
+          name={`Welcome, ${staff?.firstName}`}
           image={staff?.imageUrl!}
           role={user?.role!}
           opacityTitle={opacityTitle}

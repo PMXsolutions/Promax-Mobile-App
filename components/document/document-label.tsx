@@ -110,20 +110,16 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
             </View>
           </View>
           <View style={styles.iconButton}>
-            {loading ? (
-              <ActivityIndicator color={THEME.colors.white} />
-            ) : (
-              <MaterialIcons
-                name={expanded ? "keyboard-arrow-down" : "keyboard-arrow-right"}
-                size={20}
-                color={THEME.colors.grayBg}
-              />
-            )}
+            <MaterialIcons
+              name={expanded ? "keyboard-arrow-down" : "keyboard-arrow-right"}
+              size={20}
+              color={THEME.colors.grayBg}
+            />
           </View>
         </View>
       </TouchableWithoutFeedback>
       <CollapsableContainer expanded={expanded}>
-        <View style={{ paddingVertical: 5 }}>
+        <View style={{ paddingVertical: 5, flex: 1 }}>
           {item?.expirationDate && item?.expirationDate.length > 5 && (
             <Text style={[styles.details, styles.text]}>
               Date Expired:{" "}
@@ -142,11 +138,29 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
                 onPress={handleDownload}
                 style={styles.downloadButton}
               >
-                <MaterialIcons
-                  name="download"
-                  size={24}
-                  color={THEME.colors.white}
-                />
+                {loading ? (
+                  <ActivityIndicator color={THEME.colors.white} />
+                ) : (
+                  <MaterialIcons
+                    name="download"
+                    size={24}
+                    color={THEME.colors.white}
+                  />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleDownload}
+                style={styles.downloadButton}
+              >
+                {loading ? (
+                  <ActivityIndicator color={THEME.colors.white} />
+                ) : (
+                  <MaterialIcons
+                    name="edit-document"
+                    size={24}
+                    color={THEME.colors.white}
+                  />
+                )}
               </TouchableOpacity>
             </View>
           )}
@@ -221,6 +235,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // Vertically aligns the button
     paddingHorizontal: 10, // Optional: Adjust spacing
     marginTop: 5,
+    gap: 8,
   },
 
   downloadButton: {
