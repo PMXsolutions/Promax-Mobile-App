@@ -166,14 +166,14 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
         control={form.control}
         placeholder={"Confirm new password"}
       />
-      <View style={[styles.actions, { marginBottom: bottomInset }]}>
-        <CustomButton
-          onPress={form.handleSubmit(onSubmitPasswordChange)}
-          //   loading={isPending}
-          //   disabled={isPending}
-          title="Update Password"
-        />
-      </View>
+      {/* <View style={[styles.actions, { marginBottom: bottomInset }]}> */}
+      <CustomButton
+        onPress={form.handleSubmit(onSubmitPasswordChange)}
+        //   loading={isPending}
+        //   disabled={isPending}
+        title="Update Password"
+      />
+      {/* </View> */}
     </ScrollView>
   );
 };

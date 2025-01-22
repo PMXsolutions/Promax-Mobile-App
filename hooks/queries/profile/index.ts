@@ -1,5 +1,6 @@
 import { profileService } from "@/services/profile";
 import { CompanyDetail, StaffProfile } from "@/types/auth";
+import { StaffAvailability } from "@/types/users";
 import { useQuery } from "@tanstack/react-query";
 
 const useFetchStaffProfile = (staffId: number) => {
@@ -11,6 +12,7 @@ const useFetchStaffProfile = (staffId: number) => {
     enabled: !!staffId, // Only run the query if staffId is defined
   });
 };
+
 const useFetchCompanyData = (companyId: number) => {
   return useQuery<CompanyDetail>({
     queryKey: ["company", companyId],
@@ -19,7 +21,15 @@ const useFetchCompanyData = (companyId: number) => {
     enabled: !!companyId, // Only run the query if companyId is defined
   });
 };
+const useFetchAvailability = (staffId: number) => {
+  return useQuery<StaffAvailability[]>({
+    queryKey: ["availability"],
+    queryFn: () => profileService.fetchStaffAvailability(staffId),
+    enabled: !!staffId, // Only run the query if companyId is defined
+  });
+};
 export const profileQuery = {
   useFetchStaffProfile,
   useFetchCompanyData,
+  useFetchAvailability,
 };

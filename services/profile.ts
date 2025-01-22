@@ -1,3 +1,4 @@
+import { FormEditType, FormSubmitType } from "@/hooks/mutation/availability";
 import axiosInstance from "@/libs/axiosInstance";
 import { StaffProfile } from "@/types/auth";
 
@@ -59,8 +60,62 @@ const handleEditStaffProfile = async (
   );
 };
 
+const fetchStaffAvailability = async (staffId: number) => {
+  try {
+    const { data } = await axiosInstance.get(
+      `/StaffAvailibilities/get_staff_availabilities?staffId=${staffId}`,
+      {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      }
+    );
+
+    return data;
+  } catch (error) {
+    throw new Error("Unable to fetch staff availabilty");
+  }
+};
+const submitStaffAvailability = async (formInfo: FormSubmitType) => {
+  const response = await axiosInstance.post(
+    `/StaffAvailibilities/add_staff_availability?userId=${formInfo.user}`,
+    {
+      staffId: formInfo.staffId,
+      days: formInfo.day,
+      fromTimeOfDay: formInfo.newStartTime,
+      toTimeOfDay: formInfo.newEndTime,
+      companyID: formInfo.companyID,
+    }
+  );
+  return response;
+};
+const editStaffAvailability = async (formInfo: FormEditType) => {
+  return axiosInstance.post(
+    `/StaffAvailibilities/edit/${formInfo?.staffAvailibilityId}?userId=${formInfo?.user}`,
+    {
+      staffAvailibilityId: formInfo?.staffAvailibilityId,
+      staffId: formInfo?.staffId,
+      days: formInfo?.days,
+      fromTimeOfDay: formInfo?.fromTimeOfDay,
+      toTimeOfDay: formInfo?.toTimeOfDay,
+      companyID: formInfo?.companyID,
+    }
+  );
+};
+
+const deleteStaffAvailability = async (id: number) => {
+  const response = await axiosInstance.post(
+    `/StaffAvailibilities/delete/${id}`
+  );
+  return response;
+};
+
 export const profileService = {
   fetchStaffProfile,
   fetchCompanyData,
   handleEditStaffProfile,
+  fetchStaffAvailability,
+  submitStaffAvailability,
+  editStaffAvailability,
+  deleteStaffAvailability,
 };

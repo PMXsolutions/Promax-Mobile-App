@@ -1,3 +1,5 @@
+import { StaffProfileTypes } from "./auth";
+
 export interface StaffInfoType {
   staffId: number;
   maxStaffId: string;
@@ -121,4 +123,18 @@ export interface ClientInfoType {
   userCreated: string;
   dateModified: string; // You may want to use Date type if it's a date string
   userModified: string;
+}
+
+export interface StaffAvailability {
+  companyID: number;
+  dateCreated: string;
+  dateModified: string;
+  days: string;
+  fromTimeOfDay: string;
+  staffAvailibilityId: number;
+  staffId: number;
+  toTimeOfDay: string;
+  userCreated: string;
+  userModified: string;
+  staff: StaffProfileTypes;
 }

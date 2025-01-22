@@ -94,3 +94,10 @@ export function getActivityDetailStatus(activity: ShiftRosterType) {
     return "Clock-In";
   }
 }
+
+export function convertTo12HourFormat(time24: any) {
+  const [hours, minutes] = time24.split(":");
+  const period = hours >= 12 ? "PM" : "AM";
+  const hours12 = hours % 12 || 12; // Handle 0 as 12
+  return `${hours12}:${minutes} ${period}`;
+}

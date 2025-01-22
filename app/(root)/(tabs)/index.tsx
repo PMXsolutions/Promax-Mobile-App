@@ -6,6 +6,9 @@ import useAuthStore from "@/store/use-auth-store";
 import { shiftQuery } from "@/hooks/queries/shift";
 import ShiftCalendar from "@/modules/shift/shift-calendar";
 import Header from "@/components/shared/header";
+import { getActivityDetailStatus } from "@/helpers/shift-service";
+import MiniLoader from "@/components/shared/mini-loader";
+import PendingShift from "@/components/shift/banner/pending-shift";
 
 const Activity = () => {
   const { staff, user } = useAuthStore();
@@ -14,6 +17,13 @@ const Activity = () => {
   const onRefresh = async () => {
     await refetch();
   };
+  const filteredShifts =
+    data?.filter(
+      (activity) =>
+        activity.status !== "Cancelled" &&
+        getActivityDetailStatus(activity) === "Present" &&
+        !activity?.isShiftReportSigned
+    ) || [];
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -37,6 +47,7 @@ const Activity = () => {
       bgColor={THEME.colors.brand}
       barStyle="light-content"
     >
+      <MiniLoader visible={isLoading} title="Loading Shift..." />
       <View
         style={[
           // styles.header,
@@ -50,6 +61,9 @@ const Activity = () => {
           opacityTitle={opacityTitle}
           translateTitle={translateTitle}
         />
+        {filteredShifts.length > 0 && (
+          <PendingShift num={filteredShifts.length} />
+        )}
         {/* <SearchBar openFilterModal={openFilterModal} /> */}
       </View>
       <View style={styles.container}>

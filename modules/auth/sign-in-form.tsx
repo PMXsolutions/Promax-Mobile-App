@@ -58,9 +58,7 @@ const SignInForm = () => {
           message: error.response?.data?.message,
           type: "danger",
         });
-        //   navigation.navigate("EmailConfirmation", {
-        //     email: inputs.email,
-        //   });
+        router.navigate(`/(auth)/otp-verification/${data.email}`);
       } else if (
         error.response?.data?.message ===
         "Email Not Confirmed. An OTP has been sent to your mail to confirm your email"
@@ -69,9 +67,7 @@ const SignInForm = () => {
           message: error.response?.data?.message,
           type: "danger",
         });
-        //   navigation.navigate("EmailConfirmation", {
-        //     email: inputs.email,
-        //   });
+        router.navigate(`/(auth)/otp-verification/${data.email}`);
       } else if (error.response?.data?.message === "Invalid Login Attempt") {
         showMessage({
           message: "Incorrect Password",
