@@ -17,21 +17,9 @@ export const useClockOut = (user: string, shiftRosterId: number) => {
         description: "Well done!",
         type: "success",
       });
-      // queryClient.invalidateQueries({
-      //   queryKey: ["shift", { id: shiftRosterId }],
-      // });
-      // queryClient.invalidateQueries({ queryKey: ["shifts"] });
-      const queriesToInvalidate = [
-        ["shift", { id: shiftRosterId }],
-        ["shifts"],
-      ];
-
-      return queriesToInvalidate.forEach((query) =>
-        queryClient.invalidateQueries({ queryKey: query })
-      );
-      // return queryClient.invalidateQueries({
-      //   queryKey: ["shift", { id: shiftRosterId }],
-      // });
+      return queryClient.invalidateQueries({
+        queryKey: ["shifts"],
+      });
     },
     onError: (error) => {
       if (isAxiosError(error)) {

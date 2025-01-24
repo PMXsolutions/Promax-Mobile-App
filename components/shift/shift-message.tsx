@@ -4,7 +4,13 @@ import { ShiftRosterType } from "@/types/shift";
 import Text from "../shared/text";
 import CustomButton from "../shared/custom-button";
 
-const ShiftMessage = ({ shift }: { shift: ShiftRosterType }) => {
+const ShiftMessage = ({
+  shift,
+  closeModal,
+}: {
+  shift: ShiftRosterType;
+  closeModal: () => void;
+}) => {
   // Define the date-time strings
   const startTimeString = shift?.dateFrom;
   const endTimeString = shift?.dateTo;
@@ -41,7 +47,7 @@ const ShiftMessage = ({ shift }: { shift: ShiftRosterType }) => {
         to avoid errors or being unable to clock into your next shift.
         {"\n"}
       </Text>
-      <CustomButton title="Ok" />
+      <CustomButton title="Ok" onPress={closeModal} />
     </View>
   );
 };

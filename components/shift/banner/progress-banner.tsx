@@ -3,11 +3,11 @@ import React from "react";
 import { THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";
 
-const InProgress = ({ shiftId }: { shiftId: number }) => {
+const ProgressBanner = ({ shiftId }: { shiftId: number }) => {
   return (
     <View style={styles.header}>
       <View style={styles.section}>
-        <Text style={styles.title} weight="semiBold" size="lg">
+        <Text style={styles.title} weight="semiBold" size="md">
           Shift (#{shiftId}) in Progress
         </Text>
       </View>
@@ -15,7 +15,7 @@ const InProgress = ({ shiftId }: { shiftId: number }) => {
   );
 };
 
-export default InProgress;
+export default ProgressBanner;
 
 const styles = StyleSheet.create({
   header: {

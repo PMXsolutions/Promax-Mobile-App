@@ -2,6 +2,7 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";
+import { router } from "expo-router";
 
 const PendingShift = ({ num }: { num: number }) => {
   return (
@@ -14,16 +15,19 @@ const PendingShift = ({ num }: { num: number }) => {
           numberOfLines={1}
           ellipsizeMode="tail"
         >
-          You have pending shift report{" "}
+          You have{" "}
+          <Text weight="bold" style={{ color: "#FFFF00" }}>
+            {" "}
+            ({num})
+          </Text>{" "}
+          pending shift report{" "}
         </Text>
       </View>
       <TouchableOpacity
         style={styles.section}
-        // onPress={() => navigation.navigate("ShiftPending", { penShift: shift })}
+        onPress={() => router.push("/(root)/shift/pending")}
       >
-        <Text style={[styles.title, { color: "#FFFF00" }]}>
-          ({num}) Review Now
-        </Text>
+        <Text style={[styles.title, { color: "#FFFF00" }]}>Review Now</Text>
       </TouchableOpacity>
     </View>
   );
@@ -37,8 +41,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: THEME.spacing.gutter,
-    paddingVertical: 10,
-    backgroundColor: THEME.colors.secondary,
+    paddingVertical: 15,
+    backgroundColor: THEME.colors.red,
   },
   section: {
     // flex: 1,
@@ -46,6 +50,6 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#030229",
+    color: THEME.colors.white,
   },
 });

@@ -16,7 +16,7 @@ const useShiftRoster = (staffId: number) => {
 };
 const useShiftDetail = (shiftId: number) => {
   return useQuery<ShiftRosterType>({
-    queryKey: ["shift", { id: shiftId }],
+    queryKey: ["shifts", "detail", { id: shiftId }],
     queryFn: () => ShiftRosterService.fetchShiftDetails(shiftId),
     enabled: !!shiftId, // Only run the query if shiftId is defined
   });

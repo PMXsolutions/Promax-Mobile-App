@@ -80,6 +80,7 @@ const Profile = () => {
             {labelArr.map((item, index) => (
               <ProfileLabel
                 key={index} // Ensure a unique key for each item
+                index={index} // Ensure a unique key for each item
                 iconName={item.iconName}
                 label={item.title}
                 link={item.url}

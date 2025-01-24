@@ -13,7 +13,6 @@ import useClockIn from "@/hooks/queries/shift/clock-in";
 import { useClockOut } from "@/hooks/queries/shift/clock-out";
 import ShiftAction from "@/helpers/shift-action";
 import useAuthStore from "@/store/use-auth-store";
-import BottomModal from "@/components/shared/bottom-modal";
 import ShiftMessage from "@/components/shift/shift-message";
 import TransportButton from "@/components/shift/transport-button";
 import ModalPop from "@/components/shared/modal";
@@ -88,7 +87,10 @@ const ShiftDetail = () => {
         closeModal={() => setModalVisible(false)}
         title={`Good Job, ${shift?.staff?.firstName}`}
       >
-        <ShiftMessage shift={shift!} />
+        <ShiftMessage
+          shift={shift!}
+          closeModal={() => setModalVisible(false)}
+        />
       </ModalPop>
       {/* {shiftInfo && getActivityStatus(shiftInfo) === "Shift In progress" && (
         <>

@@ -162,9 +162,9 @@ const Notification = () => {
       <HeaderWhite name={"Notification"} />
 
       <View style={[styles.container]}>
-        {filteredNotification && filteredNotification?.length <= 0 && (
+        {/* {filteredNotification && filteredNotification?.length <= 0 && (
           <EmptyData />
-        )}
+        )} */}
         <FlatList
           data={filteredNotification}
           renderItem={renderItem}
@@ -183,6 +183,11 @@ const Notification = () => {
               colors={[THEME.colors.primary]}
               onRefresh={onRefresh}
             />
+          }
+          ListEmptyComponent={
+            <View style={{ marginTop: 150 }}>
+              <EmptyData />
+            </View>
           }
         />
 

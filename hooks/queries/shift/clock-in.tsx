@@ -85,13 +85,9 @@ const useClockIn = (
       });
 
       setModalVisible(true);
-      const queriesToInvalidate = [
-        ["shift", { id: shiftRosterId }],
-        ["shifts"],
-      ];
-      return queriesToInvalidate.forEach((query) =>
-        queryClient.invalidateQueries({ queryKey: query })
-      );
+      return queryClient.invalidateQueries({
+        queryKey: ["shifts"],
+      });
     },
     onError: (error) => {
       if (isAxiosError(error)) {

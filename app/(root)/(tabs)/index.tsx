@@ -61,11 +61,11 @@ const Activity = () => {
           opacityTitle={opacityTitle}
           translateTitle={translateTitle}
         />
-        {filteredShifts.length > 0 && (
-          <PendingShift num={filteredShifts.length} />
-        )}
         {/* <SearchBar openFilterModal={openFilterModal} /> */}
       </View>
+      {filteredShifts.length > 0 && (
+        <PendingShift num={filteredShifts.length} />
+      )}
       <View style={styles.container}>
         <ShiftCalendar
           isError={isError}
