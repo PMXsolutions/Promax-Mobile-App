@@ -44,7 +44,7 @@ const TransportButton = ({ shiftId }: { shiftId: number }) => {
       <Pressable
         onPress={() =>
           router.push({
-            pathname: "/(root)/transport/select-location",
+            pathname: "/(root)/transport/select-destination",
             params: { id: shiftId },
           })
         }

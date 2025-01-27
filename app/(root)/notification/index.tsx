@@ -172,7 +172,7 @@ const Notification = () => {
           style={styles.notificationList}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingBottom: 5,
+            paddingBottom: 15,
             gap: 2,
             marginVertical: 10,
           }}

@@ -7,7 +7,6 @@ import { profileQuery } from "@/hooks/queries/profile";
 import { StaffAvailability } from "@/types/users";
 import MiniLoader from "@/components/shared/mini-loader";
 import DayAvailabilityForm from "@/modules/profile/availability-form";
-import Text from "@/components/shared/text";
 import {
   availbilityMutation,
   FormEditType,

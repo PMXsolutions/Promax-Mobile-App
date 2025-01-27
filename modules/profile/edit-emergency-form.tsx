@@ -42,7 +42,6 @@ const EditEmergencyForm = ({ id }: { id: string }) => {
       });
     }
   }, [staffData]);
-  const [dateOfBirth, setDateOfBirth] = useState(staffData?.dateOfBirth || "");
 
   const handleInputChange = <K extends keyof StaffProfile>(
     name: K,

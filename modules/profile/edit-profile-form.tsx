@@ -262,20 +262,21 @@ const EditProfileForm = ({ id }: { id: string }) => {
             onChangeText={(value) => handleInputChange("aboutMe", value)}
             numberOfLines={4}
             multiline
-            containerStyle={styles.inputContainerStyle}
+            // containerStyle={styles.inputContainerStyle}
             textAlign="left"
             placeholder="Type here..."
           />
+          <View style={{ marginBottom: 16 }}>
+            <CustomButton
+              title="Save"
+              onPress={() => handleFormSubmit()}
+              loading={isPending}
+            />
+          </View>
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <CustomButton
-          title="Save"
-          onPress={() => handleFormSubmit()}
-          loading={isPending}
-        />
-      </View>
+      {/* <View style={styles.footer}></View> */}
     </>
   );
 };

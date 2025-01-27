@@ -6,7 +6,7 @@ import { showMessage } from "react-native-flash-message";
 
 const useEditReport = (
   shiftReportId: number,
-  userId: number,
+  userId: string,
   formInfo: ShiftReport
 ) => {
   console.log(shiftReportId, userId, formInfo);

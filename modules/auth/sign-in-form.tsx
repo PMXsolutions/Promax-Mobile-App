@@ -4,7 +4,6 @@ import CustomButton from "@/components/shared/custom-button";
 import { Link, router } from "expo-router";
 import { THEME } from "@/constants/theme";
 import Feather from "@expo/vector-icons/Feather";
-import * as CheckboxPrimitive from "@rn-primitives/checkbox";
 import { SigninFormSchema } from "./types";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
