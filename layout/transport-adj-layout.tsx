@@ -22,6 +22,14 @@ const TransportLayout: React.FC<TransportLayoutProps> = ({
         style={styles.map}
         ref={mapRef as any}
         customMapStyle={mapStyle}
+        loadingEnabled={true}
+        loadingIndicatorColor="#666666"
+        loadingBackgroundColor="#eeeeee"
+        moveOnMarkerPress={false}
+        showsUserLocation={true}
+        showsCompass={true}
+        showsPointsOfInterest={false}
+        //  provider="google"
         initialRegion={
           currentLocation
             ? {
@@ -43,7 +51,6 @@ const TransportLayout: React.FC<TransportLayoutProps> = ({
             : undefined
         }
         mapType="standard"
-        showsUserLocation={true}
       >
         {currentLocation && (
           <Marker coordinate={currentLocation} pinColor={THEME.colors.brand} />

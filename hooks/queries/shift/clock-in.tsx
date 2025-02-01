@@ -78,13 +78,13 @@ const useClockIn = (
     },
 
     onSuccess: () => {
+      setModalVisible(true);
       showMessage({
         message: "You’ve clocked in and are ready to go",
         description: "Have a productive shift!",
         type: "success",
       });
 
-      setModalVisible(true);
       return queryClient.invalidateQueries({
         queryKey: ["shifts"],
       });

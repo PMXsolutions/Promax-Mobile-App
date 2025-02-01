@@ -1,14 +1,8 @@
-import React from "react";
+import React, { useRef } from "react";
 import { View, StyleSheet, Dimensions, StatusBar } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
 import { THEME } from "@/constants/theme";
 import Text from "./text";
+import LottieView from "lottie-react-native";
 
 interface LoaderProps {
   name: "2-curves";
@@ -23,55 +17,26 @@ const Loader: React.FC<LoaderProps> = ({
   color,
   title = "Loading...",
 }) => {
+  const animation = useRef<LottieView>(null);
   const { width, height } = Dimensions.get("screen");
-
-  // Shared value for rotation
-  const rotation = useSharedValue(0);
-
-  // Start the animation
-  React.useEffect(() => {
-    rotation.value = withRepeat(
-      withTiming(360, {
-        duration: 1000,
-        easing: Easing.linear,
-      }),
-      -1, // Infinite
-      false // No reverse
-    );
-  }, [rotation]);
-
-  // Animated style
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          rotateZ: `${rotation.value}deg`,
-        },
-      ],
-    };
-  });
 
   if (name === "2-curves") {
     return (
       <View style={[styles.container, { height, width }]}>
         <StatusBar barStyle={"light-content"} />
-        <View style={[styles.loaderContainer]}>
-          <Animated.View
-            style={[
-              styles.loader,
-              {
-                borderTopColor: color || "dodgerblue",
-                borderBottomColor: color || "dodgerblue",
-              },
-              animatedStyle, // Add the animated style
-            ]}
-          />
-        </View>
-        <Text
-          size="lg"
-          weight="semiBold"
-          style={{ color: "white", marginTop: 50 }}
-        >
+
+        <LottieView
+          ref={animation}
+          source={require("../../assets/json/lotiie2.json")}
+          autoPlay={true}
+          loop={true}
+          style={{
+            width: 200,
+            height: 200,
+            backgroundColor: THEME.colors.brand,
+          }}
+        />
+        <Text size="lg" weight="bold" style={{ color: "white", marginTop: 10 }}>
           {title}
         </Text>
       </View>
@@ -85,7 +50,7 @@ export default Loader;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: THEME.colors.brand || "black",
+    backgroundColor: THEME.colors.brand,
     justifyContent: "center",
     position: "absolute",
     alignItems: "center",

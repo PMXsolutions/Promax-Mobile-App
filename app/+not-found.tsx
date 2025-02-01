@@ -1,3 +1,4 @@
+import React from "react";
 import Text from "@/components/shared/text";
 import { Link, Stack } from "expo-router";
 import { View } from "react-native";

@@ -22,7 +22,8 @@ import { queryClient } from "@/libs/query";
 import { StatusBar } from "react-native";
 import "react-native-get-random-values";
 import useAuthStore from "@/store/use-auth-store";
-import MiniLoader from "@/components/shared/mini-loader";
+import Loader from "@/components/shared/loader";
+import { THEME } from "@/constants/theme";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -72,8 +73,15 @@ export default function RootLayout() {
 
   // Show a loading state until fonts and onboarding status are resolved
   if (!fontLoaded || isOnboardingComplete === null) {
-    return <MiniLoader visible={true} />;
+    return (
+      <Loader
+        name="2-curves"
+        color={THEME.colors.secondary}
+        title="Loading.."
+      />
+    );
   }
+
   return <Root />;
 }
 function Root() {

@@ -4,11 +4,11 @@ import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import { useLocalSearchParams } from "expo-router";
 import { notificationQuery } from "@/hooks/queries/notification";
 import HeaderWhite from "@/components/shared/header-no-bg";
-import MiniLoader from "@/components/shared/mini-loader";
 import { THEME } from "@/constants/theme";
 import { WebView } from "react-native-webview";
 import Text from "@/components/shared/text";
 import { queryClient } from "@/libs/query";
+import Loader from "@/components/shared/loader";
 
 const NotificationDetail = () => {
   const query = useLocalSearchParams();
@@ -27,11 +27,19 @@ const NotificationDetail = () => {
     });
   };
 
+  if (isLoading) {
+    return (
+      <Loader
+        name="2-curves"
+        color={THEME.colors.secondary}
+        title="Opening Notification.."
+      />
+    );
+  }
+
   return (
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={`#${messageData?.messageId.toString() as string}`} />
-
-      <MiniLoader visible={isLoading} title="Opening Notification" />
 
       <View style={styles.content}>
         <Text weight="bold" size="3xl" style={{ marginBottom: 5 }}>
@@ -39,9 +47,7 @@ const NotificationDetail = () => {
         </Text>
       </View>
       <WebView
-        // style={styles.content}
         originWhitelist={["*"]}
-        // source={{ html: messageData?.content as string }}
         source={{
           html: `<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head><body style="padding:10px">${
             messageData?.content as string
