@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   labelContainer: {
-    marginLeft: 8,
+    marginLeft: 4,
   },
   label: {
     fontSize: 14,

@@ -2,8 +2,9 @@ import GoBack from "@/components/go-back";
 import CustomButton from "@/components/shared/custom-button";
 import Text from "@/components/shared/text";
 import { THEME } from "@/constants/theme";
+import axiosInstance from "@/libs/axiosInstance";
 import Timer from "@/modules/auth/timer";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Platform, Pressable, TextInput, View } from "react-native";
 import {
@@ -12,6 +13,7 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from "react-native-confirmation-code-field";
+import { showMessage } from "react-native-flash-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const CELL_COUNT = 6;
@@ -36,9 +38,11 @@ const OtpVerfication: React.FC = () => {
   const query = useLocalSearchParams();
   const email = query.email as unknown as string;
   const [code, setCode] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const [expired, setExpired] = useState(false);
-  const [minutes, setMinutes] = useState(0);
+  const [minutes, setMinutes] = useState(2);
   const [seconds, setSeconds] = useState(59);
+  const [loading, setLoading] = useState(false);
 
   const codeRef = useBlurOnFulfill({
     value: code,
@@ -53,43 +57,81 @@ const OtpVerfication: React.FC = () => {
   useEffect(() => {
     if (code.length === 6 && !expired) {
       // API call to verify OTP
-      alert("otp verified");
+      verifyCode();
     }
   }, [code]);
 
-  const verifyCode = async () => {
-    // API call to verify OTP
-    if (code.length === 6 && !expired) {
-      alert("otp verified");
-      verifySignIn();
-    } else {
-      alert("Invalid OTP");
-    }
-  };
-
-  const verifySignIn = async () => {
-    // API call to verify and sign in
-    if (code.length === 6 && !expired) {
-      await verifyCode();
-      alert("verified and signed in");
-    } else {
-      alert("Invalid OTP");
-    }
-  };
-
-  const resetTimer = useCallback(() => {
-    setMinutes(0);
+  const resetTimer = () => {
+    setMinutes(2);
     setSeconds(59);
-  }, [0, 59]);
-
+  };
   const resendCode = async () => {
-    // API call to resend OTP
     if (expired) {
-      resetTimer();
+      setError("");
+      try {
+        const { data } = await axiosInstance.get(
+          `/Account/resend_otp?email=${email}`
+        );
+        if (data.status === "Success") {
+          showMessage({
+            type: "success",
+            message: data.message,
+          });
+          resetTimer();
+          setExpired(false);
+        }
+      } catch (error: any) {
+        if (error instanceof Error) {
+          showMessage({
+            message: error.name,
+            type: "danger",
+          });
+        }
+        showMessage({
+          message: error.response?.data?.message,
+          type: "danger",
+        });
+        setMinutes(0);
+        setSeconds(0);
+        setExpired(true);
+        setLoading(false);
+      }
     }
-    console.log("otp resent");
   };
 
+  const verifyCode = async () => {
+    if (code.length !== 6) {
+      alert("Incomplete code");
+      return;
+    }
+    const postData = {
+      email,
+      otp: code,
+    };
+    setError("");
+    setLoading(true);
+    try {
+      const { data } = await axiosInstance.post("/Account/post_otp", postData);
+      showMessage({
+        type: "success",
+        message: data.message,
+      });
+      router.push("/(auth)/sign-in");
+      setLoading(false);
+    } catch (error: any) {
+      setLoading(false);
+      if (error instanceof Error) {
+        showMessage({
+          message: error.name,
+          type: "danger",
+        });
+      }
+      showMessage({
+        message: error.response?.data?.message,
+        type: "danger",
+      });
+    }
+  };
   return (
     <SafeAreaView edges={["top"]} style={styles.container}>
       <GoBack />
@@ -138,9 +180,13 @@ const OtpVerfication: React.FC = () => {
           />
 
           <View>
-            <CustomButton title="Verify" onPress={handleVerification} />
+            <CustomButton
+              title="Verify"
+              onPress={verifyCode}
+              loading={loading}
+            />
 
-            {expired && (
+            {error && (
               <Text
                 size="md"
                 weight="medium"
@@ -150,32 +196,29 @@ const OtpVerfication: React.FC = () => {
                   textAlign: "center",
                 }}
               >
-                OTP expired
+                {error}
               </Text>
             )}
 
-            <View style={styles.footer}>
-              <Text>Didn't receive any code?</Text>
-              <Pressable onPress={resendCode}>
-                <Text
-                  size="md"
-                  weight="bold"
-                  style={{ color: THEME.colors.primary }}
-                >
-                  Resend OTP
-                </Text>
-              </Pressable>
-            </View>
+            {expired && (
+              <View style={styles.footer}>
+                <Text>Didn't receive any code?</Text>
+                <Pressable onPress={resendCode}>
+                  <Text
+                    size="md"
+                    weight="bold"
+                    style={{ color: THEME.colors.primary }}
+                  >
+                    Resend OTP
+                  </Text>
+                </Pressable>
+              </View>
+            )}
           </View>
         </View>
       </View>
     </SafeAreaView>
   );
-
-  async function handleVerification() {
-    // TODO: Implement check verification code and contitnue to sign in or sign up
-    // router.replace('/verification-success');
-  }
 };
 
 const styles = StyleSheet.create({

@@ -29,29 +29,44 @@ const ShiftAction = ({
       {activity && (
         <>
           {getActivityDetailStatus(activity) === "Upcoming" ? (
-            <View
-              style={{
-                backgroundColor: THEME.colors.secondary,
-                borderRadius: 5,
-                justifyContent: "center",
-                alignItems: "center",
-                padding: 10,
-                marginBottom: 20,
-              }}
-            >
-              <Text
-                size="lg"
-                weight="semiBold"
-                style={[
-                  styles.cancelButtonText,
-                  {
-                    textAlign: "center",
-                    color: THEME.colors.black,
-                  },
-                ]}
+            <View style={styles.footer}>
+              <CustomButton
+                bgVariant="light"
+                onPress={() =>
+                  router.push({
+                    pathname: "/(root)/shift/cancel",
+                    params: {
+                      id: activity?.shiftRosterId,
+                    },
+                  })
+                }
+                title="Request to Cancel Shift"
+                textVariant="primary"
+              />
+              <View
+                style={{
+                  backgroundColor: THEME.colors.secondary + "50",
+                  borderRadius: 5,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 10,
+                  // marginBottom: 20,
+                }}
               >
-                Not Started
-              </Text>
+                <Text
+                  size="lg"
+                  weight="semiBold"
+                  style={[
+                    styles.cancelButtonText,
+                    {
+                      textAlign: "center",
+                      color: THEME.colors.black,
+                    },
+                  ]}
+                >
+                  Not Started
+                </Text>
+              </View>
             </View>
           ) : getActivityDetailStatus(activity) === "Clock-In" ? (
             <View style={styles.footer}>

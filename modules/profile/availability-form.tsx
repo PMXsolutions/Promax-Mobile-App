@@ -53,7 +53,7 @@ const DayAvailabilityForm = ({
         </Text>
 
         <TouchableOpacity onPress={() => handleAddTimeSlot(day)}>
-          <Feather name="plus-circle" size={24} color={THEME.colors.grayBg} />
+          <Feather name="plus-circle" size={30} color={THEME.colors.grayBg} />
         </TouchableOpacity>
       </View>
 
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.colors.border,
     padding: 3,
     borderRadius: 5,
-    marginRight: 10,
+    marginRight: 30,
   },
 });
 

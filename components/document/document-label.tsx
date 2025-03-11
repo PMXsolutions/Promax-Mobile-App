@@ -14,6 +14,11 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { formattedTime } from "@/helpers/shift-service";
 import Text from "../shared/text";
 import { downloadAndSaveDocument } from "@/utils/file-utils";
+import { queryClient } from "@/libs/query";
+import { showMessage } from "react-native-flash-message";
+import { useMutation } from "@tanstack/react-query";
+import { reportService } from "@/services/report";
+import { router } from "expo-router";
 
 export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
   const [expanded, setExpanded] = useState(false);
@@ -34,6 +39,35 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
       );
     }
     setLoading(false);
+  };
+
+  const { mutate: onSubmit, isPending } = useMutation({
+    mutationFn: async () => {
+      return reportService.handleDeleteDoc(item.documentId as number); // Ensure this API call works
+    },
+    onSuccess: ({ data }) => {
+      showMessage({
+        message: data?.message,
+        type: "success",
+      });
+
+      return queryClient.invalidateQueries({
+        queryKey: ["staffDocument"],
+      });
+    },
+
+    onError: (error: any) => {
+      console.log(error);
+
+      showMessage({
+        message: error.response?.data?.message,
+        type: "danger",
+      });
+    },
+  });
+
+  const handleDocDelete = () => {
+    onSubmit(); // Should call the mutation function
   };
 
   const aus_timezone = "Australia/Sydney";
@@ -136,7 +170,10 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
             <View style={styles.downloadContainer}>
               <TouchableOpacity
                 onPress={handleDownload}
-                style={styles.downloadButton}
+                style={[
+                  styles.downloadButton,
+                  { backgroundColor: THEME.colors.black },
+                ]}
               >
                 {loading ? (
                   <ActivityIndicator color={THEME.colors.white} />
@@ -148,20 +185,39 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
                   />
                 )}
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleDownload}
-                style={styles.downloadButton}
-              >
-                {loading ? (
-                  <ActivityIndicator color={THEME.colors.white} />
-                ) : (
+              {item?.documentId && (
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push(`/(root)/document/${item.documentId}`)
+                  }
+                  style={styles.downloadButton}
+                >
                   <MaterialIcons
                     name="edit-document"
                     size={24}
                     color={THEME.colors.white}
                   />
-                )}
-              </TouchableOpacity>
+                </TouchableOpacity>
+              )}
+              {item?.documentId && (
+                <TouchableOpacity
+                  onPress={handleDocDelete}
+                  style={[
+                    styles.downloadButton,
+                    { backgroundColor: THEME.colors.red },
+                  ]}
+                >
+                  {isPending ? (
+                    <ActivityIndicator color={THEME.colors.white} />
+                  ) : (
+                    <MaterialIcons
+                      name="delete"
+                      size={24}
+                      color={THEME.colors.white}
+                    />
+                  )}
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
@@ -231,7 +287,7 @@ const styles = StyleSheet.create({
   },
   downloadContainer: {
     flexDirection: "row",
-    // justifyContent: "flex-end", // Aligns the button to the right
+    justifyContent: "space-around", // Aligns the button to the right
     alignItems: "center", // Vertically aligns the button
     paddingHorizontal: 10, // Optional: Adjust spacing
     marginTop: 5,

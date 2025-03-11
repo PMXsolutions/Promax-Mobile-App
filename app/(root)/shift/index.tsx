@@ -16,6 +16,7 @@ import useAuthStore from "@/store/use-auth-store";
 import ShiftMessage from "@/components/shift/shift-message";
 import TransportButton from "@/components/shift/transport-button";
 import ModalPop from "@/components/shared/modal";
+import MiniLoader from "@/components/shared/mini-loader";
 
 const ShiftDetail = () => {
   const { user } = useAuthStore();
@@ -52,17 +53,13 @@ const ShiftDetail = () => {
     );
   }
 
-  if (distanceCheckLoading) {
-    <Loader
-      name="2-curves"
-      color={THEME.colors.secondary}
-      title="Calculating distance to client's location "
-    />;
-  }
-
   return (
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={clients} />
+      <MiniLoader
+        visible={distanceCheckLoading}
+        title="Calculating your distance to client's location.."
+      />
       {shift && getActivityDetailStatus(shift) === "Shift In progress" && (
         <ProgressBanner shiftId={shift.shiftRosterId} />
       )}

@@ -31,8 +31,8 @@ const EditProfileForm = ({ id }: { id: string }) => {
   const { data: staffData } = profileQuery.useFetchStaffProfile(Number(id));
   const { user } = useAuthStore();
   const [form, setForm] = useState({
-    imageFile: "",
-    imageUrl: "", // Add imageUrl to form state
+    imageFile: "https://placehold.co/400",
+    imageUrl: "https://placehold.co/400", // Add imageUrl to form state
     firstName: "",
     surName: "",
     middleName: "",
@@ -268,7 +268,7 @@ const EditProfileForm = ({ id }: { id: string }) => {
           />
           <View style={{ marginBottom: 16 }}>
             <CustomButton
-              title="Save"
+              title="Save Changes"
               onPress={() => handleFormSubmit()}
               loading={isPending}
             />

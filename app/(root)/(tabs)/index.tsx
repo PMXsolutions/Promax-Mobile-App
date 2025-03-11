@@ -47,7 +47,7 @@ const Activity = () => {
       bgColor={THEME.colors.brand}
       barStyle="light-content"
     >
-      <MiniLoader visible={isLoading} title="Loading Shift..." />
+      <MiniLoader visible={isLoading} title="Loading Shifts..." />
       <View
         style={[
           // styles.header,

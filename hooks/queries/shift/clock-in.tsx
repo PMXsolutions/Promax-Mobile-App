@@ -77,10 +77,10 @@ const useClockIn = (
       ); // Ensure this API call works
     },
 
-    onSuccess: () => {
+    onSuccess: ({ data }) => {
       setModalVisible(true);
       showMessage({
-        message: "You’ve clocked in and are ready to go",
+        message: data.message || "You’ve clocked in and are ready to go",
         description: "Have a productive shift!",
         type: "success",
       });
@@ -103,6 +103,7 @@ const useClockIn = (
   // Function to initiate the clock-in process
   const handleClock = async () => {
     setDistanceCheckLoading(true); // Start distance check loading state
+
     const staffLocation = await getCurrentLocation();
 
     if (!staffLocation) {

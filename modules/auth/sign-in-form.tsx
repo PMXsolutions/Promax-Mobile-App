@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import React, { useState } from "react";
 import CustomButton from "@/components/shared/custom-button";
 import { Link, router } from "expo-router";
@@ -13,6 +13,8 @@ import useAuthStore from "@/store/use-auth-store";
 import { AuthService } from "@/services/auth";
 import { FormInput, FormPasswordInput } from "@/components/wrapper";
 import Checkbox from "@/components/shared/checkbox";
+import { Alert } from "react-native";
+import Text from "@/components/shared/text";
 
 const SignInForm = () => {
   const [loading, setLoading] = useState(false);
@@ -40,6 +42,10 @@ const SignInForm = () => {
           });
           setLoading(false);
         } else {
+          Alert.alert(
+            "Info",
+            " Thank you for your interest in our mobile app. At this time, the app is exclusively available for staff members. In the meantime, you can continue to access our web platform for all your needs."
+          );
           // navigation.navigate("NotAvailable");
           setLoading(false);
         }
@@ -94,14 +100,14 @@ const SignInForm = () => {
         label="Email"
         placeholder="Enter your email"
         autoCapitalize="none"
-        icon={<Feather name={"mail"} size={22} color={THEME.colors.grayBg} />}
+        icon={<Feather name={"mail"} size={20} color={THEME.colors.grayBg} />}
       />
       <FormPasswordInput
         control={form.control}
         name="password"
         label="Password"
         placeholder="Enter your password"
-        icon={<Feather name={"lock"} size={22} color={THEME.colors.grayBg} />}
+        icon={<Feather name={"lock"} size={20} color={THEME.colors.grayBg} />}
       />
 
       <View style={styles.row}>

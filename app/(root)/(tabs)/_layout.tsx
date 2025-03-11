@@ -10,6 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { HapticTab } from "@/components/haptic";
 
 type CustomTabButtonProps = PressableProps & {
   accessibilityState?: AccessibilityState;
@@ -51,6 +52,16 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarButton: HapticTab,
+        // tabBarBackground: TabBarBackground,
+
+        // tabBarBackground: () => (
+        //   <BlurView
+        //     tint="light"
+        //     intensity={100}
+        //     style={StyleSheet.absoluteFill}
+        //   />
+        // ),
         tabBarStyle: {
           backgroundColor: "#ffffff",
           paddingTop: 5,

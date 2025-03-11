@@ -34,7 +34,6 @@ const EditInfoForm = ({ id }: { id: string }) => {
       });
     }
   }, [staffData]);
-  const [dateOfBirth, setDateOfBirth] = useState(staffData?.dateOfBirth || "");
 
   const handleInputChange = <K extends keyof StaffProfile>(
     name: K,
@@ -125,7 +124,7 @@ const EditInfoForm = ({ id }: { id: string }) => {
 
       <View style={styles.footer}>
         <CustomButton
-          title="Save"
+          title="Save Changes"
           onPress={() => handleFormSubmit()}
           loading={isPending}
         />

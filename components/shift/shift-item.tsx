@@ -33,7 +33,10 @@ const ShiftItem = ({ item }: { item: AgendaProps }) => {
 
   const handleShiftAction = () => {
     if (isPending) {
-      Alert.alert("Pending", "Awaiting feedback from Admin on your request");
+      Alert.alert(
+        "Pending",
+        "Awaiting feedback from Admin on your cancellation request"
+      );
     } else if (isCancelled) {
       Alert.alert("Cancelled", "This shift has been cancelled");
     } else {

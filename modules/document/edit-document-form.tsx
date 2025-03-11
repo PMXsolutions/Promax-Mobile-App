@@ -22,22 +22,79 @@ import { reportService } from "@/services/report";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/libs/query";
 import { router } from "expo-router";
+import { reportQuery } from "@/hooks/queries/report";
+import Loader from "@/components/shared/loader";
+import { DocumentData } from "@/types/report";
 
-const AddForm = () => {
+const EditForm = ({ id }: { id: string }) => {
+  const { data: docData, isLoading } = reportQuery.useFetchStaffDocumentDetail(
+    Number(id)
+  );
+
+  //   const { mutate: onSubmit, isPending } = useMutation({
+  //     mutationFn: async () => {
+  //       const reqBody = {
+  //         ...staffData,
+  //         ...form,
+  //       };
+  //       return profileService.handleEditStaffProfile(
+  //         Number(staffData?.staffId),
+  //         user?.userId as string,
+  //         reqBody as StaffProfile
+  //       ); // Ensure this API call works
+  //     },
+  //     onSuccess: ({ data }) => {
+  //       showMessage({
+  //         message: data?.message,
+  //         description: "Profile Edited Successfully",
+  //         type: "success",
+  //       });
+
+  //       router.back();
+  //       return queryClient.invalidateQueries({
+  //         queryKey: ["staff", { id: staffData?.staffId }],
+  //       });
+  //     },
+
+  //     onError: (error: any) => {
+  //       showMessage({
+  //         message: error.response?.data?.message,
+  //         type: "danger",
+  //       });
+  //     },
+  //   });
+
+  //   const handleFormSubmit = () => {
+  //     onSubmit(); // Should call the mutation function
+  //   };
+  const [form, setForm] = useState({
+    documentName: "",
+    documentFile: "",
+  });
   const { user, staff } = useAuthStore();
-  const [docName, setDocName] = useState("");
-  const [otherDocName, setOtherDocName] = useState(""); // Separate state for "Other Name"
-  const [expiryDate, setExpiryDate] = useState(" ");
+
+  const [expiryDate, setExpiryDate] = useState(docData?.expirationDate || "");
   const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentPickerAsset | null>(null);
+  React.useEffect(() => {
+    if (docData) {
+      setForm({
+        documentName: docData.documentName,
+        documentFile: "",
+      });
+    }
+  }, [docData]);
 
-  // Prepare document options
-  const docArr = documentNames.map((item) => ({
-    label: item,
-    value: item,
-  }));
-  docArr.push({ label: "Others", value: "others" });
+  const handleInputChange = <K extends keyof DocumentData>(
+    name: K,
+    value: DocumentData[K]
+  ) => {
+    setForm((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
   // Handle document picker
   const handleImagePick = async () => {
@@ -56,25 +113,17 @@ const AddForm = () => {
     }
   };
 
-  // Check if "Others" is selected
-  const isOtherSelected = docName === "others";
-
-  // const handleSubmit = () => {
-  //   const finalDocName = docName === "others" ? otherDocName : docName;
-  //   console.log("Document Name:", finalDocName, expiryDate);
-  // };
-
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
-      const finalDocName = docName === "others" ? otherDocName : docName;
       const reqBody = {
         docFile: selectedDocument,
         companyId: user?.companyId,
-        docuName: finalDocName,
+        docuName: form.documentName,
         expirationDate: expiryDate,
         staffName: staff?.fullName,
       };
-      return reportService.handleUploadStaffDocument(
+      return reportService.handleEditStaffDocument(
+        Number(id),
         Number(staff?.staffId),
         user?.userId as string,
         reqBody
@@ -82,13 +131,13 @@ const AddForm = () => {
     },
     onSuccess: ({ data }) => {
       showMessage({
-        message: "Document Submitted Successfully",
+        message: "Document Edited Successfully",
         type: "success",
       });
 
       router.back();
       return queryClient.invalidateQueries({
-        queryKey: ["staffDocument", { id: staff?.staffId }],
+        queryKey: ["staffDocument", "edit", { id: staff?.staffId }],
       });
     },
 
@@ -101,9 +150,9 @@ const AddForm = () => {
   });
 
   const handleFormSubmit = () => {
-    if (!docName || docName === "") {
+    if (!form.documentName || form.documentName === "") {
       showMessage({
-        message: "Please select or enter a document name",
+        message: "Document name is required",
         type: "info",
       });
       return;
@@ -118,35 +167,26 @@ const AddForm = () => {
     }
     onSubmit(); // Should call the mutation function
   };
-
+  if (isLoading) {
+    return (
+      <Loader
+        name="2-curves"
+        color={THEME.colors.secondary}
+        title="Loading Document.."
+      />
+    );
+  }
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 10 }}
     >
       <View style={{ rowGap: THEME.spacing.md }}>
-        {/* Dropdown Select */}
-        <View>
-          <Text style={styles.inputLabel}>Document List</Text>
-          <Select
-            options={docArr}
-            placeholder="Select a Document"
-            iconColor="#ccc"
-            onValueChange={(value) => setDocName(value?.value as string)}
-            value={docName}
-          />
-        </View>
-
-        {/* Manual Document Name Input */}
-        {isOtherSelected && (
-          <TextInput
-            required
-            label="Enter Document Name"
-            placeholder="Enter Document Name"
-            value={otherDocName} // Use the separate state here
-            onChangeText={(value) => setOtherDocName(value)} // Update the separate state
-          />
-        )}
+        <TextInput
+          label="Document Name"
+          value={form.documentName}
+          onChangeText={(value) => handleInputChange("documentName", value)}
+        />
 
         <DateModal
           label="Expiration Date"
@@ -202,10 +242,9 @@ const AddForm = () => {
   );
 };
 
-export default AddForm;
+export default EditForm;
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     paddingHorizontal: THEME.spacing.md,
     paddingVertical: 20,
     color: THEME.colors.white,
@@ -213,8 +252,8 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: THEME.fontSize.md,
     fontFamily: THEME.fontFamily.semiBold,
-    marginBottom: 5,
     color: THEME.colors.grayBg,
+    marginBottom: 5,
   },
   uploadBloc: {
     marginVertical: 2,

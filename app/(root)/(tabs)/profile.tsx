@@ -84,6 +84,8 @@ const Profile = () => {
                 iconName={item.iconName}
                 label={item.title}
                 link={item.url}
+                edit={item.edit}
+                id={staffData?.staffId as number}
               />
             ))}
           </View>

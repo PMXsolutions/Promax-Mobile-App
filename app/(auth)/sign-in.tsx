@@ -13,6 +13,7 @@ import SignInForm from "@/modules/auth/sign-in-form";
 import { KeyboardAvoidingView } from "react-native";
 import { Platform } from "react-native";
 import { THEME } from "@/constants/theme";
+import { Link } from "expo-router";
 
 export default function Signin() {
   return (
@@ -31,7 +32,7 @@ export default function Signin() {
               style={{
                 backgroundColor: THEME.colors.lightGray,
                 padding: 5,
-                borderRadius: 10,
+                borderRadius: 99,
                 marginBottom: 10,
               }}
             >
@@ -65,6 +66,16 @@ export default function Signin() {
           <Text style={{ textDecorationLine: "underline" }}>Sign up</Text>
         </Text>
       </TouchableOpacity> */}
+
+      <Text style={{ textAlign: "center" }} size="sm" weight="regular">
+        Powered by:{" "}
+        <Link
+          href={"https://promaxsolutions.com.au/"}
+          style={{ fontFamily: THEME.fontFamily.semiBold }}
+        >
+          Promax IT Solutions
+        </Link>
+      </Text>
     </SafeAreaView>
   );
 }

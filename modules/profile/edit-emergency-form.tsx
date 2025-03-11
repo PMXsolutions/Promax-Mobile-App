@@ -152,7 +152,7 @@ const EditEmergencyForm = ({ id }: { id: string }) => {
 
       <View style={styles.footer}>
         <CustomButton
-          title="Save"
+          title="Save Changes"
           onPress={() => handleFormSubmit()}
           loading={isPending}
         />

@@ -49,7 +49,11 @@ const NotificationDetail = () => {
       <WebView
         originWhitelist={["*"]}
         source={{
-          html: `<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head><body style="padding:10px">${
+          html: `<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+          </head><body style="padding:10px">${
             messageData?.content as string
           }</body></html>`,
         }}

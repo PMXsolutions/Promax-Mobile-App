@@ -61,7 +61,18 @@ const fetchStaffDocument = async (staffId: number) => {
     );
     return data.staffDocuments;
   } catch (error) {
-    throw new Error("Unable to fetch shift documents");
+    throw new Error("Unable to fetch staff documents");
+  }
+};
+const fetchStaffDocumentDetail = async (docId: number) => {
+  try {
+    const { data } = await axiosInstance.get(
+      `/Documents/get_document/${docId}`
+    );
+
+    return data.staffDocument;
+  } catch (error) {
+    throw new Error("Unable to fetch staff document");
   }
 };
 
@@ -97,6 +108,45 @@ const handleUploadStaffDocument = async (
     }
   );
 };
+const handleEditStaffDocument = async (
+  docId: number,
+  staffId: number,
+  userId: string,
+  formInfo: reqBodyType
+) => {
+  const formData = new FormData();
+
+  if (formInfo?.docFile) {
+    formData.append("DocumentFile", {
+      uri: formInfo.docFile.uri, // Use the URI of the file
+      name: formInfo.docFile.name, // Use the filename
+      type: formInfo.docFile.mimeType, // Use the MIME type
+    } as unknown as Blob);
+  }
+
+  formData.append("CompanyId", formInfo.companyId?.toString() as string); // Using optional chaining and nullish coalescing
+  formData.append("DocumentId", docId?.toString() as string); // Using optional chaining and nullish coalescing
+  formData.append("DocumentName", formInfo.docuName);
+  formData.append("ExpirationDate", formInfo.expirationDate);
+  formData.append("User", formInfo?.staffName as string);
+  formData.append("Status", "Pending");
+  formData.append("UserRole", "Staff");
+  formData.append("UserId", staffId.toString());
+
+  return axiosInstance.post(
+    `/Documents/edit/${docId}?userId=${userId}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+const handleDeleteDoc = async (id: number) => {
+  return axiosInstance.post(`/Documents/delete/${id}`);
+};
 
 export const reportService = {
   fetchStaffReport,
@@ -105,4 +155,7 @@ export const reportService = {
   fetchStaffDocument,
   handleUploadStaffDocument,
   submitShiftForm,
+  handleDeleteDoc,
+  fetchStaffDocumentDetail,
+  handleEditStaffDocument,
 };

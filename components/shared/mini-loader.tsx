@@ -9,12 +9,14 @@ const MiniLoader = ({ visible = false, title = "Loading..." }) => {
     visible && (
       <View style={[style.container, { height, width }]}>
         <View style={style.loader}>
-          <ActivityIndicator size="large" color={THEME.colors.primary} />
+          <ActivityIndicator size="large" color={THEME.colors.white} />
           <Text
             weight="medium"
             size="lg"
             style={{
+              color: "white",
               marginLeft: 10,
+              textAlign: "center",
             }}
           >
             {title}
@@ -28,18 +30,18 @@ const MiniLoader = ({ visible = false, title = "Loading..." }) => {
 const style = StyleSheet.create({
   loader: {
     height: 70,
-    backgroundColor: THEME.colors.white,
     marginHorizontal: 50,
     borderRadius: 5,
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     paddingHorizontal: 20,
-    minWidth: 80,
+    minWidth: 90,
+    gap: 12,
   },
   container: {
     position: "absolute",
     zIndex: 10,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
   },
 });

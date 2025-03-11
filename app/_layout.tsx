@@ -24,6 +24,7 @@ import "react-native-get-random-values";
 import useAuthStore from "@/store/use-auth-store";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
+import { KeyboardAvoiderProvider } from "@good-react-native/keyboard-avoider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -99,21 +100,23 @@ function Root() {
       <StatusBar barStyle={"dark-content"} />
       <QueryClientProvider client={queryClient}>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <Stack
-            screenOptions={{
-              gestureEnabled: true,
-              gestureDirection: "horizontal",
-              animation: "slide_from_right",
-            }}
-          >
-            {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(root)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
+          <KeyboardAvoiderProvider>
+            <Stack
+              screenOptions={{
+                gestureEnabled: true,
+                gestureDirection: "horizontal",
+                animation: "slide_from_right",
+              }}
+            >
+              {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(root)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </KeyboardAvoiderProvider>
         </GestureHandlerRootView>
       </QueryClientProvider>
-      <FlashMessage position="bottom" />
+      <FlashMessage position="top" />
       <PortalHost />
     </>
   );

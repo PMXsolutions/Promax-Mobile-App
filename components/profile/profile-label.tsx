@@ -11,11 +11,15 @@ const ProfileLabel = ({
   label,
   link,
   index,
+  edit,
+  id,
 }: {
   iconName: keyof typeof MaterialCommunityIcons.glyphMap;
   label: string;
   link: RelativePathString | ExternalPathString;
   index: number;
+  edit: boolean;
+  id: number;
 }) => {
   return (
     <Animated.View
@@ -24,7 +28,11 @@ const ProfileLabel = ({
         .springify()
         .damping(14)}
     >
-      <TouchableWithoutFeedback onPress={() => router.push(link)}>
+      <TouchableWithoutFeedback
+        onPress={() =>
+          edit ? router.push(`${link}/${id} `) : router.push(link)
+        }
+      >
         <View style={styles.container}>
           <View style={styles.label}>
             <View

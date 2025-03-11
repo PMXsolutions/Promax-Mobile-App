@@ -45,6 +45,8 @@ const ShiftCancelForm = ({ shiftId }: { shiftId: number }) => {
       });
     },
     onError: (error) => {
+      console.log(error);
+
       showMessage({
         message: "Unable to submit form",
         type: "danger",

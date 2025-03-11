@@ -12,7 +12,7 @@ interface TimerProps {
 }
 
 const Timer: React.FC<TimerProps> = ({
-  initialMinutes = 0,
+  initialMinutes = 2,
   initialSeconds = 59,
   onExpire,
   resetTimer,

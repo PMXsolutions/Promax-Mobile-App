@@ -29,6 +29,8 @@ const forgotPassword = async ({ email }: ForgotpasswordSchema) => {
   }
 };
 
+// const { data } = await publicAxios.post("/Account/post_otp", postData);
+
 // const loginUser = async ({
 //     email,
 //     password,

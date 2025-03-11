@@ -66,6 +66,7 @@ const Document = () => {
         return {
           id: index.toString(),
           documentName,
+          documentId: fetchedDoc?.documentId,
           documentUrl: fetchedDoc?.documentUrl || "", // Default to empty string if not found
           status: fetchedDoc?.status || "Not Submitted",
           implementationDate: fetchedDoc?.implementationDate || "N/A",
@@ -82,6 +83,7 @@ const Document = () => {
           id: (mergedData.length + index).toString(),
           documentName: doc.documentName,
           documentUrl: doc.documentUrl,
+          documentId: doc?.documentId,
           status: doc.status as string,
           implementationDate: doc.implementationDate || "N/A",
           expirationDate: doc.expirationDate || "N/A",
@@ -94,11 +96,13 @@ const Document = () => {
       setFilteredData(finalData);
     }
   }, [documentData]);
+
   const docData = React.useMemo(() => {
     return filteredData.filter((item) =>
       item?.documentName!.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, filteredData]);
+
   return (
     <ScreenWrapper
       statusBgColor={THEME.colors.brand}

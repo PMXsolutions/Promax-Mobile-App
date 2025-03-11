@@ -1,58 +1,32 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  View,
-  Button,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
-import * as Location from "expo-location";
-import TransportLayout from "@/layout/transport-adj-layout";
+import React from "react";
+import { View, StyleSheet, Alert } from "react-native";
 import GoogleTextInput from "@/components/map/google-text-input";
 import { THEME } from "@/constants/theme";
-import { MapViewProps } from "react-native-maps";
+import Text from "@/components/shared/text";
+import CustomButton from "@/components/shared/custom-button";
+import { KeyboardAvoiderView } from "@good-react-native/keyboard-avoider";
 
 interface Props {
-  navigation: any;
-}
-
-const DestinationScreen: React.FC<Props> = ({ navigation }) => {
-  const mapRef = useRef<MapViewProps>(null);
-  const [initialLocation, setInitialLocation] = useState<{
+  setStep: React.Dispatch<React.SetStateAction<number>>;
+  destination: {
     latitude: number;
     longitude: number;
-  } | null>(null);
-  const [destination, setDestination] = useState<string | null>(null);
+    address: string;
+  } | null;
+  setDestination: React.Dispatch<
+    React.SetStateAction<{
+      latitude: number;
+      longitude: number;
+      address: string;
+    } | null>
+  >;
+}
 
-  useEffect(() => {
-    const fetchLocation = async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === "granted") {
-        const {
-          coords: { latitude, longitude },
-        } = await Location.getCurrentPositionAsync();
-        setInitialLocation({ latitude, longitude });
-
-        const address = await Location.reverseGeocodeAsync({
-          latitude,
-          longitude,
-        });
-
-        console.log(address);
-
-        if (mapRef.current) {
-          (mapRef.current as any).animateToRegion({
-            latitude,
-            longitude,
-            latitudeDelta: 0.012,
-            longitudeDelta: 0.012,
-          });
-        }
-      }
-    };
-    fetchLocation();
-  }, []);
-
+const DestinationScreen: React.FC<Props> = ({
+  destination,
+  setDestination,
+  setStep,
+}) => {
   //   const coordinates = destination
   //     ? [
   //         { latitude: latlng.latitude, longitude: latlng.longitude },
@@ -70,63 +44,66 @@ const DestinationScreen: React.FC<Props> = ({ navigation }) => {
   //   }, [destination, latlng]);
 
   // Fetch staff's initial location
-  useEffect(() => {
-    const fetchLocation = async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Denied",
-          "Location permission is required to continue."
-        );
-        return;
-      }
-      const location = await Location.getCurrentPositionAsync({});
-      setInitialLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
-    };
+  // useEffect(() => {
+  //   const fetchLocation = async () => {
+  //     const { status } = await Location.requestForegroundPermissionsAsync();
+  //     if (status !== "granted") {
+  //       Alert.alert(
+  //         "Permission Denied",
+  //         "Location permission is required to continue."
+  //       );
+  //       return;
+  //     }
+  //     const location = await Location.getCurrentPositionAsync({});
+  //     setInitialLocation({
+  //       latitude: location.coords.latitude,
+  //       longitude: location.coords.longitude,
+  //     });
+  //   };
 
-    fetchLocation();
-  }, []);
+  //   fetchLocation();
+  // }, []);
 
   const handleNext = () => {
     if (!destination) {
       Alert.alert("Error", "Please select a destination.");
       return;
     }
-    navigation.navigate("InstructionsScreen", { initialLocation, destination });
+    setStep(2);
   };
 
-  if (!initialLocation) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color={THEME.colors.brand} />
-      </View>
-    );
-  }
-
   return (
-    <TransportLayout currentLocation={initialLocation} mapRef={mapRef}>
-      <View style={styles.container}>
-        <GoogleTextInput
-          icon={"map"}
-          containerStyle={{
-            backgroundColor: "#f5f5f5",
-          }}
-          textInputBackgroundColor="transparent"
-          handlePress={(location) => setDestination(location.address)}
-        />
-        <Button title="Next" onPress={handleNext} />
-      </View>
-    </TransportLayout>
+    <View style={styles.container}>
+      <KeyboardAvoiderView>
+        <View>
+          <Text style={styles.inputLabel}>Select Destination </Text>
+
+          <GoogleTextInput
+            icon={"map"}
+            containerStyle={{
+              backgroundColor: "#f5f5f5",
+            }}
+            textInputBackgroundColor="transparent"
+            handlePress={(location) => setDestination(location)}
+          />
+        </View>
+        <View style={{ marginTop: THEME.spacing.lg }}>
+          <CustomButton title="Next" onPress={handleNext} />
+        </View>
+      </KeyboardAvoiderView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center" },
+  container: { rowGap: THEME.spacing.lg },
   input: { borderWidth: 1, borderColor: "#ccc", padding: 8, borderRadius: 5 },
   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  inputLabel: {
+    fontSize: THEME.fontSize.lg,
+    fontFamily: THEME.fontFamily.semiBold,
+    marginVertical: 10,
+  },
 });
 
 export default DestinationScreen;
