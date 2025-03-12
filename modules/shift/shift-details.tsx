@@ -161,12 +161,7 @@ const styles = StyleSheet.create({
     marginTop: THEME.spacing.sm,
     width: "100%",
   },
-  //   sectionTitle: {
-  //     fontSize: 16,
-  //     color: "#030229",
-  //     marginBottom: 10,
-  //     fontFamily: "Inter_600SemiBold",
-  //   },
+
   sectionItem: {
     lineHeight: 19.2,
   },

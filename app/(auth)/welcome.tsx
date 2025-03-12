@@ -1,13 +1,13 @@
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Swiper from "react-native-swiper";
 import onboarding from "@/constants/data";
 import Text from "@/components/shared/text";
 import CustomButton from "@/components/shared/custom-button";
 import { THEME } from "@/constants/theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 
 const Welcome = () => {
   const swiperRef = useRef<Swiper>(null);
@@ -21,11 +21,9 @@ const Welcome = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenWrapper barStyle="dark-content">
       <TouchableOpacity
-        onPress={() => {
-          router.replace("/(auth)/sign-in");
-        }}
+        onPress={() => completeOnboarding}
         style={styles.skipButton}
       >
         <Text weight="bold" size="md">
@@ -101,13 +99,8 @@ const Welcome = () => {
           </View>
         ))}
       </Swiper>
-      <View
-        style={{
-          width: "91.666667%",
-          marginTop: 40,
-          marginBottom: 20,
-        }}
-      >
+
+      <View style={styles.buttonContainer}>
         <CustomButton
           title={isLastSlide ? "Get Started" : "Next"}
           onPress={() =>
@@ -115,7 +108,7 @@ const Welcome = () => {
           }
         />
       </View>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 
@@ -139,5 +132,12 @@ const styles = StyleSheet.create({
     height: 5,
     marginHorizontal: 4,
     borderRadius: 50,
+  },
+  buttonContainer: {
+    // width: "91.666667%",
+    marginTop: 10,
+    marginBottom: 40,
+    paddingHorizontal: THEME.spacing.gutter,
+    justifyContent: "center",
   },
 });

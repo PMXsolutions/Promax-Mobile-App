@@ -19,7 +19,7 @@ import FlashMessage from "react-native-flash-message";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { queryClient } from "@/libs/query";
-import { StatusBar } from "react-native";
+import { Platform, StatusBar, View } from "react-native";
 import "react-native-get-random-values";
 import useAuthStore from "@/store/use-auth-store";
 import Loader from "@/components/shared/loader";
@@ -96,7 +96,7 @@ function Root() {
     }
   }, [isAuthenticated]);
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <StatusBar barStyle={"dark-content"} />
       <QueryClientProvider client={queryClient}>
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -116,8 +116,11 @@ function Root() {
           </KeyboardAvoiderProvider>
         </GestureHandlerRootView>
       </QueryClientProvider>
-      <FlashMessage position="top" />
+      <FlashMessage
+        position={Platform.OS === "ios" ? "top" : "center"}
+        floating={true}
+      />
       <PortalHost />
-    </>
+    </View>
   );
 }

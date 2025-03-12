@@ -7,8 +7,6 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { THEME } from "@/constants/theme";
-import Select from "@/components/shared/select";
-import { documentNames } from "@/constants/profile-data";
 import { convertImageToBase64, uploadDoc } from "@/utils/profile-image-handler";
 import { showMessage } from "react-native-flash-message";
 import Text from "@/components/shared/text";
@@ -23,7 +21,6 @@ import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/libs/query";
 import { router } from "expo-router";
 import { reportQuery } from "@/hooks/queries/report";
-import Loader from "@/components/shared/loader";
 import { DocumentData } from "@/types/report";
 
 const EditForm = ({ id }: { id: string }) => {
@@ -167,15 +164,7 @@ const EditForm = ({ id }: { id: string }) => {
     }
     onSubmit(); // Should call the mutation function
   };
-  if (isLoading) {
-    return (
-      <Loader
-        name="2-curves"
-        color={THEME.colors.secondary}
-        title="Loading Document.."
-      />
-    );
-  }
+
   return (
     <ScrollView
       style={styles.container}

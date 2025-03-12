@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: normalize(7),
     paddingHorizontal: THEME.spacing.sm,
-    height: normalize(38),
+    height: 48,
   },
   iconContainer: {
     marginRight: normalize(4),

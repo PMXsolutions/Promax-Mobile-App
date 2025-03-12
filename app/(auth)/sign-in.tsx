@@ -14,15 +14,11 @@ import { KeyboardAvoidingView } from "react-native";
 import { Platform } from "react-native";
 import { THEME } from "@/constants/theme";
 import { Link } from "expo-router";
+import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 
 export default function Signin() {
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: "#fff",
-      }}
-    >
+    <ScreenWrapper barStyle="dark-content">
       <ScrollView style={styles.container}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -31,7 +27,7 @@ export default function Signin() {
             <TouchableOpacity
               style={{
                 backgroundColor: THEME.colors.lightGray,
-                padding: 5,
+                padding: 2,
                 borderRadius: 99,
                 marginBottom: 10,
               }}
@@ -40,7 +36,7 @@ export default function Signin() {
                 alt="App Logo"
                 resizeMode="contain"
                 style={styles.headerImg}
-                source={require("@/assets/images/splash-icon1.png")}
+                source={require("@/assets/images/adaptive-icon.png")}
               />
             </TouchableOpacity>
 
@@ -67,7 +63,11 @@ export default function Signin() {
         </Text>
       </TouchableOpacity> */}
 
-      <Text style={{ textAlign: "center" }} size="sm" weight="regular">
+      <Text
+        style={{ textAlign: "center", marginBottom: 20 }}
+        size="sm"
+        weight="regular"
+      >
         Powered by:{" "}
         <Link
           href={"https://promaxsolutions.com.au/"}
@@ -76,7 +76,7 @@ export default function Signin() {
           Promax IT Solutions
         </Link>
       </Text>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }
 

@@ -109,6 +109,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
             placeholder="Type here..."
           />
@@ -121,6 +122,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
             placeholder="Type here..."
           />
@@ -134,6 +136,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
             placeholder="Type here..."
           />
@@ -147,6 +150,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
             placeholder="Type here..."
           />
@@ -159,6 +163,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
             placeholder="Type here..."
           />
@@ -190,6 +195,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -220,6 +226,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -250,6 +257,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -264,6 +272,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
           />
           {/* section 5 */}
@@ -275,6 +284,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
           />
 
@@ -302,6 +312,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -331,6 +342,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -374,6 +386,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: THEME.spacing.md,
     // marginTop: 10,
   },
+  inputStyle: { height: 80, textAlignVertical: "top" },
   inputContainerStyle: {
     width: "100%",
     height: 80,

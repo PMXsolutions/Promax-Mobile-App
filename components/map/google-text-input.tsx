@@ -1,15 +1,9 @@
-import {
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  View,
-} from "react-native";
+import { View } from "react-native";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 
 import { MaterialIcons } from "@expo/vector-icons";
 import { GoogleInputProps } from "@/types/type";
-
-const googlePlacesApiKey = process.env.EXPO_PUBLIC_PLACES_API_KEY;
+import { GOOGLE_MAPS_API_KEY } from "@/constants/api-key";
 
 const GoogleTextInput = ({
   icon,
@@ -75,7 +69,7 @@ const GoogleTextInput = ({
           });
         }}
         query={{
-          key: googlePlacesApiKey,
+          key: GOOGLE_MAPS_API_KEY,
           language: "en",
         }}
         renderLeftButton={() => (

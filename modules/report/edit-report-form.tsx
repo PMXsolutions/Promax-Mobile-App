@@ -16,6 +16,7 @@ import { showMessage } from "react-native-flash-message";
 import { router } from "expo-router";
 import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
+import { KeyboardAvoiderView } from "@good-react-native/keyboard-avoider";
 
 const EditReportForm = ({
   reportId,
@@ -124,22 +125,12 @@ const EditReportForm = ({
     onSubmit(); // Should call the mutation function
   };
 
-  // const load = true;
-  if (isLoading) {
-    return (
-      <Loader
-        name="2-curves"
-        color={THEME.colors.secondary}
-        title="Loading Report.."
-      />
-    );
-  }
-
   return (
     <ScrollView
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
+      {/* <KeyboardAvoiderView> */}
       {shift && <ReportFormHeader item={shift} />}
       <View style={{ gap: THEME.spacing.sm, marginVertical: 10 }}>
         <Text size="md" weight="bold" style={{ color: THEME.colors.red }}>
@@ -153,6 +144,7 @@ const EditReportForm = ({
             onChangeText={(value) => handleInputChange("urgentMatters", value)}
             numberOfLines={4}
             multiline
+            style={styles.inputStyle}
             containerStyle={styles.inputContainerStyle}
             textAlign="left"
             placeholder="Type here..."
@@ -166,6 +158,7 @@ const EditReportForm = ({
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
             placeholder="Type here..."
           />
@@ -179,6 +172,7 @@ const EditReportForm = ({
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
             placeholder="Type here..."
           />
@@ -192,6 +186,7 @@ const EditReportForm = ({
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
             placeholder="Type here..."
           />
@@ -204,6 +199,7 @@ const EditReportForm = ({
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
             placeholder="Type here..."
           />
@@ -235,6 +231,7 @@ const EditReportForm = ({
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -265,6 +262,7 @@ const EditReportForm = ({
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -295,6 +293,7 @@ const EditReportForm = ({
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -309,6 +308,7 @@ const EditReportForm = ({
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
           />
           {/* section 5 */}
@@ -320,6 +320,7 @@ const EditReportForm = ({
             numberOfLines={4}
             multiline
             containerStyle={styles.inputContainerStyle}
+            style={styles.inputStyle}
             textAlign="left"
           />
 
@@ -347,6 +348,7 @@ const EditReportForm = ({
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -376,6 +378,7 @@ const EditReportForm = ({
                 }
                 multiline
                 containerStyle={styles.inputContainerStyle}
+                style={styles.inputStyle}
                 placeholder="Type here..."
               />
             )}
@@ -397,14 +400,15 @@ const EditReportForm = ({
               />
             )}
           </View>
-          <View style={{ marginBottom: 16 }}>
-            <CustomButton
-              title={"Submit"}
-              onPress={() => handleFormSubmit()}
-              loading={isPending}
-            />
-          </View>
         </View>
+      </View>
+      {/* </KeyboardAvoiderView> */}
+      <View style={{ marginBottom: 10 }}>
+        <CustomButton
+          title={"Submit"}
+          onPress={() => handleFormSubmit()}
+          loading={isPending}
+        />
       </View>
     </ScrollView>
   );
@@ -419,6 +423,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: THEME.spacing.md,
     // marginTop: 10,
   },
+  inputStyle: { height: 80, textAlignVertical: "top" },
   inputContainerStyle: {
     width: "100%",
     height: 80,

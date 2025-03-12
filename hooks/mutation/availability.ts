@@ -61,9 +61,6 @@ const useEditStaffAvailability = (formInfo: FormEditType) => {
         type: "danger",
         message: error.response?.data?.message || "An error occurred",
       });
-      return queryClient.invalidateQueries({
-        queryKey: ["availability"],
-      });
     },
   });
 };
