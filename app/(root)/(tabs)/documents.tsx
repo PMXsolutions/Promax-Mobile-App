@@ -138,7 +138,7 @@ const Document = () => {
             data={docData}
             keyExtractor={(_, index) => index.toString()}
             renderItem={({ item }) => <DocumentLabel item={item} />}
-            contentContainerStyle={{ ...styles.content, paddingBottom: 10 }}
+            contentContainerStyle={{ ...styles.content, paddingBottom: 30 }}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl

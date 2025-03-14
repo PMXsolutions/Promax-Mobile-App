@@ -62,7 +62,7 @@ const Header = ({ opacityTitle, translateTitle, name, image }: Props) => {
 
       <View style={{ flex: 1 }}>
         <Text
-          size="xl"
+          size="lg"
           weight="bold"
           style={{
             marginBottom: 4,

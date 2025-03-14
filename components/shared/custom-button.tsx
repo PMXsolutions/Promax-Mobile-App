@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import Text from "./text";
 import { THEME } from "@/constants/theme";
-import normalize from "@/libs/normalize";
 import Animated, { ZoomIn, ZoomOut } from "react-native-reanimated";
 
 const getBgVariantStyle = (variant: ButtonProps["bgVariant"]): ViewStyle => {
@@ -75,7 +74,11 @@ const CustomButton = ({
           />
         </Animated.View>
       ) : (
-        <Text style={getTextVariantStyle(textVariant)} size="lg" weight="bold">
+        <Text
+          style={getTextVariantStyle(textVariant)}
+          size="base"
+          weight="bold"
+        >
           {title}
         </Text>
       )}

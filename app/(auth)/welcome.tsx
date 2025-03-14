@@ -23,7 +23,7 @@ const Welcome = () => {
   return (
     <ScreenWrapper barStyle="dark-content">
       <TouchableOpacity
-        onPress={() => completeOnboarding}
+        onPress={() => completeOnboarding()}
         style={styles.skipButton}
       >
         <Text weight="bold" size="md">

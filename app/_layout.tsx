@@ -117,7 +117,7 @@ function Root() {
         </GestureHandlerRootView>
       </QueryClientProvider>
       <FlashMessage
-        position={Platform.OS === "ios" ? "top" : "center"}
+        position={Platform.OS === "ios" ? "top" : "bottom"}
         floating={true}
       />
       <PortalHost />

@@ -31,15 +31,17 @@ const UserHeader = ({
           />
         </ImageBackground>
       </View>
-      <Text
-        style={styles.name}
-        size="md"
-        weight="semiBold"
-        numberOfLines={1}
-        ellipsizeMode="tail"
-      >
-        {name}
-      </Text>
+      <View>
+        <Text
+          style={styles.name}
+          size="md"
+          weight="semiBold"
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {name}
+        </Text>
+      </View>
       <Text style={styles.label} size="md" weight="medium">
         {role}
       </Text>
@@ -66,11 +68,12 @@ const styles = StyleSheet.create({
   },
   name: {
     marginHorizontal: 4,
-    lineHeight: 19.2,
+    // lineHeight: 19.2,
+    // flex: 1,
   },
   label: {
     color: "#888",
-    lineHeight: 22.4,
+    // lineHeight: 22.4,
     letterSpacing: 0.2,
     textAlign: "center",
   },

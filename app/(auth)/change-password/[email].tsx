@@ -16,7 +16,7 @@ const ChangePassword = () => {
 
       <View style={styles.wrapper}>
         <View>
-          <Text size="3xl" weight="semiBold" style={styles.title}>
+          <Text size="2xl" weight="semiBold" style={styles.title}>
             Change Password
           </Text>
           <Text size="md" weight="regular" style={styles.desc}>

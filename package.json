@@ -49,6 +49,7 @@
     "expo-status-bar": "~2.0.0",
     "expo-symbols": "~0.2.0",
     "expo-system-ui": "~4.0.5",
+    "expo-updates": "~0.27.3",
     "expo-web-browser": "~14.0.1",
     "geolib": "^3.3.4",
     "lottie-react-native": "^7.2.2",

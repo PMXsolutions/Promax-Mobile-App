@@ -52,7 +52,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarButton: HapticTab,
+        // tabBarButton: HapticTab,
         // tabBarBackground: TabBarBackground,
 
         // tabBarBackground: () => (
@@ -74,7 +74,7 @@ export default function TabLayout() {
           elevation: 5,
         },
         tabBarActiveTintColor: THEME.colors.brand,
-        tabBarInactiveTintColor: "#A1A1A1",
+        // tabBarInactiveTintColor: "#A1A1A1",
         tabBarLabelStyle: {
           fontSize: 12,
           fontFamily: THEME.fontFamily.semiBold,

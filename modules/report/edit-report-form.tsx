@@ -1,7 +1,6 @@
 import { Image, ScrollView, StyleSheet, Switch, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { reportQuery } from "@/hooks/queries/report";
-import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
 import ReportFormHeader from "@/components/shift/report/report-header";
 import TextInput from "@/components/shared/input";
@@ -16,7 +15,6 @@ import { showMessage } from "react-native-flash-message";
 import { router } from "expo-router";
 import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
-import { KeyboardAvoiderView } from "@good-react-native/keyboard-avoider";
 
 const EditReportForm = ({
   reportId,
@@ -103,7 +101,6 @@ const EditReportForm = ({
     onSuccess: ({ data }) => {
       showMessage({
         message: data.message,
-        description: "Report Edited Successfully",
         type: "success",
       });
 

@@ -68,7 +68,6 @@ const EditEmergencyForm = ({ id }: { id: string }) => {
     onSuccess: ({ data }) => {
       showMessage({
         message: data?.message,
-        description: "Profile Edited Successfully",
         type: "success",
       });
 

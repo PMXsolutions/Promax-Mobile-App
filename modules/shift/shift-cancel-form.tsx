@@ -1,6 +1,5 @@
 import { StyleSheet, View } from "react-native";
 import React from "react";
-import TextInput from "@/components/shared/input";
 import CustomButton from "@/components/shared/custom-button";
 import { THEME } from "@/constants/theme";
 import { ShiftRosterService } from "@/services/shift";
@@ -45,8 +44,6 @@ const ShiftCancelForm = ({ shiftId }: { shiftId: number }) => {
       });
     },
     onError: (error) => {
-      console.log(error);
-
       showMessage({
         message: "Unable to submit form",
         type: "danger",
@@ -65,9 +62,7 @@ const ShiftCancelForm = ({ shiftId }: { shiftId: number }) => {
           required
           control={form.control}
           name="reason"
-          // onChangeText={(value) =>
-          //   handleInputChange("details_IfProblemExist", value)
-          // }
+          style={styles.inputStyle}
           multiline
           containerStyle={styles.inputContainerStyle}
           placeholder="Type here..."
@@ -92,4 +87,5 @@ const styles = StyleSheet.create({
     height: 150,
     alignItems: "flex-start",
   },
+  inputStyle: { height: 150, textAlignVertical: "top" },
 });

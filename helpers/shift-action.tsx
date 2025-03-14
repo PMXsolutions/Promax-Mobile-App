@@ -30,6 +30,30 @@ const ShiftAction = ({
         <>
           {getActivityDetailStatus(activity) === "Upcoming" ? (
             <View style={styles.footer}>
+              <View
+                style={{
+                  backgroundColor: THEME.colors.secondary + "50",
+                  borderRadius: 5,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 10,
+                  // marginBottom: 20,
+                }}
+              >
+                <Text
+                  size="base"
+                  weight="semiBold"
+                  style={[
+                    styles.cancelButtonText,
+                    {
+                      textAlign: "center",
+                      color: THEME.colors.black,
+                    },
+                  ]}
+                >
+                  Not Started
+                </Text>
+              </View>
               <CustomButton
                 bgVariant="light"
                 onPress={() =>
@@ -43,30 +67,6 @@ const ShiftAction = ({
                 title="Request to Cancel Shift"
                 textVariant="primary"
               />
-              <View
-                style={{
-                  backgroundColor: THEME.colors.secondary + "50",
-                  borderRadius: 5,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 10,
-                  // marginBottom: 20,
-                }}
-              >
-                <Text
-                  size="lg"
-                  weight="semiBold"
-                  style={[
-                    styles.cancelButtonText,
-                    {
-                      textAlign: "center",
-                      color: THEME.colors.black,
-                    },
-                  ]}
-                >
-                  Not Started
-                </Text>
-              </View>
             </View>
           ) : getActivityDetailStatus(activity) === "Clock-In" ? (
             <View style={styles.footer}>

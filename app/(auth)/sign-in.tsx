@@ -40,7 +40,7 @@ export default function Signin() {
               />
             </TouchableOpacity>
 
-            <Text style={styles.title} size="3xl" weight="bold">
+            <Text style={styles.title} size="2xl" weight="bold">
               Sign In to your Account
             </Text>
 

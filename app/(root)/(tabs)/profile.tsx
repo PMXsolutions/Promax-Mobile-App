@@ -131,16 +131,16 @@ const Profile = () => {
             style={{
               justifyContent: "center",
               flexDirection: "row",
-              padding: 20,
+              padding: 15,
               alignSelf: "center",
               borderRadius: 90,
               backgroundColor: THEME.colors.lightGray,
               alignItems: "center",
             }}
           >
-            <FontAwesome6 name="door-open" size={40} />
+            <FontAwesome6 name="door-open" size={30} />
           </View>
-          <Text size="2xl" weight="extraBold" style={{ marginVertical: 5 }}>
+          <Text size="xl" weight="bold" style={{ marginVertical: 5 }}>
             Logout?
           </Text>
           <Text
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.colors.white,
   },
   content: {
-    rowGap: THEME.spacing.lg,
+    rowGap: THEME.spacing.sm,
     backgroundColor: THEME.colors.white,
     paddingHorizontal: THEME.spacing.md,
     paddingVertical: 10,

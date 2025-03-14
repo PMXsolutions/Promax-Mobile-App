@@ -23,7 +23,7 @@ const Loader: React.FC<LoaderProps> = ({
   if (name === "2-curves") {
     return (
       <View style={[styles.container, { height, width }]}>
-        <StatusBar barStyle={"light-content"} />
+        <StatusBar hidden />
 
         <LottieView
           ref={animation}

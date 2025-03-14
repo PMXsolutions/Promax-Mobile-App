@@ -18,12 +18,12 @@ const TableStructure = ({
         {iconName && (
           <MaterialIcons name={iconName} size={18} color={"#5C5C5C"} />
         )}
-        <Text size="lg" weight="semiBold" style={styles.label}>
+        <Text size="base" weight="semiBold" style={styles.label}>
           {label}:
         </Text>
       </View>
       <View style={styles.valueCont}>
-        <Text size="lg" weight="medium" style={styles.value}>
+        <Text size="base" weight="medium" style={styles.value}>
           {value}
         </Text>
       </View>

@@ -60,7 +60,6 @@ const EditInfoForm = ({ id }: { id: string }) => {
     onSuccess: ({ data }) => {
       showMessage({
         message: data?.message,
-        description: "Profile Edited Successfully",
         type: "success",
       });
 
@@ -95,13 +94,11 @@ const EditInfoForm = ({ id }: { id: string }) => {
             label="Instagram"
             value={form.instagram}
             onChangeText={(value) => handleInputChange("instagram", value)}
-            editable={false}
           />
           <TextInput
             label="Linked-In"
             value={form.linkedIn}
             onChangeText={(value) => handleInputChange("linkedIn", value)}
-            editable={false}
           />
           <TextInput
             label="Facebook"

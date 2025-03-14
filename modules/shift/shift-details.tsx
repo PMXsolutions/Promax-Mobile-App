@@ -80,7 +80,7 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
                       marginRight: 10,
                     }}
                   />
-                  <Text size="lg" weight="medium" style={styles.sectionItem}>
+                  <Text size="base" weight="medium">
                     {activity.trim()}
                   </Text>
                 </View>
@@ -103,10 +103,9 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
               <Text
                 weight="medium"
                 size="md"
-                style={[
-                  styles.sectionItem,
-                  { color: shift.description ? "#000" : THEME.colors.inactive },
-                ]}
+                style={{
+                  color: shift.description ? "#000" : THEME.colors.inactive,
+                }}
               >
                 {shift?.description ||
                   "If there's additional description for shift, it will appear in this text box, do well to ignore when there is no description."}
@@ -132,11 +131,10 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
             >
               <Text
                 weight="medium"
-                size="md"
-                style={[
-                  styles.sectionItem,
-                  { color: shift.appointment ? "#000" : THEME.colors.inactive },
-                ]}
+                size="base"
+                style={{
+                  color: shift.appointment ? "#000" : THEME.colors.inactive,
+                }}
               >
                 {shift?.appointment ||
                   "If a client request for an appointment, it will appear in this text box, do well to ignore when there is no additional appointment request."}
@@ -160,9 +158,5 @@ const styles = StyleSheet.create({
     margin: THEME.spacing.xs,
     marginTop: THEME.spacing.sm,
     width: "100%",
-  },
-
-  sectionItem: {
-    lineHeight: 19.2,
   },
 });

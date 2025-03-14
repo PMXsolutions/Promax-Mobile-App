@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Pressable,
 } from "react-native";
-// import TimeSlotPicker from "./TimeSlotPicker"; // Import the TimeSlotPicker component
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { DaySlots, TimeSlot } from "@/app/(root)/(tabs)/add";
 import { THEME } from "@/constants/theme";

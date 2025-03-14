@@ -28,7 +28,7 @@ const ListDisplay = ({
               style={{ flexDirection: "row", gap: 10, alignItems: "center" }}
             >
               <MaterialIcons name={iconName} size={18} color={"#5C5C5C"} />
-              <Text weight="semiBold" size="lg" style={styles.title}>
+              <Text weight="semiBold" size="base" style={styles.title}>
                 {title}
               </Text>
             </View>

@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import React from "react";
 import { useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
@@ -41,6 +41,8 @@ const ShiftDetail = () => {
     user?.userId as string,
     shift?.shiftRosterId!
   );
+
+  const shiftActivities = shift?.activities.split(", ");
 
   // const load = true;
   if (isLoading) {
@@ -98,9 +100,11 @@ const ShiftDetail = () => {
       )} */}
 
       <>
-        {/* {shift && shiftActivities?.includes(" Transport") && ( */}
-        <TransportButton shiftId={shift?.shiftRosterId!} />
-        {/* )} */}
+        {shift &&
+          getActivityDetailStatus(shift) === "Shift In progress" &&
+          shiftActivities?.includes("Transport") && (
+            <TransportButton shiftId={shift?.shiftRosterId!} />
+          )}
       </>
     </ScreenWrapper>
   );

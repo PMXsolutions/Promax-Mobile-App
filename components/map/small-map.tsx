@@ -57,7 +57,7 @@ export default SmallMap;
 const styles = StyleSheet.create({
   map: {
     width: "100%",
-    height: 200, // Adjust the height to ensure the map displays properly
+    height: 250, // Adjust the height to ensure the map displays properly
     marginBottom: 20,
   },
 });

@@ -1,5 +1,4 @@
 import { THEME } from "@/constants/theme";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import {
   Text as RNText,
   TextProps as RNTextProps,
@@ -12,6 +11,7 @@ import {
 export interface TextProps extends RNTextProps {
   lightColor?: string;
   darkColor?: string;
+  color?: string;
   size?: keyof typeof THEME.fontSize;
   weight?: keyof typeof THEME.fontFamily;
 }
@@ -29,6 +29,7 @@ export interface TextProps extends RNTextProps {
  */
 const Text = ({
   children,
+  color = THEME.colors.black,
   lightColor,
   darkColor,
   style,
@@ -36,7 +37,6 @@ const Text = ({
   weight = "regular",
   ...props
 }: TextProps) => {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
   return (
     <RNText
       style={[
@@ -50,6 +50,7 @@ const Text = ({
         style,
       ]}
       {...props}
+      adjustsFontSizeToFit
     >
       {children}
     </RNText>

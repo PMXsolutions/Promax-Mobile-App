@@ -28,42 +28,6 @@ const EditForm = ({ id }: { id: string }) => {
     Number(id)
   );
 
-  //   const { mutate: onSubmit, isPending } = useMutation({
-  //     mutationFn: async () => {
-  //       const reqBody = {
-  //         ...staffData,
-  //         ...form,
-  //       };
-  //       return profileService.handleEditStaffProfile(
-  //         Number(staffData?.staffId),
-  //         user?.userId as string,
-  //         reqBody as StaffProfile
-  //       ); // Ensure this API call works
-  //     },
-  //     onSuccess: ({ data }) => {
-  //       showMessage({
-  //         message: data?.message,
-  //         description: "Profile Edited Successfully",
-  //         type: "success",
-  //       });
-
-  //       router.back();
-  //       return queryClient.invalidateQueries({
-  //         queryKey: ["staff", { id: staffData?.staffId }],
-  //       });
-  //     },
-
-  //     onError: (error: any) => {
-  //       showMessage({
-  //         message: error.response?.data?.message,
-  //         type: "danger",
-  //       });
-  //     },
-  //   });
-
-  //   const handleFormSubmit = () => {
-  //     onSubmit(); // Should call the mutation function
-  //   };
   const [form, setForm] = useState({
     documentName: "",
     documentFile: "",

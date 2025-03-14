@@ -138,7 +138,7 @@ const OtpVerfication: React.FC = () => {
 
       <View style={styles.wrapper}>
         <View>
-          <Text size="3xl" weight="semiBold" style={styles.title}>
+          <Text size="2xl" weight="semiBold" style={styles.title}>
             Verification Code
           </Text>
           <Text size="md" weight="regular" style={styles.desc}>

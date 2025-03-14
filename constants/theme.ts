@@ -57,15 +57,25 @@ const fontFamily = {
   black: "Inter_900Black",
 } as const;
 
+// const fontSize = {
+//   xs: normalize(7),
+//   sm: normalize(9),
+//   md: normalize(11),
+//   base: normalize(12),
+//   lg: normalize(13),
+//   xl: 18,
+//   "2xl": 20,
+//   "3xl": 24,
+// } as const;
 const fontSize = {
-  xs: normalize(7),
-  sm: normalize(9),
-  md: normalize(11),
-  base: normalize(12),
-  lg: normalize(13),
-  xl: 18,
-  "2xl": 20,
-  "3xl": 24,
+  xs: 10, // Extra Small
+  sm: 12, // Small
+  md: 14, // Medium
+  base: 16, // Default Body Text
+  lg: 18, // Large
+  xl: 20, // Extra Large
+  "2xl": 24, // 2x Extra Large
+  "3xl": 30, // 3x Extra Large
 } as const;
 
 export const THEME = {

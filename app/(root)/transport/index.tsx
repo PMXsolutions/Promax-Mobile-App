@@ -3,7 +3,7 @@ import { mapStyle } from "@/constants/map-style";
 import { THEME } from "@/constants/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet, ActivityIndicator } from "react-native";
-import MapView, { MapViewProps, Marker } from "react-native-maps";
+import MapView, { MapViewProps, Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
 import Loader from "@/components/shared/loader";
 import DestinationScreen from "./select-destination";
@@ -35,12 +35,11 @@ const TransportLayout: React.FC = () => {
           latitude,
           longitude,
         });
+
         setInitialLocation({
           latitude,
           longitude,
-          address: `${address[0]?.name || "Unknown"}, ${
-            address[0]?.region || "Unknown"
-          }`,
+          address: `${address[0].formattedAddress || "Unknown"}`,
         });
 
         if (mapRef.current) {
@@ -56,6 +55,19 @@ const TransportLayout: React.FC = () => {
     fetchLocation();
   }, []);
 
+  const coordinates = [];
+  if (initialLocation) {
+    coordinates.push({
+      latitude: initialLocation.latitude,
+      longitude: initialLocation.longitude,
+    });
+  }
+  if (destination) {
+    coordinates.push({
+      latitude: destination.latitude,
+      longitude: destination.longitude,
+    });
+  }
   if (!initialLocation) {
     return (
       <Loader
@@ -116,6 +128,24 @@ const TransportLayout: React.FC = () => {
         {initialLocation && (
           <Marker coordinate={initialLocation} pinColor={THEME.colors.brand} />
         )}
+
+        {destination && (
+          <Marker
+            coordinate={{
+              latitude: destination.latitude,
+              longitude: destination.longitude,
+            }}
+            pinColor={THEME.colors.secondary}
+          />
+        )}
+        {destination && coordinates.length > 1 && (
+          <Polyline
+            coordinates={coordinates}
+            strokeColor={THEME.colors.brand}
+            strokeWidth={3} // Increase stroke width for visibility
+            lineDashPattern={[5, 10]}
+          />
+        )}
       </MapView>
 
       {/* Content Section */}
@@ -148,6 +178,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
+    marginTop: -10,
   },
 });
 

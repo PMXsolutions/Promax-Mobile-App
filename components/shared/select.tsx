@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   },
   trigger: {
     paddingHorizontal: 10,
-    height: normalize(38),
+    height: 48,
     borderWidth: 1,
     borderColor: THEME.colors.border,
     borderRadius: normalize(6),

@@ -9,7 +9,7 @@ import GoBack from "../go-back";
 const HeaderWhite = ({ name }: { name: string }) => {
   return (
     <View style={styles.header}>
-      <View style={{ flex: 0.2 }}>
+      <View style={{ flex: 0.12 }}>
         {/* <TouchableOpacity onPress={() => router.back()}>
           <MaterialIcons
             name="arrow-back"
@@ -22,7 +22,7 @@ const HeaderWhite = ({ name }: { name: string }) => {
       <View style={styles.section}>
         <Text
           weight="semiBold"
-          size="xl"
+          size="base"
           style={styles.title}
           numberOfLines={1}
           ellipsizeMode="tail"

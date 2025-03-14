@@ -103,7 +103,7 @@ const ReviewScreen = ({
 
       <View style={styles.stepRow}>
         <Text size="lg" weight="bold" style={{ color: THEME.colors.grayBg }}>
-          Distance:{" "}
+          Approx. Distance:{" "}
         </Text>
         <Text size="lg" weight="bold">
           {distanceKm !== null
@@ -118,12 +118,15 @@ const ReviewScreen = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: THEME.spacing.sm, rowGap: THEME.spacing.lg },
+  container: {
+    flex: 1,
+    padding: THEME.spacing.sm,
+    rowGap: THEME.spacing.lg,
+  },
   map: { width: "100%", height: "50%" },
 
   stepRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    alignItems: "baseline",
   },
 
   grayDot: {
