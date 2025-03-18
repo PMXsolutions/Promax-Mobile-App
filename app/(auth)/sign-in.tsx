@@ -19,10 +19,11 @@ import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 export default function Signin() {
   return (
     <ScreenWrapper barStyle="dark-content">
-      <ScrollView style={styles.container}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        <ScrollView>
           <View style={styles.header}>
             <TouchableOpacity
               style={{
@@ -49,8 +50,8 @@ export default function Signin() {
             </Text>
           </View>
           <SignInForm />
-        </KeyboardAvoidingView>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* <TouchableOpacity
         onPress={() => {

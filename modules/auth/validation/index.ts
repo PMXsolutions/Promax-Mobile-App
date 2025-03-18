@@ -10,7 +10,7 @@ export const signInFormSchema = z.object({
     .string({
       required_error: "Password is required",
     })
-    .min(2, "Password must be at least 6 characters"),
+    .min(2, "Password must be at least 4 characters"),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -22,7 +22,7 @@ export const forgotPasswordSchema = z.object({
 export const changePasswordSchema = z
   .object({
     old_password: z.string({
-      required_error: "Old password is required",
+      required_error: "Code is required",
     }),
     new_password: z.string({
       required_error: "New password is required",
