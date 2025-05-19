@@ -1,4 +1,4 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { StyleProp, TouchableOpacityProps, ViewStyle } from "react-native";
 
 declare interface ButtonProps extends TouchableOpacityProps {
@@ -44,7 +44,7 @@ declare interface LocationStore {
 }
 
 declare interface GoogleInputProps {
-  icon?: keyof typeof MaterialIcons.glyphMap;
+  icon?: keyof typeof Feather.glyphMap;
   initialLocation?: string;
   containerStyle?: StyleProp<ViewStyle>;
 

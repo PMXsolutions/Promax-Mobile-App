@@ -41,7 +41,7 @@ const ProfileLabel = ({
               color={THEME.colors.primary}
             />
           </View>
-          <Text weight="medium" size="base">
+          <Text weight="semiBold" size="base">
             {label}
           </Text>
         </View>

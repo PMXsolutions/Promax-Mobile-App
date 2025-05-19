@@ -58,6 +58,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
   },
+  // modalContent: {
+  //   width: '90%',
+  //   maxWidth: 400,
+  //   padding: 20,
+  //   backgroundColor: "#fff",
+  //   borderRadius: 10,
+  //   elevation: 5,
+  //   shadowColor: "#000",
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowOpacity: 0.3,
+  //   shadowRadius: 4,
+  // },
   sendButton: {
     backgroundColor: THEME.colors.primary,
     padding: 10,

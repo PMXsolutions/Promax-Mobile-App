@@ -1,28 +1,23 @@
 import Text from "@/components/shared/text";
 import React from "react";
-
 import {
   StyleSheet,
-  SafeAreaView,
   View,
   Image,
   TouchableOpacity,
   ScrollView,
 } from "react-native";
 import SignInForm from "@/modules/auth/sign-in-form";
-import { KeyboardAvoidingView } from "react-native";
-import { Platform } from "react-native";
 import { THEME } from "@/constants/theme";
-import { Link } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
+import { Pressable } from "react-native-gesture-handler";
+import * as Linking from "expo-linking";
+import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
 
 export default function Signin() {
   return (
     <ScreenWrapper barStyle="dark-content">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
-      >
+      <KeyboardAwareWrapper>
         <ScrollView>
           <View style={styles.header}>
             <TouchableOpacity
@@ -51,32 +46,25 @@ export default function Signin() {
           </View>
           <SignInForm />
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareWrapper>
 
-      {/* <TouchableOpacity
-        onPress={() => {
-          // handle link
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 20,
+          justifyContent: "center",
         }}
       >
-        <Text style={styles.formFooter}>
-          Don't have an account?{" "}
-          <Text style={{ textDecorationLine: "underline" }}>Sign up</Text>
+        <Text style={{ textAlign: "center" }} size="sm" weight="regular">
+          Powered by:{" "}
         </Text>
-      </TouchableOpacity> */}
-
-      <Text
-        style={{ textAlign: "center", marginBottom: 20 }}
-        size="sm"
-        weight="regular"
-      >
-        Powered by:{" "}
-        <Link
-          href={"https://promaxsolutions.com.au/"}
-          style={{ fontFamily: THEME.fontFamily.semiBold }}
+        <Pressable
+          onPress={() => Linking.openURL("https://promaxsolutions.com.au/")}
         >
-          Promax IT Solutions
-        </Link>
-      </Text>
+          <Text weight="bold"> Promax IT Solutions</Text>
+        </Pressable>
+      </View>
     </ScreenWrapper>
   );
 }

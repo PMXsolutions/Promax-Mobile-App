@@ -12,18 +12,3 @@
 -keep class com.facebook.react.turbomodule.** { *; }
 
 # Add any project specific keep options here:
-
-
-# Keep React Native classes
--keep class com.facebook.react.** { *; }
--keep class com.facebook.fbreact.** { *; }
-
-# Keep React Native modules
--keep class com.facebook.react.bridge.ReactContextBaseJavaModule { *; }
--keep class com.facebook.react.bridge.ReactContextBaseJavaModule$1 { *; }
-
-# Keep the MainActivity
--keep class com.yourapp.MainActivity { *; }
-
-# Keep your app's custom classes
--keep class com.yourapp.** { *; }

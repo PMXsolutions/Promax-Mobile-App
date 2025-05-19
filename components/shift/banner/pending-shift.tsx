@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";
@@ -6,7 +6,10 @@ import { router } from "expo-router";
 
 const PendingShift = ({ num }: { num: number }) => {
   return (
-    <View style={styles.header}>
+    <Pressable
+      style={styles.header}
+      onPress={() => router.push("/(root)/shift/pending")}
+    >
       <View style={styles.section}>
         <Text
           style={styles.title}
@@ -23,13 +26,10 @@ const PendingShift = ({ num }: { num: number }) => {
           pending shift report{" "}
         </Text>
       </View>
-      <TouchableOpacity
-        style={styles.section}
-        onPress={() => router.push("/(root)/shift/pending")}
-      >
+      <View style={styles.section}>
         <Text style={[styles.title, { color: "#FFFF00" }]}>Review Now</Text>
-      </TouchableOpacity>
-    </View>
+      </View>
+    </Pressable>
   );
 };
 

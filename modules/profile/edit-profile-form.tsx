@@ -26,6 +26,7 @@ import {
   resizeImage,
 } from "@/utils/profile-image-handler";
 import DateModal from "@/components/shared/date-modal";
+import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
 
 const EditProfileForm = ({ id }: { id: string }) => {
   const { data: staffData } = profileQuery.useFetchStaffProfile(Number(id));
@@ -139,141 +140,143 @@ const EditProfileForm = ({ id }: { id: string }) => {
 
   return (
     <>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: 10 }}
-      >
-        {/* Render fields here */}
-        <View style={styles.profileContainer}>
-          <View style={styles.avatarContainer}>
-            <ImageBackground
-              source={{ uri: form.imageUrl }}
-              style={styles.avatar}
-              imageStyle={styles.avatar}
-            >
-              <Image
-                source={{ uri: form.imageFile }}
-                style={[
-                  styles.avatar,
-                  { borderWidth: 1, borderColor: THEME.colors.lightGray },
+      <KeyboardAwareWrapper>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={{ paddingBottom: 10 }}
+        >
+          {/* Render fields here */}
+          <View style={styles.profileContainer}>
+            <View style={styles.avatarContainer}>
+              <ImageBackground
+                source={{ uri: form.imageUrl }}
+                style={styles.avatar}
+                imageStyle={styles.avatar}
+              >
+                <Image
+                  source={{ uri: form.imageFile }}
+                  style={[
+                    styles.avatar,
+                    { borderWidth: 1, borderColor: THEME.colors.lightGray },
+                  ]}
+                  resizeMode="cover"
+                />
+              </ImageBackground>
+
+              <TouchableOpacity
+                style={styles.cameraIcon}
+                onPress={handleImagePick}
+              >
+                <Feather name="camera" size={28} color={THEME.colors.primary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={{ rowGap: THEME.spacing.md }}>
+            <TextInput
+              label="First Name"
+              value={form.firstName}
+              onChangeText={(value) => handleInputChange("firstName", value)}
+              editable={false}
+            />
+            <TextInput
+              label="Last Name"
+              value={form.surName}
+              onChangeText={(value) => handleInputChange("surName", value)}
+              editable={false}
+            />
+            <TextInput
+              label="Middle Name"
+              value={form.middleName}
+              onChangeText={(value) => handleInputChange("middleName", value)}
+            />
+            <TextInput
+              label="Phone Number"
+              value={form.phoneNumber}
+              onChangeText={(value) => handleInputChange("phoneNumber", value)}
+              keyboardType="phone-pad"
+            />
+            <View>
+              <Text style={styles.inputLabel}>Gender</Text>
+              <Select
+                value={form?.gender}
+                options={[
+                  { value: "Male", label: "Male" },
+                  { value: "Female", label: "Female" },
+                  { value: "Transgender", label: "Transgender" },
+                  {
+                    value: "Non-binary/non-conforming",
+                    label: "Non-binary/non-conforming",
+                  },
+                  {
+                    value: "Prefer not to respond",
+                    label: "Prefer not to respond",
+                  },
                 ]}
-                resizeMode="cover"
+                placeholder={form?.gender}
+                iconColor="#ccc"
+                onValueChange={(value) =>
+                  handleInputChange("gender", value?.value as string)
+                }
               />
-            </ImageBackground>
+            </View>
 
-            <TouchableOpacity
-              style={styles.cameraIcon}
-              onPress={handleImagePick}
-            >
-              <Feather name="camera" size={28} color={THEME.colors.primary} />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={{ rowGap: THEME.spacing.md }}>
-          <TextInput
-            label="First Name"
-            value={form.firstName}
-            onChangeText={(value) => handleInputChange("firstName", value)}
-            editable={false}
-          />
-          <TextInput
-            label="Last Name"
-            value={form.surName}
-            onChangeText={(value) => handleInputChange("surName", value)}
-            editable={false}
-          />
-          <TextInput
-            label="Middle Name"
-            value={form.middleName}
-            onChangeText={(value) => handleInputChange("middleName", value)}
-          />
-          <TextInput
-            label="Phone Number"
-            value={form.phoneNumber}
-            onChangeText={(value) => handleInputChange("phoneNumber", value)}
-            keyboardType="phone-pad"
-          />
-          <View>
-            <Text style={styles.inputLabel}>Gender</Text>
-            <Select
-              value={form?.gender}
-              options={[
-                { value: "Male", label: "Male" },
-                { value: "Female", label: "Female" },
-                { value: "Transgender", label: "Transgender" },
-                {
-                  value: "Non-binary/non-conforming",
-                  label: "Non-binary/non-conforming",
-                },
-                {
-                  value: "Prefer not to respond",
-                  label: "Prefer not to respond",
-                },
-              ]}
-              placeholder={form?.gender}
-              iconColor="#ccc"
-              onValueChange={(value) =>
-                handleInputChange("gender", value?.value as string)
-              }
+            <DateModal
+              value={dateOfBirth}
+              onChange={setDateOfBirth}
+              label="Date of Birth"
             />
-          </View>
 
-          <DateModal
-            value={dateOfBirth}
-            onChange={setDateOfBirth}
-            label="Date of Birth"
-          />
-
-          {/* //////////// */}
-          <TextInput
-            label="Country"
-            value={form.country}
-            onChangeText={(value) => handleInputChange("country", value)}
-          />
-          <TextInput
-            label="State"
-            value={form.state}
-            onChangeText={(value) => handleInputChange("state", value)}
-          />
-          <TextInput
-            label="City"
-            value={form.city}
-            onChangeText={(value) => handleInputChange("city", value)}
-          />
-          <TextInput
-            label="Address"
-            value={form.address}
-            onChangeText={(value) => handleInputChange("address", value)}
-          />
-          <TextInput
-            label="Suburb"
-            value={form.suburb}
-            onChangeText={(value) => handleInputChange("suburb", value)}
-          />
-          <TextInput
-            label="Postcode"
-            value={form.postcode}
-            onChangeText={(value) => handleInputChange("postcode", value)}
-          />
-          <TextInput
-            label="About Me"
-            value={form.aboutMe}
-            onChangeText={(value) => handleInputChange("aboutMe", value)}
-            numberOfLines={4}
-            multiline
-            // containerStyle={styles.inputContainerStyle}
-            textAlign="left"
-            placeholder="Type here..."
-          />
-          <View style={{ marginBottom: 16 }}>
-            <CustomButton
-              title="Save Changes"
-              onPress={() => handleFormSubmit()}
-              loading={isPending}
+            {/* //////////// */}
+            <TextInput
+              label="Country"
+              value={form.country}
+              onChangeText={(value) => handleInputChange("country", value)}
             />
+            <TextInput
+              label="State"
+              value={form.state}
+              onChangeText={(value) => handleInputChange("state", value)}
+            />
+            <TextInput
+              label="City"
+              value={form.city}
+              onChangeText={(value) => handleInputChange("city", value)}
+            />
+            <TextInput
+              label="Address"
+              value={form.address}
+              onChangeText={(value) => handleInputChange("address", value)}
+            />
+            <TextInput
+              label="Suburb"
+              value={form.suburb}
+              onChangeText={(value) => handleInputChange("suburb", value)}
+            />
+            <TextInput
+              label="Postcode"
+              value={form.postcode}
+              onChangeText={(value) => handleInputChange("postcode", value)}
+            />
+            <TextInput
+              label="About Me"
+              value={form.aboutMe}
+              onChangeText={(value) => handleInputChange("aboutMe", value)}
+              numberOfLines={4}
+              multiline
+              // containerStyle={styles.inputContainerStyle}
+              textAlign="left"
+              placeholder="Type here..."
+            />
+            <View style={{ marginBottom: 16 }}>
+              <CustomButton
+                title="Save Changes"
+                onPress={() => handleFormSubmit()}
+                loading={isPending}
+              />
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAwareWrapper>
 
       {/* <View style={styles.footer}></View> */}
     </>

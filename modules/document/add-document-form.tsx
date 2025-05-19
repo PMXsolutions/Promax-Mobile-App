@@ -9,7 +9,7 @@ import React, { useState } from "react";
 import { THEME } from "@/constants/theme";
 import Select from "@/components/shared/select";
 import { documentNames } from "@/constants/profile-data";
-import { convertImageToBase64, uploadDoc } from "@/utils/profile-image-handler";
+import { uploadDoc } from "@/utils/profile-image-handler";
 import { showMessage } from "react-native-flash-message";
 import Text from "@/components/shared/text";
 import { DocumentPickerAsset } from "expo-document-picker";
@@ -22,6 +22,7 @@ import { reportService } from "@/services/report";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/libs/query";
 import { router } from "expo-router";
+import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
 
 const AddForm = () => {
   const { user, staff } = useAuthStore();
@@ -45,7 +46,6 @@ const AddForm = () => {
       const docUri = await uploadDoc();
       if (docUri) {
         setSelectedDocument(docUri);
-        const baseFile = await convertImageToBase64(docUri.uri);
         setUploadedDocument(docUri.uri);
       }
     } catch (error) {
@@ -120,85 +120,87 @@ const AddForm = () => {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingBottom: 10 }}
-    >
-      <View style={{ rowGap: THEME.spacing.md }}>
-        {/* Dropdown Select */}
-        <View>
-          <Text style={styles.inputLabel}>Document List</Text>
-          <Select
-            options={docArr}
-            placeholder="Select a Document"
-            iconColor="#ccc"
-            onValueChange={(value) => setDocName(value?.value as string)}
-            value={docName}
-          />
-        </View>
+    <KeyboardAwareWrapper>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 10 }}
+      >
+        <View style={{ rowGap: THEME.spacing.md }}>
+          {/* Dropdown Select */}
+          <View>
+            <Text style={styles.inputLabel}>Document List</Text>
+            <Select
+              options={docArr}
+              placeholder="Select a Document"
+              iconColor="#ccc"
+              onValueChange={(value) => setDocName(value?.value as string)}
+              value={docName}
+            />
+          </View>
 
-        {/* Manual Document Name Input */}
-        {isOtherSelected && (
-          <TextInput
-            required
-            label="Enter Document Name"
-            placeholder="Enter Document Name"
-            value={otherDocName} // Use the separate state here
-            onChangeText={(value) => setOtherDocName(value)} // Update the separate state
-          />
-        )}
-
-        <DateModal
-          label="Expiration Date"
-          value={expiryDate}
-          onChange={setExpiryDate}
-        />
-
-        {/* Document Upload Section */}
-        <View>
-          <Text style={styles.inputLabel}>Upload File </Text>
-
-          <Pressable
-            style={[
-              styles.uploadBloc,
-              { borderColor: THEME.colors.grayBg, borderStyle: "dashed" },
-            ]}
-            onPress={handleImagePick}
-          >
-            <View style={styles.uploadButton}>
-              <Text weight="regular" style={styles.uploadButtonText}>
-                Tap to select file
-              </Text>
-            </View>
-            <Text> (.pdf, .doc, .docx)</Text>
-          </Pressable>
-
-          {/* Display Uploaded Document */}
-          {uploadedDocument && (
-            <View style={[styles.uploadButton, styles.nameCont]}>
-              <Text
-                style={[styles.uploadButtonText, { flex: 1 }]}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {selectedDocument?.name}
-              </Text>
-              <TouchableWithoutFeedback
-                onPress={() => setUploadedDocument(null)}
-              >
-                <Feather name="x" color="red" size={20} />
-              </TouchableWithoutFeedback>
-            </View>
+          {/* Manual Document Name Input */}
+          {isOtherSelected && (
+            <TextInput
+              required
+              label="Enter Document Name"
+              placeholder="Enter Document Name"
+              value={otherDocName} // Use the separate state here
+              onChangeText={(value) => setOtherDocName(value)} // Update the separate state
+            />
           )}
+
+          <DateModal
+            label="Expiration Date"
+            value={expiryDate}
+            onChange={setExpiryDate}
+          />
+
+          {/* Document Upload Section */}
+          <View>
+            <Text style={styles.inputLabel}>Upload File </Text>
+
+            <Pressable
+              style={[
+                styles.uploadBloc,
+                { borderColor: THEME.colors.grayBg, borderStyle: "dashed" },
+              ]}
+              onPress={handleImagePick}
+            >
+              <View style={styles.uploadButton}>
+                <Text weight="regular" style={styles.uploadButtonText}>
+                  Tap to select file
+                </Text>
+              </View>
+              <Text> (.pdf, .doc, .docx)</Text>
+            </Pressable>
+
+            {/* Display Uploaded Document */}
+            {uploadedDocument && (
+              <View style={[styles.uploadButton, styles.nameCont]}>
+                <Text
+                  style={[styles.uploadButtonText, { flex: 1 }]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {selectedDocument?.name}
+                </Text>
+                <TouchableWithoutFeedback
+                  onPress={() => setUploadedDocument(null)}
+                >
+                  <Feather name="x" color="red" size={20} />
+                </TouchableWithoutFeedback>
+              </View>
+            )}
+          </View>
+          <CustomButton
+            title={"Submit"}
+            onPress={handleFormSubmit}
+            // Handle submission logic here
+            loading={isPending}
+          />
         </View>
-        <CustomButton
-          title={"Submit"}
-          onPress={handleFormSubmit}
-          // Handle submission logic here
-          loading={isPending}
-        />
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAwareWrapper>
   );
 };
 

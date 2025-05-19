@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 
-import { MaterialIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { GoogleInputProps } from "@/types/type";
 import { GOOGLE_MAPS_API_KEY } from "@/constants/api-key";
 
@@ -81,12 +81,12 @@ const GoogleTextInput = ({
               height: 24,
             }}
           >
-            <MaterialIcons name={icon ? icon : "search"} size={24} />
+            <Feather name={icon ? icon : "search"} size={24} />
           </View>
         )}
         textInputProps={{
           placeholderTextColor: "gray",
-          placeholder: initialLocation ?? "Where do you want to go?",
+          placeholder: initialLocation ?? "Type in an address...",
         }}
       />
     </View>

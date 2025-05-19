@@ -11,6 +11,7 @@ import { router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { profileService } from "@/services/profile";
 import useAuthStore from "@/store/use-auth-store";
+import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
 
 const EditInfoForm = ({ id }: { id: string }) => {
   const { data: staffData } = profileQuery.useFetchStaffProfile(Number(id));
@@ -83,41 +84,43 @@ const EditInfoForm = ({ id }: { id: string }) => {
 
   return (
     <>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: 10 }}
-      >
-        {/* Render fields here */}
+      <KeyboardAwareWrapper>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={{ paddingBottom: 10 }}
+        >
+          {/* Render fields here */}
 
-        <View style={{ rowGap: THEME.spacing.md }}>
-          <TextInput
-            label="Instagram"
-            value={form.instagram}
-            onChangeText={(value) => handleInputChange("instagram", value)}
-          />
-          <TextInput
-            label="Linked-In"
-            value={form.linkedIn}
-            onChangeText={(value) => handleInputChange("linkedIn", value)}
-          />
-          <TextInput
-            label="Facebook"
-            value={form.facebook}
-            onChangeText={(value) => handleInputChange("facebook", value)}
-            keyboardType="phone-pad"
-          />
-          <TextInput
-            label="Youtube"
-            value={form.youtube}
-            onChangeText={(value) => handleInputChange("youtube", value)}
-          />
-          <TextInput
-            label="X (Formerly twitter)"
-            value={form.twitter}
-            onChangeText={(value) => handleInputChange("twitter", value)}
-          />
-        </View>
-      </ScrollView>
+          <View style={{ rowGap: THEME.spacing.md }}>
+            <TextInput
+              label="Instagram"
+              value={form.instagram}
+              onChangeText={(value) => handleInputChange("instagram", value)}
+            />
+            <TextInput
+              label="Linked-In"
+              value={form.linkedIn}
+              onChangeText={(value) => handleInputChange("linkedIn", value)}
+            />
+            <TextInput
+              label="Facebook"
+              value={form.facebook}
+              onChangeText={(value) => handleInputChange("facebook", value)}
+              keyboardType="phone-pad"
+            />
+            <TextInput
+              label="Youtube"
+              value={form.youtube}
+              onChangeText={(value) => handleInputChange("youtube", value)}
+            />
+            <TextInput
+              label="X (Formerly twitter)"
+              value={form.twitter}
+              onChangeText={(value) => handleInputChange("twitter", value)}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAwareWrapper>
 
       <View style={styles.footer}>
         <CustomButton

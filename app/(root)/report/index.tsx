@@ -3,7 +3,7 @@ import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import { useLocalSearchParams } from "expo-router";
 import HeaderWhite from "@/components/shared/header-no-bg";
 import EditReportForm from "@/modules/report/edit-report-form";
-import { KeyboardAvoiderView } from "@good-react-native/keyboard-avoider";
+
 import { reportQuery } from "@/hooks/queries/report";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
@@ -36,6 +36,7 @@ const ReportDetail = () => {
       > */}
 
       <EditReportForm reportId={reportId} rosterId={rosterId} />
+
       {/* </KeyboardAvoidingView> */}
     </ScreenWrapper>
   );

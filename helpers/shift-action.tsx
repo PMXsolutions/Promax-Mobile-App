@@ -15,6 +15,7 @@ interface ShiftProps {
   clockIn: () => Promise<void>;
   clockOut: UseMutateFunction<AxiosResponse<any, any>, Error, void, unknown>;
   clockOutPending: boolean;
+  now: Date;
 }
 
 const ShiftAction = ({
@@ -23,12 +24,13 @@ const ShiftAction = ({
   clockIn,
   clockOut,
   clockOutPending,
+  now,
 }: ShiftProps) => {
   return (
     <View style={styles.buttonCont}>
       {activity && (
         <>
-          {getActivityDetailStatus(activity) === "Upcoming" ? (
+          {getActivityDetailStatus(activity, now) === "Upcoming" ? (
             <View style={styles.footer}>
               <View
                 style={{
@@ -51,7 +53,7 @@ const ShiftAction = ({
                     },
                   ]}
                 >
-                  Not Started
+                  ⏳ Not Started
                 </Text>
               </View>
               <CustomButton
@@ -68,7 +70,7 @@ const ShiftAction = ({
                 textVariant="primary"
               />
             </View>
-          ) : getActivityDetailStatus(activity) === "Clock-In" ? (
+          ) : getActivityDetailStatus(activity, now) === "Clock-In" ? (
             <View style={styles.footer}>
               <CustomButton
                 bgVariant="light"
@@ -87,7 +89,7 @@ const ShiftAction = ({
                 onPress={clockIn}
                 disabled={clockInPending}
                 loading={clockInPending}
-                title="Clock In"
+                title="🕒 Start Shift"
               />
             </View>
           ) : (
@@ -95,15 +97,15 @@ const ShiftAction = ({
               <View
                 style={{
                   backgroundColor:
-                    getActivityDetailStatus(activity) === "Absent"
+                    getActivityDetailStatus(activity, now) === "Absent"
                       ? "#b91c1c"
-                      : getActivityDetailStatus(activity) === "Present"
+                      : getActivityDetailStatus(activity, now) === "Present"
                       ? "#047857"
                       : "transparent",
                   display:
-                    getActivityDetailStatus(activity) === "Absent"
+                    getActivityDetailStatus(activity, now) === "Absent"
                       ? "flex"
-                      : getActivityDetailStatus(activity) === "Present"
+                      : getActivityDetailStatus(activity, now) === "Present"
                       ? "flex"
                       : "none",
 
@@ -120,25 +122,30 @@ const ShiftAction = ({
                     {
                       textAlign: "center",
                       color:
-                        getActivityDetailStatus(activity) === "Absent"
+                        getActivityDetailStatus(activity, now) === "Absent"
                           ? "#fff"
-                          : getActivityDetailStatus(activity) === "Present"
+                          : getActivityDetailStatus(activity, now) === "Present"
                           ? "#fff"
                           : "transparent",
                       display:
-                        getActivityDetailStatus(activity) === "Absent"
+                        getActivityDetailStatus(activity, now) === "Absent"
                           ? "flex"
-                          : getActivityDetailStatus(activity) === "Present"
+                          : getActivityDetailStatus(activity, now) === "Present"
                           ? "flex"
                           : "none",
                     },
                   ]}
                 >
-                  {getActivityDetailStatus(activity)}
+                  {getActivityDetailStatus(activity, now) === "Absent"
+                    ? "Absent"
+                    : getActivityDetailStatus(activity, now) === "Present"
+                    ? "✅ Shift Completed"
+                    : getActivityDetailStatus(activity, now)}
                 </Text>
               </View>
 
-              {getActivityDetailStatus(activity) === "Shift In progress" && (
+              {getActivityDetailStatus(activity, now) ===
+                "Shift In progress" && (
                 <>
                   {!activity?.isShiftReportSigned && (
                     <View style={styles.footer}>
@@ -151,7 +158,7 @@ const ShiftAction = ({
                             },
                           })
                         }
-                        title="Fill Shift Report"
+                        title="✏️ Fill Shift Report"
                       />
                     </View>
                   )}
@@ -169,7 +176,7 @@ const ShiftAction = ({
                             },
                           })
                         }
-                        title="Edit Shift Report"
+                        title="✏️ Edit Shift Report"
                         textVariant="primary"
                       />
 
@@ -177,7 +184,7 @@ const ShiftAction = ({
                         onPress={() => clockOut()}
                         disabled={clockOutPending}
                         loading={clockOutPending}
-                        title="Clock Out"
+                        title="🔚 End Shift"
                       />
                     </View>
                   )}

@@ -97,7 +97,11 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
             <View
               style={{
                 ...styles.section,
+                borderRadius: 5,
+                borderWidth: 1,
                 padding: 10,
+                // flex: 1,
+                borderColor: THEME.colors.lightGray,
               }}
             >
               <Text
@@ -125,13 +129,13 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
                 borderRadius: 5,
                 borderWidth: 1,
                 padding: 10,
-                flex: 1,
+                // flex: 1,
                 borderColor: THEME.colors.lightGray,
               }}
             >
               <Text
                 weight="medium"
-                size="base"
+                size="md"
                 style={{
                   color: shift.appointment ? "#000" : THEME.colors.inactive,
                 }}
@@ -155,7 +159,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   section: {
-    margin: THEME.spacing.xs,
+    // margin: THEME.spacing.xs,
     marginTop: THEME.spacing.sm,
     width: "100%",
   },

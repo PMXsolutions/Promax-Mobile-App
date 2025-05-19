@@ -3,7 +3,6 @@ import { useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
 import EditProfileForm from "@/modules/profile/edit-profile-form";
-import KeyboardWrapper from "@/components/shared/keyboard-wrapper";
 
 const EditPersonalInfo = () => {
   const query = useLocalSearchParams();
@@ -13,9 +12,7 @@ const EditPersonalInfo = () => {
   return (
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={"Edit Personal Information"} />
-      <KeyboardWrapper>
-        <EditProfileForm id={id} />
-      </KeyboardWrapper>
+      <EditProfileForm id={id} />
     </ScreenWrapper>
   );
 };

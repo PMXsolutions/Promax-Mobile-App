@@ -42,7 +42,7 @@ const NotificationDetail = () => {
       <HeaderWhite name={`#${messageData?.messageId.toString() as string}`} />
 
       <View style={styles.content}>
-        <Text weight="bold" size="3xl" style={{ marginBottom: 5 }}>
+        <Text weight="bold" size="2xl" style={{ marginBottom: 5 }}>
           {messageData?.subject}
         </Text>
       </View>

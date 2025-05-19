@@ -47,7 +47,9 @@ const ShiftMessage = ({
         to avoid errors or being unable to clock into your next shift.
         {"\n"}
       </Text>
-      <CustomButton title="Ok" onPress={closeModal} />
+      <View style={{ paddingVertical: 10 }}>
+        <CustomButton title="Ok" onPress={closeModal} />
+      </View>
     </View>
   );
 };

@@ -11,6 +11,7 @@ import { router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { profileService } from "@/services/profile";
 import useAuthStore from "@/store/use-auth-store";
+import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
 
 const EditEmergencyForm = ({ id }: { id: string }) => {
   const { data: staffData } = profileQuery.useFetchStaffProfile(Number(id));
@@ -91,71 +92,74 @@ const EditEmergencyForm = ({ id }: { id: string }) => {
 
   return (
     <>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: 10 }}
-      >
-        {/* Render fields here */}
+      <KeyboardAwareWrapper>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={{ paddingBottom: 10 }}
+        >
+          {/* Render fields here */}
 
-        <View style={{ rowGap: THEME.spacing.md }}>
-          <TextInput
-            label="Contact Name"
-            value={form.nextOfKin}
-            onChangeText={(value) => handleInputChange("nextOfKin", value)}
-            editable={false}
-          />
-          <TextInput
-            label="Email"
-            value={form.kinEmail}
-            onChangeText={(value) => handleInputChange("kinEmail", value)}
-            editable={false}
-          />
-          <TextInput
-            label="Phone Number"
-            value={form.kinPhoneNumber}
-            onChangeText={(value) => handleInputChange("kinPhoneNumber", value)}
-            keyboardType="phone-pad"
-          />
-          <TextInput
-            label="Relationship"
-            value={form.relationship}
-            onChangeText={(value) => handleInputChange("relationship", value)}
-          />
-          <TextInput
-            label="Nationality"
-            value={form.kinCountry}
-            onChangeText={(value) => handleInputChange("kinCountry", value)}
-          />
-          <TextInput
-            label="State"
-            value={form.kinState}
-            onChangeText={(value) => handleInputChange("kinState", value)}
-          />
-          <TextInput
-            label="City"
-            value={form.kinCity}
-            onChangeText={(value) => handleInputChange("kinCity", value)}
-          />
-          <TextInput
-            label="Address"
-            value={form.kinAddress}
-            onChangeText={(value) => handleInputChange("kinAddress", value)}
-          />
-          <TextInput
-            label="Post Code"
-            value={form.kinPostcode}
-            onChangeText={(value) => handleInputChange("kinPostcode", value)}
-          />
-        </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <CustomButton
-          title="Save Changes"
-          onPress={() => handleFormSubmit()}
-          loading={isPending}
-        />
-      </View>
+          <View style={{ rowGap: THEME.spacing.md }}>
+            <TextInput
+              label="Contact Name"
+              value={form.nextOfKin}
+              onChangeText={(value) => handleInputChange("nextOfKin", value)}
+              editable={false}
+            />
+            <TextInput
+              label="Email"
+              value={form.kinEmail}
+              onChangeText={(value) => handleInputChange("kinEmail", value)}
+              editable={false}
+            />
+            <TextInput
+              label="Phone Number"
+              value={form.kinPhoneNumber}
+              onChangeText={(value) =>
+                handleInputChange("kinPhoneNumber", value)
+              }
+              keyboardType="phone-pad"
+            />
+            <TextInput
+              label="Relationship"
+              value={form.relationship}
+              onChangeText={(value) => handleInputChange("relationship", value)}
+            />
+            <TextInput
+              label="Nationality"
+              value={form.kinCountry}
+              onChangeText={(value) => handleInputChange("kinCountry", value)}
+            />
+            <TextInput
+              label="State"
+              value={form.kinState}
+              onChangeText={(value) => handleInputChange("kinState", value)}
+            />
+            <TextInput
+              label="City"
+              value={form.kinCity}
+              onChangeText={(value) => handleInputChange("kinCity", value)}
+            />
+            <TextInput
+              label="Address"
+              value={form.kinAddress}
+              onChangeText={(value) => handleInputChange("kinAddress", value)}
+            />
+            <TextInput
+              label="Post Code"
+              value={form.kinPostcode}
+              onChangeText={(value) => handleInputChange("kinPostcode", value)}
+            />
+          </View>
+          <View style={{ marginVertical: 16 }}>
+            <CustomButton
+              title="Save Changes"
+              onPress={() => handleFormSubmit()}
+              loading={isPending}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAwareWrapper>
     </>
   );
 };

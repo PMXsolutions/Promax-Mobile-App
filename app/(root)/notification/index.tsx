@@ -27,6 +27,7 @@ import { router } from "expo-router";
 
 const Notification = () => {
   const { user } = useAuthStore();
+
   const {
     data: notificationData,
     isLoading,
@@ -142,7 +143,7 @@ const Notification = () => {
           </View>
           <View style={styles.textContainer}>
             <Text style={styles.notificationTitle} weight="bold" size="md">
-              {item.subject}
+              {item?.subject || "(No Subject)"}
             </Text>
             <Text style={styles.notificationDate}>
               {formattedTime(

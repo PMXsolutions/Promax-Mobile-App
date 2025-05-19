@@ -15,6 +15,7 @@ import { router } from "expo-router";
 import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import MiniLoader from "@/components/shared/mini-loader";
+import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
 
 const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   const { user } = useAuthStore();
@@ -90,290 +91,300 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <MiniLoader visible={isLoading} title="Loading Report.." />
-      {shift && <ReportFormHeader item={shift} />}
-      <View style={{ gap: THEME.spacing.sm, marginVertical: 10 }}>
-        <Text size="md" weight="bold" style={{ color: THEME.colors.red }}>
-          URGENT MATTER ALERTS:
-        </Text>
+    <KeyboardAwareWrapper>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <MiniLoader visible={isLoading} title="Loading Report.." />
+        {shift && <ReportFormHeader item={shift} />}
+        <View style={{ gap: THEME.spacing.sm, marginVertical: 10 }}>
+          <Text size="md" weight="bold" style={{ color: THEME.colors.red }}>
+            URGENT MATTER ALERTS:
+          </Text>
 
-        <View style={{ rowGap: THEME.spacing.lg }}>
-          <TextInput
-            label="Urgent Matters?"
-            value={form.urgentMatters}
-            onChangeText={(value) => handleInputChange("urgentMatters", value)}
-            numberOfLines={4}
-            multiline
-            containerStyle={styles.inputContainerStyle}
-            style={styles.inputStyle}
-            textAlign="left"
-            placeholder="Type here..."
-          />
-          <TextInput
-            label="Medications Given"
-            value={form.medicationGiven}
-            onChangeText={(value) =>
-              handleInputChange("medicationGiven", value)
-            }
-            numberOfLines={4}
-            multiline
-            containerStyle={styles.inputContainerStyle}
-            style={styles.inputStyle}
-            textAlign="left"
-            placeholder="Type here..."
-          />
+          <View style={{ rowGap: THEME.spacing.lg }}>
+            <TextInput
+              label="Urgent Matters?"
+              value={form.urgentMatters}
+              onChangeText={(value) =>
+                handleInputChange("urgentMatters", value)
+              }
+              numberOfLines={4}
+              multiline
+              containerStyle={styles.inputContainerStyle}
+              style={styles.inputStyle}
+              textAlign="left"
+              placeholder="Type here..."
+            />
+            <TextInput
+              label="Medications Given"
+              value={form.medicationGiven}
+              onChangeText={(value) =>
+                handleInputChange("medicationGiven", value)
+              }
+              numberOfLines={4}
+              multiline
+              containerStyle={styles.inputContainerStyle}
+              style={styles.inputStyle}
+              textAlign="left"
+              placeholder="Type here..."
+            />
 
-          <TextInput
-            label="Medications Signed For"
-            value={form.medicationSigned}
-            onChangeText={(value) =>
-              handleInputChange("medicationSigned", value)
-            }
-            numberOfLines={4}
-            multiline
-            containerStyle={styles.inputContainerStyle}
-            style={styles.inputStyle}
-            textAlign="left"
-            placeholder="Type here..."
-          />
+            <TextInput
+              label="Medications Signed For"
+              value={form.medicationSigned}
+              onChangeText={(value) =>
+                handleInputChange("medicationSigned", value)
+              }
+              numberOfLines={4}
+              multiline
+              containerStyle={styles.inputContainerStyle}
+              style={styles.inputStyle}
+              textAlign="left"
+              placeholder="Type here..."
+            />
 
-          <TextInput
-            label="Medications Available for the Next 30 days"
-            value={form.medicationAvailable}
-            onChangeText={(value) =>
-              handleInputChange("medicationAvailable", value)
-            }
-            numberOfLines={4}
-            multiline
-            containerStyle={styles.inputContainerStyle}
-            style={styles.inputStyle}
-            textAlign="left"
-            placeholder="Type here..."
-          />
-          <TextInput
-            label="Medication Errors"
-            value={form.medicatioErrors}
-            onChangeText={(value) =>
-              handleInputChange("medicatioErrors", value)
-            }
-            numberOfLines={4}
-            multiline
-            containerStyle={styles.inputContainerStyle}
-            style={styles.inputStyle}
-            textAlign="left"
-            placeholder="Type here..."
-          />
-          {/* section 1 */}
-          <View>
-            <CustomSwitch
-              label={
-                <Text size="md" weight="bold">
-                  Meals:
-                  <Text style={{ fontWeight: "400" }}>
-                    {" "}
-                    Were they given in line with the participant's mealtime
-                    management plan?
+            <TextInput
+              label="Medications Available for the Next 30 days"
+              value={form.medicationAvailable}
+              onChangeText={(value) =>
+                handleInputChange("medicationAvailable", value)
+              }
+              numberOfLines={4}
+              multiline
+              containerStyle={styles.inputContainerStyle}
+              style={styles.inputStyle}
+              textAlign="left"
+              placeholder="Type here..."
+            />
+            <TextInput
+              label="Medication Errors"
+              value={form.medicatioErrors}
+              onChangeText={(value) =>
+                handleInputChange("medicatioErrors", value)
+              }
+              numberOfLines={4}
+              multiline
+              containerStyle={styles.inputContainerStyle}
+              style={styles.inputStyle}
+              textAlign="left"
+              placeholder="Type here..."
+            />
+            {/* section 1 */}
+            <View>
+              <CustomSwitch
+                label={
+                  <Text size="md" weight="bold">
+                    Meals:
+                    <Text style={{ fontWeight: "400" }}>
+                      {" "}
+                      Were they given in line with the participant's mealtime
+                      management plan?
+                    </Text>
                   </Text>
-                </Text>
-              }
-              value={form.isMealManagementPlan}
-              onValueChange={(value) =>
-                handleInputChange("isMealManagementPlan", value)
-              }
-            />
-
-            {form.isMealManagementPlan === false && (
-              <TextInput
-                label="Details if Not Meal Management Plan"
-                value={form.details_IfNotMealMaganementPlan}
-                onChangeText={(value) =>
-                  handleInputChange("details_IfNotMealMaganementPlan", value)
                 }
-                multiline
-                containerStyle={styles.inputContainerStyle}
-                style={styles.inputStyle}
-                placeholder="Type here..."
+                value={form.isMealManagementPlan}
+                onValueChange={(value) =>
+                  handleInputChange("isMealManagementPlan", value)
+                }
               />
-            )}
-          </View>
-          {/* section 2 */}
-          <View>
-            <CustomSwitch
-              label={
-                <Text size="md" weight="bold">
-                  <Text style={{ fontWeight: "400" }}>
-                    Did the participant experience any eating or drinking
-                    problems?
+
+              {form.isMealManagementPlan === false && (
+                <TextInput
+                  label="Details if Not Meal Management Plan"
+                  value={form.details_IfNotMealMaganementPlan}
+                  onChangeText={(value) =>
+                    handleInputChange("details_IfNotMealMaganementPlan", value)
+                  }
+                  multiline
+                  containerStyle={styles.inputContainerStyle}
+                  style={styles.inputStyle}
+                  placeholder="Type here..."
+                />
+              )}
+            </View>
+            {/* section 2 */}
+            <View>
+              <CustomSwitch
+                label={
+                  <Text size="md" weight="bold">
+                    <Text style={{ fontWeight: "400" }}>
+                      Did the participant experience any eating or drinking
+                      problems?
+                    </Text>
                   </Text>
-                </Text>
-              }
-              value={form.isDrinkingProblem}
-              onValueChange={(value) =>
-                handleInputChange("isDrinkingProblem", value)
-              }
-            />
-
-            {form.isDrinkingProblem && (
-              <TextInput
-                label="Details if there's a drinking problem"
-                value={form.details_IfProblemExist}
-                onChangeText={(value) =>
-                  handleInputChange("details_IfProblemExist", value)
                 }
-                multiline
-                containerStyle={styles.inputContainerStyle}
-                style={styles.inputStyle}
-                placeholder="Type here..."
+                value={form.isDrinkingProblem}
+                onValueChange={(value) =>
+                  handleInputChange("isDrinkingProblem", value)
+                }
               />
-            )}
-          </View>
-          {/* section 3 */}
-          <View>
-            <CustomSwitch
-              label={
-                <Text size="md" weight="bold">
-                  <Text style={{ fontWeight: "400" }}>
-                    Did the participant experience any Health and well-being
-                    issues?
+
+              {form.isDrinkingProblem && (
+                <TextInput
+                  label="Details if there's a drinking problem"
+                  value={form.details_IfProblemExist}
+                  onChangeText={(value) =>
+                    handleInputChange("details_IfProblemExist", value)
+                  }
+                  multiline
+                  containerStyle={styles.inputContainerStyle}
+                  style={styles.inputStyle}
+                  placeholder="Type here..."
+                />
+              )}
+            </View>
+            {/* section 3 */}
+            <View>
+              <CustomSwitch
+                label={
+                  <Text size="md" weight="bold">
+                    <Text style={{ fontWeight: "400" }}>
+                      Did the participant experience any Health and well-being
+                      issues?
+                    </Text>
                   </Text>
-                </Text>
+                }
+                value={form.isHealthIssues}
+                onValueChange={(value) =>
+                  handleInputChange("isHealthIssues", value)
+                }
+              />
+
+              {form.isHealthIssues && (
+                <TextInput
+                  label="Details if there's a drinking problem"
+                  value={form.details_IfHealthIssuesExist}
+                  onChangeText={(value) =>
+                    handleInputChange("details_IfHealthIssuesExist", value)
+                  }
+                  multiline
+                  containerStyle={styles.inputContainerStyle}
+                  style={styles.inputStyle}
+                  placeholder="Type here..."
+                />
+              )}
+            </View>
+
+            {/* section 4 */}
+            <TextInput
+              label="Support plan progress and activities:"
+              placeholder="Provide details of goal progress and activities"
+              value={form.goal_Progress}
+              onChangeText={(value) =>
+                handleInputChange("goal_Progress", value)
               }
-              value={form.isHealthIssues}
-              onValueChange={(value) =>
-                handleInputChange("isHealthIssues", value)
+              numberOfLines={4}
+              multiline
+              containerStyle={styles.inputContainerStyle}
+              style={styles.inputStyle}
+              textAlign="left"
+            />
+            {/* section 5 */}
+            <TextInput
+              label="Provide any details of contact with family and friends:"
+              placeholder="Contact Details"
+              value={form.contactFamily}
+              onChangeText={(value) =>
+                handleInputChange("contactFamily", value)
               }
+              numberOfLines={4}
+              multiline
+              containerStyle={styles.inputContainerStyle}
+              style={styles.inputStyle}
+              textAlign="left"
             />
 
-            {form.isHealthIssues && (
-              <TextInput
-                label="Details if there's a drinking problem"
-                value={form.details_IfHealthIssuesExist}
-                onChangeText={(value) =>
-                  handleInputChange("details_IfHealthIssuesExist", value)
-                }
-                multiline
-                containerStyle={styles.inputContainerStyle}
-                style={styles.inputStyle}
-                placeholder="Type here..."
-              />
-            )}
-          </View>
-
-          {/* section 4 */}
-          <TextInput
-            label="Support plan progress and activities:"
-            placeholder="Provide details of goal progress and activities"
-            value={form.goal_Progress}
-            onChangeText={(value) => handleInputChange("goal_Progress", value)}
-            numberOfLines={4}
-            multiline
-            containerStyle={styles.inputContainerStyle}
-            style={styles.inputStyle}
-            textAlign="left"
-          />
-          {/* section 5 */}
-          <TextInput
-            label="Provide any details of contact with family and friends:"
-            placeholder="Contact Details"
-            value={form.contactFamily}
-            onChangeText={(value) => handleInputChange("contactFamily", value)}
-            numberOfLines={4}
-            multiline
-            containerStyle={styles.inputContainerStyle}
-            style={styles.inputStyle}
-            textAlign="left"
-          />
-
-          {/* section 6 */}
-          <View>
-            <CustomSwitch
-              label={
-                <Text size="md" weight="bold">
-                  <Text style={{ fontWeight: "400" }}>
-                    {" "}
-                    Is there any Incident?
+            {/* section 6 */}
+            <View>
+              <CustomSwitch
+                label={
+                  <Text size="md" weight="bold">
+                    <Text style={{ fontWeight: "400" }}>
+                      {" "}
+                      Is there any Incident?
+                    </Text>
                   </Text>
-                </Text>
-              }
-              value={form.isIncident}
-              onValueChange={(value) => handleInputChange("isIncident", value)}
-            />
-
-            {form.isIncident && (
-              <TextInput
-                label="Details if there's incident"
-                value={form.details_IfIsIncipient}
-                onChangeText={(value) =>
-                  handleInputChange("details_IfIsIncipient", value)
                 }
-                multiline
-                containerStyle={styles.inputContainerStyle}
-                style={styles.inputStyle}
-                placeholder="Type here..."
+                value={form.isIncident}
+                onValueChange={(value) =>
+                  handleInputChange("isIncident", value)
+                }
               />
-            )}
-          </View>
-          {/* section 7 */}
-          <View>
-            <CustomSwitch
-              label={
-                <Text size="md" weight="bold">
-                  <Text style={{ fontWeight: "400" }}>
-                    Is there any behaviour of concern?
+
+              {form.isIncident && (
+                <TextInput
+                  label="Details if there's incident"
+                  value={form.details_IfIsIncipient}
+                  onChangeText={(value) =>
+                    handleInputChange("details_IfIsIncipient", value)
+                  }
+                  multiline
+                  containerStyle={styles.inputContainerStyle}
+                  style={styles.inputStyle}
+                  placeholder="Type here..."
+                />
+              )}
+            </View>
+            {/* section 7 */}
+            <View>
+              <CustomSwitch
+                label={
+                  <Text size="md" weight="bold">
+                    <Text style={{ fontWeight: "400" }}>
+                      Is there any behaviour of concern?
+                    </Text>
                   </Text>
-                </Text>
-              }
-              value={form.isBehaviourConcerned}
-              onValueChange={(value) =>
-                handleInputChange("isBehaviourConcerned", value)
-              }
-            />
-
-            {form.isBehaviourConcerned && (
-              <TextInput
-                label="Details if there's behaviour of concern"
-                value={form.details_ifIsBehaviourConcerned}
-                onChangeText={(value) =>
-                  handleInputChange("details_ifIsBehaviourConcerned", value)
                 }
-                multiline
-                containerStyle={styles.inputContainerStyle}
-                style={styles.inputStyle}
-                placeholder="Type here..."
+                value={form.isBehaviourConcerned}
+                onValueChange={(value) =>
+                  handleInputChange("isBehaviourConcerned", value)
+                }
               />
-            )}
-          </View>
 
-          <View>
-            <Text size="md" weight="bold">
-              Signature
-            </Text>
+              {form.isBehaviourConcerned && (
+                <TextInput
+                  label="Details if there's behaviour of concern"
+                  value={form.details_ifIsBehaviourConcerned}
+                  onChangeText={(value) =>
+                    handleInputChange("details_ifIsBehaviourConcerned", value)
+                  }
+                  multiline
+                  containerStyle={styles.inputContainerStyle}
+                  style={styles.inputStyle}
+                  placeholder="Type here..."
+                />
+              )}
+            </View>
 
-            {shift?.staff?.signatureUrl && (
-              <Image
-                source={{ uri: shift?.staff.signatureUrl }}
-                style={{
-                  height: 50,
-                  width: 140,
-                  resizeMode: "contain",
-                }}
+            <View>
+              <Text size="md" weight="bold">
+                Signature
+              </Text>
+
+              {shift?.staff?.signatureUrl && (
+                <Image
+                  source={{ uri: shift?.staff.signatureUrl }}
+                  style={{
+                    height: 50,
+                    width: 140,
+                    resizeMode: "contain",
+                  }}
+                />
+              )}
+            </View>
+            <View style={{ marginBottom: 16 }}>
+              <CustomButton
+                title={"Submit"}
+                onPress={() => handleFormSubmit()}
+                loading={isPending}
               />
-            )}
-          </View>
-          <View style={{ marginBottom: 16 }}>
-            <CustomButton
-              title={"Submit"}
-              onPress={() => handleFormSubmit()}
-              loading={isPending}
-            />
+            </View>
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAwareWrapper>
   );
 };
 

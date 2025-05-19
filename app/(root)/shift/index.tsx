@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
@@ -25,6 +25,7 @@ const ShiftDetail = () => {
   const id = query.id as unknown as string;
   const clients = query.clients as unknown as string;
   const { data: shift, isLoading } = shiftQuery.useShiftDetail(Number(id));
+
   const {
     clockInPending,
     handleClock,
@@ -43,6 +44,16 @@ const ShiftDetail = () => {
   );
 
   const shiftActivities = shift?.activities.split(", ");
+  // Live time tracking state
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval); // Clean up interval on unmount
+  }, []);
 
   // const load = true;
   if (isLoading) {
@@ -62,7 +73,7 @@ const ShiftDetail = () => {
         visible={distanceCheckLoading}
         title="Calculating your distance to client's location.."
       />
-      {shift && getActivityDetailStatus(shift) === "Shift In progress" && (
+      {shift && getActivityDetailStatus(shift, now) === "Shift In progress" && (
         <ProgressBanner shiftId={shift.shiftRosterId} />
       )}
       <ScrollView
@@ -78,9 +89,20 @@ const ShiftDetail = () => {
           clockOut={clockOut}
           clockOutPending={clockOutPending}
           activity={shift!}
+          now={now}
         />
       )}
       {/*  */}
+
+      <>
+        {shift &&
+          // getActivityDetailStatus(shift, now) === "Present" &&
+          // getActivityDetailStatus(shift, now) === "Absent" &&
+          shiftActivities?.includes("Transport") && (
+            <TransportButton shiftId={shift?.shiftRosterId!} />
+          )}
+      </>
+      {/* <>{shift && <TransportButton shiftId={shift?.shiftRosterId!} />}</> */}
       <ModalPop
         modalVisible={modalVisible}
         closeModal={() => setModalVisible(false)}
@@ -91,21 +113,6 @@ const ShiftDetail = () => {
           closeModal={() => setModalVisible(false)}
         />
       </ModalPop>
-      {/* {shiftInfo && getActivityStatus(shiftInfo) === "Shift In progress" && (
-        <>
-          {shiftInfo && shiftActivities.includes(" Transport") && (
-            <TransportButton shiftId={shiftId} />
-          )}
-        </>
-      )} */}
-
-      <>
-        {shift &&
-          getActivityDetailStatus(shift) === "Shift In progress" &&
-          shiftActivities?.includes("Transport") && (
-            <TransportButton shiftId={shift?.shiftRosterId!} />
-          )}
-      </>
     </ScreenWrapper>
   );
 };

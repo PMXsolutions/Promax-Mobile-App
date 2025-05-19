@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { router, Stack } from "expo-router";
+import { Slot, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -24,12 +24,11 @@ import "react-native-get-random-values";
 import useAuthStore from "@/store/use-auth-store";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
-import { KeyboardAvoiderProvider } from "@good-react-native/keyboard-avoider";
+import usePushNotifications from "@/hooks/usePushNotification";
 
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: "(root)/(tabs)",
 };
 
@@ -37,6 +36,12 @@ export default function RootLayout() {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState<
     boolean | null
   >(null);
+
+  const { isAuthenticated, user } = useAuthStore();
+  const pushToken = usePushNotifications(
+    user?.userId ?? "",
+    user?.companyId ?? 0
+  );
 
   const [fontLoaded, fontLoadError] = useFonts({
     Inter_100Thin,
@@ -50,29 +55,28 @@ export default function RootLayout() {
     Inter_900Black,
   });
 
-  // Check if onboarding is complete
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       const status = await AsyncStorage.getItem("onboardingComplete");
       setIsOnboardingComplete(status === "true");
     };
-
     checkOnboardingStatus();
   }, []);
 
-  // Hide SplashScreen once fonts and onboarding status are loaded
   useEffect(() => {
     if (fontLoaded && isOnboardingComplete !== null) {
       SplashScreen.hideAsync();
 
-      // Navigate to the onboarding screen if it's not complete
       if (!isOnboardingComplete) {
-        router.replace("/(auth)/welcome"); // Ensure you have a file named `onboarding.tsx` in your `pages` folder
+        router.replace("/(auth)/welcome");
+      } else if (isAuthenticated) {
+        router.replace("/");
+      } else {
+        router.replace("/(auth)/sign-in");
       }
     }
-  }, [fontLoaded, isOnboardingComplete, fontLoadError]);
+  }, [fontLoaded, isOnboardingComplete, isAuthenticated]);
 
-  // Show a loading state until fonts and onboarding status are resolved
   if (!fontLoaded || isOnboardingComplete === null) {
     return (
       <Loader
@@ -83,37 +87,12 @@ export default function RootLayout() {
     );
   }
 
-  return <Root />;
-}
-function Root() {
-  const { isAuthenticated } = useAuthStore();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace("/");
-    } else if (!isAuthenticated) {
-      router.replace("/(auth)/sign-in");
-    }
-  }, [isAuthenticated]);
   return (
     <View style={{ flex: 1 }}>
       <StatusBar barStyle={"dark-content"} />
       <QueryClientProvider client={queryClient}>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <KeyboardAvoiderProvider>
-            <Stack
-              screenOptions={{
-                gestureEnabled: true,
-                gestureDirection: "horizontal",
-                animation: "slide_from_right",
-              }}
-            >
-              {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(root)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </KeyboardAvoiderProvider>
+          <Slot />
         </GestureHandlerRootView>
       </QueryClientProvider>
       <FlashMessage

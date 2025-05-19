@@ -3,7 +3,7 @@ import { subMinutes, formatDate } from "date-fns";
 import { AgendaProps, ShiftRosterType } from "@/types/shift";
 
 const aus_timezone = "Australia/Sydney";
-const date = new Date();
+// const date = new Date();
 
 export const formattedAusTime = (timeVal: Date) => {
   return formatInTimeZone(timeVal, aus_timezone, "yyyy-MM-dd HH:mm");
@@ -18,7 +18,7 @@ export const formattedDate = (timeVal: Date, formatStr: string) => {
 
 export function getActivityStatus(activity: AgendaProps) {
   const nowInAustraliaTime = formatInTimeZone(
-    date,
+    new Date(),
     aus_timezone,
     "yyyy-MM-dd'T'HH:mm:ss"
   );
@@ -55,9 +55,10 @@ export function getActivityStatus(activity: AgendaProps) {
     return "Clock-In";
   }
 }
-export function getActivityDetailStatus(activity: ShiftRosterType) {
+
+export function getActivityDetailStatus(activity: ShiftRosterType, now: Date) {
   const nowInAustraliaTime = formatInTimeZone(
-    date,
+    now || new Date(),
     aus_timezone,
     "yyyy-MM-dd'T'HH:mm:ss"
   );

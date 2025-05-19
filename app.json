@@ -13,6 +13,7 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "runtimeVersion": "1.0.0",
     "ios": {
       "infoPlist": {
         "UIViewControllerBasedStatusBarAppearance": true,
@@ -45,7 +46,7 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.tobby95.pmaxapp",
-      "runtimeVersion": "1.0.0"
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",

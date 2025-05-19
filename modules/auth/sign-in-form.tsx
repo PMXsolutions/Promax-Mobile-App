@@ -14,7 +14,6 @@ import { AuthService } from "@/services/auth";
 import { FormInput, FormPasswordInput } from "@/components/wrapper";
 import Checkbox from "@/components/shared/checkbox";
 import { Alert } from "react-native";
-import Text from "@/components/shared/text";
 
 const SignInForm = () => {
   const [loading, setLoading] = useState(false);
@@ -36,17 +35,16 @@ const SignInForm = () => {
         if (userProfile?.role === "Staff") {
           authstore.login(userProfile, staffProfile, accessToken);
           router.push("/(root)/(tabs)");
-          showMessage({
-            message: `Welcome back ${userProfile?.firstName}`,
-            type: "success",
-          });
+          // showMessage({
+          //   message: `Welcome back ${userProfile?.firstName}`,
+          //   type: "success",
+          // });
           setLoading(false);
         } else {
           Alert.alert(
             "Info",
             " Thank you for your interest in our mobile app. At this time, the app is exclusively available for staff members. In the meantime, you can continue to access our web platform for all your needs."
           );
-          // navigation.navigate("NotAvailable");
           setLoading(false);
         }
       }

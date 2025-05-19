@@ -37,7 +37,6 @@ const ShiftCancelForm = ({ shiftId }: { shiftId: number }) => {
         type: "success",
       });
       form.reset();
-      //   navigation.navigate("Dashboard");
       router.push("/(root)/(tabs)");
       return queryClient.invalidateQueries({
         queryKey: ["shifts"],

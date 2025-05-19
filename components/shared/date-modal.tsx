@@ -67,6 +67,7 @@ const DateModal = ({ label = "Date", onChange, value }: DatePickerProps) => {
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
+        date={value ? new Date(value) : new Date()}
         onConfirm={handleConfirm}
         onCancel={hideDatePicker}
       />

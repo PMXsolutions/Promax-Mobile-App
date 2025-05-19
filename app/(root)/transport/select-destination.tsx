@@ -1,11 +1,18 @@
-import React from "react";
-import { View, StyleSheet, Alert } from "react-native";
-import GoogleTextInput from "@/components/map/google-text-input";
+import React, { useState } from "react";
+import {
+  View,
+  Modal,
+  StyleSheet,
+  Pressable,
+  Text as RNText,
+  SafeAreaView,
+  TouchableOpacity,
+} from "react-native";
 import { THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";
+import GoogleTextInput from "@/components/map/google-text-input"; // Your custom wrapper
 import CustomButton from "@/components/shared/custom-button";
-import { KeyboardAvoiderView } from "@good-react-native/keyboard-avoider";
-
+import { MaterialIcons } from "@expo/vector-icons";
 interface Props {
   setStep: React.Dispatch<React.SetStateAction<number>>;
   destination: {
@@ -22,51 +29,12 @@ interface Props {
   >;
 }
 
-const DestinationScreen: React.FC<Props> = ({
-  destination,
-  setDestination,
-  setStep,
-}) => {
-  //   const coordinates = destination
-  //     ? [
-  //         { latitude: latlng.latitude, longitude: latlng.longitude },
-  //         { latitude: destination.lat, longitude: destination.lng },
-  //       ]
-  //     : [];
-
-  //   useEffect(() => {
-  //     if (destination) {
-  //       (mapRef.current as any)?.fitToCoordinates(coordinates, {
-  //         edgePadding: { top: 200, right: 50, bottom: 50, left: 50 },
-  //         animated: true,
-  //       });
-  //     }
-  //   }, [destination, latlng]);
-
-  // Fetch staff's initial location
-  // useEffect(() => {
-  //   const fetchLocation = async () => {
-  //     const { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== "granted") {
-  //       Alert.alert(
-  //         "Permission Denied",
-  //         "Location permission is required to continue."
-  //       );
-  //       return;
-  //     }
-  //     const location = await Location.getCurrentPositionAsync({});
-  //     setInitialLocation({
-  //       latitude: location.coords.latitude,
-  //       longitude: location.coords.longitude,
-  //     });
-  //   };
-
-  //   fetchLocation();
-  // }, []);
+const DestinationScreen = ({ destination, setDestination, setStep }: Props) => {
+  const [showModal, setShowModal] = useState(false);
 
   const handleNext = () => {
     if (!destination) {
-      Alert.alert("Error", "Please select a destination.");
+      alert("Please select a destination.");
       return;
     }
     setStep(2);
@@ -74,35 +42,91 @@ const DestinationScreen: React.FC<Props> = ({
 
   return (
     <View style={styles.container}>
-      <KeyboardAvoiderView>
-        <View>
-          <Text style={styles.inputLabel}>Select Destination </Text>
+      <Text style={styles.inputLabel}>Select Destination</Text>
 
-          <GoogleTextInput
-            icon={"map"}
-            containerStyle={{
-              backgroundColor: "#f5f5f5",
-            }}
-            textInputBackgroundColor="transparent"
-            handlePress={(location) => setDestination(location)}
-          />
-        </View>
-        <View style={{ marginTop: THEME.spacing.lg }}>
-          <CustomButton title="Next" onPress={handleNext} />
-        </View>
-      </KeyboardAvoiderView>
+      {/* Fake input field that opens the modal */}
+      <Pressable onPress={() => setShowModal(true)} style={styles.fakeInput}>
+        <MaterialIcons
+          name="map"
+          size={24}
+          color="#444"
+          style={{ marginRight: 8 }}
+        />
+        <Text style={styles.fakeInputText}>
+          {destination?.address || "Where do you want to go?"}
+        </Text>
+      </Pressable>
+
+      <View style={{ marginTop: THEME.spacing.sm }}>
+        <CustomButton title="Next" onPress={handleNext} />
+      </View>
+
+      {/* Modal with Google Autocomplete */}
+      <Modal visible={showModal} animationType="slide">
+        <SafeAreaView style={{ flex: 0.5 }}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setShowModal(false)}>
+                <RNText style={styles.cancelText}>Cancel</RNText>
+              </TouchableOpacity>
+            </View>
+
+            <GoogleTextInput
+              handlePress={(location) => {
+                setDestination(location);
+                setShowModal(false);
+              }}
+              containerStyle={{ backgroundColor: "#f5f5f5" }}
+              textInputBackgroundColor="transparent"
+            />
+          </View>
+        </SafeAreaView>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { rowGap: THEME.spacing.lg },
-  input: { borderWidth: 1, borderColor: "#ccc", padding: 8, borderRadius: 5 },
-  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: {
+    padding: THEME.spacing.sm,
+    rowGap: THEME.spacing.lg,
+  },
   inputLabel: {
     fontSize: THEME.fontSize.lg,
     fontFamily: THEME.fontFamily.semiBold,
-    marginVertical: 10,
+  },
+  fakeInput: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#fff", // or "#f5f5f5" if your input uses that
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: THEME.colors.border,
+    shadowColor: "#d4d4d4",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2, // for Android shadow
+  },
+  fakeInputText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#444",
+    flex: 1,
+  },
+  modalContent: {
+    flex: 1,
+    padding: 16,
+  },
+  modalHeader: {
+    marginBottom: 10,
+    alignItems: "flex-end",
+  },
+  cancelText: {
+    fontSize: 16,
+    color: THEME.colors.error,
   },
 });
 

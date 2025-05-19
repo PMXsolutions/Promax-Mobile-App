@@ -11,15 +11,13 @@ import PendingCard from "@/components/shift/pending-card";
 
 const ShiftPending = () => {
   const { staff } = useAuthStore();
-  const { data, isLoading, isError } = shiftQuery.useShiftRoster(
-    staff?.staffId!
-  );
+  const { data } = shiftQuery.useShiftRoster(staff?.staffId!);
 
   const filteredShifts =
     data?.filter(
       (activity) =>
         activity.status !== "Cancelled" &&
-        getActivityDetailStatus(activity) === "Present" &&
+        getActivityDetailStatus(activity, new Date()) === "Present" &&
         !activity?.isShiftReportSigned
     ) || [];
 

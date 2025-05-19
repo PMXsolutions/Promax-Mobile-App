@@ -45,6 +45,7 @@ const TransportButton = ({ shiftId }: { shiftId: number }) => {
         onPress={() =>
           router.push({
             pathname: "/(root)/transport",
+            // pathname: "/(root)/transport/real-location",
             params: { id: shiftId },
           })
         }

@@ -1,5 +1,5 @@
 import { Animated, StyleSheet, View } from "react-native";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import { THEME } from "@/constants/theme";
 import useAuthStore from "@/store/use-auth-store";
@@ -14,6 +14,16 @@ const Activity = () => {
   const { staff, user } = useAuthStore();
   const { data, isLoading, isError, refetch, isRefetching } =
     shiftQuery.useShiftRoster(staff?.staffId!);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval); // Clean up interval on unmount
+  }, []);
+
   const onRefresh = async () => {
     await refetch();
   };
@@ -21,7 +31,7 @@ const Activity = () => {
     data?.filter(
       (activity) =>
         activity.status !== "Cancelled" &&
-        getActivityDetailStatus(activity) === "Present" &&
+        getActivityDetailStatus(activity, now) === "Present" &&
         !activity?.isShiftReportSigned
     ) || [];
 
