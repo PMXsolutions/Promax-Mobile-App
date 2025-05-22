@@ -17,7 +17,7 @@ const Welcome = () => {
 
   const completeOnboarding = async () => {
     await AsyncStorage.setItem("onboardingComplete", "true");
-    router.replace("/(auth)/sign-in"); // Navigate to the main app
+    router.replace("/"); // 👈 This fixes the bug by re-running _layout.tsx logic
   };
 
   return (

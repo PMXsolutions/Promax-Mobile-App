@@ -39,7 +39,18 @@ const handleEditStaffProfile = async (
       } as unknown as Blob // Cast the object as `Blob` for TypeScript
     );
   }
-
+  // if (formInfo.signatureFile) {
+  //   formData.append(
+  //     "signatureFile",
+  //     {
+  //       uri: formInfo.signatureFile, // The URI of the image
+  //       name: "signature.png",
+  //       type: "image/png",
+  //     } as unknown as Blob // Cast the object as `Blob` for TypeScript
+  //   );
+  // }
+  console.log("FormInfowithsignature", formInfo.signatureFile);
+  // console.log(formInfo);
   for (const key in formInfo) {
     const value = formInfo[key as keyof typeof formInfo];
     if (value === null) {

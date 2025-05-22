@@ -127,24 +127,11 @@ const Profile = () => {
         title=""
       >
         <View style={{ rowGap: THEME.spacing.sm }}>
-          <View
-            style={{
-              justifyContent: "center",
-              flexDirection: "row",
-              padding: 15,
-              alignSelf: "center",
-              borderRadius: 90,
-              backgroundColor: THEME.colors.lightGray,
-              alignItems: "center",
-            }}
-          >
-            <FontAwesome6 name="door-open" size={30} />
-          </View>
           <Text size="xl" weight="bold" style={{ marginVertical: 5 }}>
             Logout?
           </Text>
           <Text
-            size="md"
+            size="base"
             weight="medium"
             style={{ marginBottom: 5, color: THEME.colors.neutral[300] }}
           >
@@ -154,18 +141,17 @@ const Profile = () => {
           <View style={[styles.buttonContainer]}>
             <Button
               containerStyle={{ flex: 1 }}
-              variant="primary"
-              onPress={() => setModalVisible(false)}
-            >
-              No
-            </Button>
-
-            <Button
-              containerStyle={{ flex: 1 }}
               variant="secondary"
               onPress={logout}
             >
               Yes
+            </Button>
+            <Button
+              containerStyle={{ flex: 1 }}
+              variant="primary"
+              onPress={() => setModalVisible(false)}
+            >
+              No
             </Button>
           </View>
         </View>

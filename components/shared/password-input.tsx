@@ -143,7 +143,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
               onChangeText={onChangeText}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              placeholderTextColor={THEME.colors.neutral[400]}
+              placeholderTextColor={THEME.colors.grayBg}
               secureTextEntry={!isPasswordVisible}
             />
             <TouchableOpacity onPress={togglePasswordVisibility}>
@@ -162,16 +162,15 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
 
 const styles = StyleSheet.create({
   outerContainer: {
-    width: "100%",
-    overflow: "hidden",
+    width: "auto",
     borderRadius: normalize(6),
   },
   container: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: normalize(6),
-    paddingHorizontal: 10,
+    borderRadius: normalize(7),
+    paddingHorizontal: THEME.spacing.sm,
     height: 48,
   },
   iconContainer: {
@@ -179,6 +178,8 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    fontFamily: THEME.fontFamily.medium,
+    fontSize: THEME.fontSize.md,
   },
   inputLabel: {
     fontSize: THEME.fontSize.md,

@@ -113,7 +113,11 @@ const SignInForm = () => {
 
         <Link
           href="/(auth)/forgot-password"
-          style={{ color: THEME.colors.primary, fontSize: 14 }}
+          style={{
+            color: THEME.colors.primary,
+            fontSize: 14,
+            fontFamily: THEME.fontFamily.medium,
+          }}
         >
           Forgot password?
         </Link>

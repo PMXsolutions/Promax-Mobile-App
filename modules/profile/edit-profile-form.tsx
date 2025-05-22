@@ -27,10 +27,24 @@ import {
 } from "@/utils/profile-image-handler";
 import DateModal from "@/components/shared/date-modal";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import SignatureComponent from "@/components/signature";
+
+// type StaffProfileWithSig = StaffProfile & {
+//   signatureFile?: {
+//     uri: string;
+//     name: string;
+//     type: string;
+//   };
+// };
 
 const EditProfileForm = ({ id }: { id: string }) => {
   const { data: staffData } = profileQuery.useFetchStaffProfile(Number(id));
   const { user } = useAuthStore();
+  const [signatureModalVisible, setSignatureModalVisible] = useState(false);
+  const [signature, setSignature] = useState<string | null>(null); // base64
+
+  const [loadingSig, setLoadingSig] = useState(false);
+
   const [form, setForm] = useState({
     imageFile: "https://placehold.co/400",
     imageUrl: "https://placehold.co/400", // Add imageUrl to form state
@@ -71,7 +85,7 @@ const EditProfileForm = ({ id }: { id: string }) => {
     }
   }, [staffData]);
   const [dateOfBirth, setDateOfBirth] = useState(staffData?.dateOfBirth || "");
-
+  const imageUri = signature ?? staffData?.signatureUrl;
   const handleInputChange = <K extends keyof StaffProfile>(
     name: K,
     value: StaffProfile[K]
@@ -101,6 +115,38 @@ const EditProfileForm = ({ id }: { id: string }) => {
       });
     }
   };
+  // const { mutate: onSubmit, isPending } = useMutation({
+  //   mutationFn: async () => {
+  //     const reqBody = {
+  //       ...staffData,
+  //       ...form,
+  //       dateOfBirth: dateOfBirth,
+  //     };
+  //     return profileService.handleEditStaffProfile(
+  //       Number(staffData?.staffId),
+  //       user?.userId as string,
+  //       reqBody as StaffProfile
+  //     ); // Ensure this API call works
+  //   },
+  //   onSuccess: ({ data }) => {
+  //     showMessage({
+  //       message: data?.message,
+  //       type: "success",
+  //     });
+
+  //     router.back();
+  //     return queryClient.invalidateQueries({
+  //       queryKey: ["staff", { id: staffData?.staffId }],
+  //     });
+  //   },
+
+  //   onError: (error: any) => {
+  //     showMessage({
+  //       message: error.response?.data?.message,
+  //       type: "danger",
+  //     });
+  //   },
+  // });
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
       const reqBody = {
@@ -108,12 +154,29 @@ const EditProfileForm = ({ id }: { id: string }) => {
         ...form,
         dateOfBirth: dateOfBirth,
       };
+
+      // If there's a new signature captured (as base64)
+      if (signature && signature.startsWith("data:image")) {
+        const sigBlob = await fetch(signature).then((res) => res.blob());
+
+        // Manually add the signature blob to reqBody
+        // Even though it's not typed in StaffProfile, we'll inject it
+        // (reqBody as StaffProfile).signatureFile = {
+        //   uri: signature,
+        //   name: "signature.png",
+        //   type: "image/png",
+        // };
+        console.log(sigBlob);
+        handleInputChange("signatureFile", signature);
+      }
+
       return profileService.handleEditStaffProfile(
         Number(staffData?.staffId),
         user?.userId as string,
         reqBody as StaffProfile
-      ); // Ensure this API call works
+      );
     },
+
     onSuccess: ({ data }) => {
       showMessage({
         message: data?.message,
@@ -267,6 +330,47 @@ const EditProfileForm = ({ id }: { id: string }) => {
               textAlign="left"
               placeholder="Type here..."
             />
+
+            <View style={styles.signatureSection}>
+              {loadingSig && <Text>Uploading signature...</Text>}
+
+              {!staffData?.signatureUrl && !signature && (
+                <TouchableOpacity
+                  onPress={() => setSignatureModalVisible(true)}
+                  style={styles.addButton}
+                >
+                  <Text style={styles.addButtonText}>Add Signature</Text>
+                </TouchableOpacity>
+              )}
+
+              {(staffData?.signatureUrl || signature) && (
+                <>
+                  <View style={styles.labelRow}>
+                    <Text style={styles.signatureLabel} weight="semiBold">
+                      Signature
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setSignatureModalVisible(true)}
+                      style={styles.editTag}
+                    >
+                      <Text style={styles.editTagText}>Edit</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <Image
+                    source={{ uri: signature ?? staffData?.signatureUrl! }}
+                    style={styles.signatureImage}
+                  />
+                </>
+              )}
+
+              <SignatureComponent
+                visible={signatureModalVisible}
+                onClose={() => setSignatureModalVisible(false)}
+                onSave={(sig) => setSignature(sig)}
+              />
+            </View>
+
             <View style={{ marginBottom: 16 }}>
               <CustomButton
                 title="Save Changes"
@@ -326,5 +430,51 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: THEME.spacing.md,
     paddingVertical: THEME.spacing.md,
+  },
+  signatureSection: {
+    marginTop: 12,
+  },
+  addButton: {
+    backgroundColor: "#3B82F6", // blue
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  labelRow: {
+    flexDirection: "row",
+    gap: 20,
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  signatureLabel: {
+    fontSize: 16,
+  },
+  editTag: {
+    backgroundColor: "#FACC15", // yellow
+    paddingVertical: 4,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  editTagText: {
+    fontSize: 14,
+    color: "#000",
+    fontWeight: "500",
+  },
+  signatureImage: {
+    width: 140,
+    paddingHorizontal: 10,
+    height: 80,
+    resizeMode: "contain",
+    borderRadius: 6,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    backgroundColor: "#f4f4f4",
   },
 });

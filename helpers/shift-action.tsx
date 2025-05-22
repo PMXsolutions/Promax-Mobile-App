@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import React from "react";
 import { getActivityDetailStatus } from "./shift-service";
 import { ShiftRosterType } from "@/types/shift";
@@ -53,7 +53,7 @@ const ShiftAction = ({
                     },
                   ]}
                 >
-                  ⏳ Not Started
+                  Not Started
                 </Text>
               </View>
               <CustomButton
@@ -73,6 +73,12 @@ const ShiftAction = ({
           ) : getActivityDetailStatus(activity, now) === "Clock-In" ? (
             <View style={styles.footer}>
               <CustomButton
+                onPress={clockIn}
+                disabled={clockInPending}
+                loading={clockInPending}
+                title="Clock In"
+              />
+              <CustomButton
                 bgVariant="light"
                 onPress={() =>
                   router.push({
@@ -84,12 +90,6 @@ const ShiftAction = ({
                 }
                 title="Request to Cancel Shift"
                 textVariant="primary"
-              />
-              <CustomButton
-                onPress={clockIn}
-                disabled={clockInPending}
-                loading={clockInPending}
-                title="🕒 Start Shift"
               />
             </View>
           ) : (
@@ -139,7 +139,7 @@ const ShiftAction = ({
                   {getActivityDetailStatus(activity, now) === "Absent"
                     ? "Absent"
                     : getActivityDetailStatus(activity, now) === "Present"
-                    ? "✅ Shift Completed"
+                    ? "Shift Completed"
                     : getActivityDetailStatus(activity, now)}
                 </Text>
               </View>
@@ -158,7 +158,7 @@ const ShiftAction = ({
                             },
                           })
                         }
-                        title="✏️ Fill Shift Report"
+                        title="Fill Shift Report"
                       />
                     </View>
                   )}
@@ -176,7 +176,7 @@ const ShiftAction = ({
                             },
                           })
                         }
-                        title="✏️ Edit Shift Report"
+                        title="Edit Shift Report"
                         textVariant="primary"
                       />
 
@@ -184,7 +184,7 @@ const ShiftAction = ({
                         onPress={() => clockOut()}
                         disabled={clockOutPending}
                         loading={clockOutPending}
-                        title="🔚 End Shift"
+                        title="Clock Out"
                       />
                     </View>
                   )}

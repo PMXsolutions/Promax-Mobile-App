@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Slot, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DancingScript_400Regular } from "@expo-google-fonts/dancing-script";
 import {
   useFonts,
   Inter_100Thin,
@@ -25,6 +26,7 @@ import useAuthStore from "@/store/use-auth-store";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
 import usePushNotifications from "@/hooks/usePushNotification";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -38,10 +40,10 @@ export default function RootLayout() {
   >(null);
 
   const { isAuthenticated, user } = useAuthStore();
-  const pushToken = usePushNotifications(
-    user?.userId ?? "",
-    user?.companyId ?? 0
-  );
+  // const pushToken = usePushNotifications(
+  //   user?.userId ?? "",
+  //   user?.companyId ?? 0
+  // );
 
   const [fontLoaded, fontLoadError] = useFonts({
     Inter_100Thin,
@@ -53,6 +55,7 @@ export default function RootLayout() {
     Inter_700Bold,
     Inter_800ExtraBold,
     Inter_900Black,
+    DancingScript_400Regular,
   });
 
   useEffect(() => {
@@ -92,7 +95,9 @@ export default function RootLayout() {
       <StatusBar barStyle={"dark-content"} />
       <QueryClientProvider client={queryClient}>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <Slot />
+          <BottomSheetModalProvider>
+            <Slot />
+          </BottomSheetModalProvider>
         </GestureHandlerRootView>
       </QueryClientProvider>
       <FlashMessage

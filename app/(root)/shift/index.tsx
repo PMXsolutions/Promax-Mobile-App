@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet } from "react-native";
-import React, { useEffect, useState } from "react";
+import { Button } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
@@ -13,10 +13,12 @@ import useClockIn from "@/hooks/queries/shift/clock-in";
 import { useClockOut } from "@/hooks/queries/shift/clock-out";
 import ShiftAction from "@/helpers/shift-action";
 import useAuthStore from "@/store/use-auth-store";
-import ShiftMessage from "@/components/shift/shift-message";
 import TransportButton from "@/components/shift/transport-button";
-import ModalPop from "@/components/shared/modal";
 import MiniLoader from "@/components/shared/mini-loader";
+import ShiftMessage from "@/components/shift/shift-message";
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CustomBackdrop from "@/components/ui/custom-backdrop";
 
 const ShiftDetail = () => {
   const { user } = useAuthStore();
@@ -42,6 +44,26 @@ const ShiftDetail = () => {
     user?.userId as string,
     shift?.shiftRosterId!
   );
+
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const insets = useSafeAreaInsets(); // for proper padding
+
+  const openModal = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+
+  const closeModal = useCallback(() => {
+    bottomSheetModalRef.current?.dismiss();
+    setModalVisible(false); // also reset original modal flag
+  }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (modalVisible) {
+        openModal();
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [modalVisible]);
 
   const shiftActivities = shift?.activities.split(", ");
   // Live time tracking state
@@ -76,12 +98,14 @@ const ShiftDetail = () => {
       {shift && getActivityDetailStatus(shift, now) === "Shift In progress" && (
         <ProgressBanner shiftId={shift.shiftRosterId} />
       )}
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <ShiftDetailContent shift={shift!} />
-      </ScrollView>
+
+      {/* <Button title="Try me " onPress={openModal} /> */}
+      <ShiftDetailContent
+        shift={shift!}
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
+
       {shift && (
         <ShiftAction
           clockIn={handleClock}
@@ -103,27 +127,28 @@ const ShiftDetail = () => {
           )}
       </>
       {/* <>{shift && <TransportButton shiftId={shift?.shiftRosterId!} />}</> */}
-      <ModalPop
-        modalVisible={modalVisible}
-        closeModal={() => setModalVisible(false)}
-        title={`Good Job, ${shift?.staff?.firstName}`}
+
+      <BottomSheetModal
+        snapPoints={["50%"]}
+        index={0}
+        ref={bottomSheetModalRef}
+        backdropComponent={(props) => <CustomBackdrop {...props} />}
+        backgroundStyle={{
+          borderRadius: 10,
+          backgroundColor: THEME.colors.white,
+        }}
+        handleIndicatorStyle={{
+          backgroundColor: THEME.colors.primary,
+        }}
       >
-        <ShiftMessage
-          shift={shift!}
-          closeModal={() => setModalVisible(false)}
-        />
-      </ModalPop>
+        <BottomSheetView
+          style={{ paddingBottom: insets.bottom + 30, paddingHorizontal: 20 }}
+        >
+          <ShiftMessage shift={shift!} closeModal={closeModal} />
+        </BottomSheetView>
+      </BottomSheetModal>
     </ScreenWrapper>
   );
 };
 
 export default ShiftDetail;
-
-const styles = StyleSheet.create({
-  content: {
-    // rowGap: THEME.spacing.lg,
-    backgroundColor: THEME.colors.white,
-    paddingHorizontal: THEME.spacing.md,
-    // marginTop: 10,
-  },
-});
