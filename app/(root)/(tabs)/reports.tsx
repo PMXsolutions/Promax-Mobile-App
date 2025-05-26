@@ -16,6 +16,7 @@ import EmptyData from "@/components/shared/empty-data";
 import Text from "@/components/shared/text";
 import Search from "@/components/shared/search-bar";
 import MiniLoader from "@/components/shared/mini-loader";
+import ErrorState from "@/components/shared/error-state";
 
 const Report = () => {
   const { staff } = useAuthStore();
@@ -65,9 +66,6 @@ const Report = () => {
     extrapolate: "clamp",
   });
 
-  if (error) {
-    return <Text>Error fetching data</Text>;
-  }
   return (
     <ScreenWrapper
       statusBgColor={THEME.colors.brand}
@@ -98,45 +96,55 @@ const Report = () => {
             onSearch={handleSearch}
           />
         </View>
-        {reportData?.length > 0 && (
-          <FlatList
-            data={reportData}
-            keyExtractor={(item) => item.shiftReportId.toString()}
-            renderItem={({ item }) => <ShiftReportCard item={item} />}
-            contentContainerStyle={styles.content}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefetching}
-                progressBackgroundColor={"#fff"}
-                colors={[THEME.colors.primary]}
-                onRefresh={onRefresh}
-              />
-            }
+        {error ? (
+          <ErrorState
+            message="Unable to load shift reports."
+            onRetry={onRefresh}
+            icon="file-alert-outline" // Or any icon you want
           />
-        )}
+        ) : (
+          <>
+            {reportData?.length > 0 && (
+              <FlatList
+                data={reportData}
+                keyExtractor={(item) => item.shiftReportId.toString()}
+                renderItem={({ item }) => <ShiftReportCard item={item} />}
+                contentContainerStyle={styles.content}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isRefetching}
+                    progressBackgroundColor={"#fff"}
+                    colors={[THEME.colors.primary]}
+                    onRefresh={onRefresh}
+                  />
+                }
+              />
+            )}
 
-        {reportData?.length <= 0 &&
-          searchTerm.trim().length < 1 &&
-          !isLoading && <EmptyData />}
-        {reportData?.length <= 0 && searchTerm.trim().length > 0 && (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              size="lg"
-              weight="semiBold"
-              style={{
-                color: THEME.colors.grayBg,
-              }}
-            >
-              No Report found for "{searchTerm}"
-            </Text>
-          </View>
+            {reportData?.length <= 0 &&
+              searchTerm.trim().length < 1 &&
+              !isLoading && <EmptyData />}
+            {reportData?.length <= 0 && searchTerm.trim().length > 0 && (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  size="lg"
+                  weight="semiBold"
+                  style={{
+                    color: THEME.colors.grayBg,
+                  }}
+                >
+                  No Report found for "{searchTerm}"
+                </Text>
+              </View>
+            )}
+          </>
         )}
       </View>
     </ScreenWrapper>

@@ -142,3 +142,17 @@ export async function saveFile(
     await Sharing.shareAsync(uri);
   }
 }
+
+export const saveBase64AsFile = async (
+  base64String: string,
+  fileName: string
+) => {
+  const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
+
+  await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+
+  return fileUri;
+};

@@ -27,6 +27,8 @@ import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
 import usePushNotifications from "@/hooks/usePushNotification";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { NetworkProvider } from "@/context/NetworkProvider";
+import NoConnectionOverlay from "@/components/no-connection";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -93,13 +95,16 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1 }}>
       <StatusBar barStyle={"dark-content"} />
-      <QueryClientProvider client={queryClient}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <BottomSheetModalProvider>
-            <Slot />
-          </BottomSheetModalProvider>
-        </GestureHandlerRootView>
-      </QueryClientProvider>
+      <NetworkProvider>
+        <QueryClientProvider client={queryClient}>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <BottomSheetModalProvider>
+              <Slot />
+              <NoConnectionOverlay />
+            </BottomSheetModalProvider>
+          </GestureHandlerRootView>
+        </QueryClientProvider>
+      </NetworkProvider>
       <FlashMessage
         position={Platform.OS === "ios" ? "top" : "bottom"}
         floating={true}

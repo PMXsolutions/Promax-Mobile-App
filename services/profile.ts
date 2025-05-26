@@ -1,6 +1,8 @@
 import { FormEditType, FormSubmitType } from "@/hooks/mutation/availability";
 import axiosInstance from "@/libs/axiosInstance";
 import { StaffProfile } from "@/types/auth";
+import { saveBase64AsFile } from "@/utils/file-utils";
+import { Platform } from "react-native";
 
 const fetchStaffProfile = async (staffId: number) => {
   try {
@@ -39,17 +41,40 @@ const handleEditStaffProfile = async (
       } as unknown as Blob // Cast the object as `Blob` for TypeScript
     );
   }
-  // if (formInfo.signatureFile) {
-  //   formData.append(
-  //     "signatureFile",
-  //     {
-  //       uri: formInfo.signatureFile, // The URI of the image
-  //       name: "signature.png",
-  //       type: "image/png",
-  //     } as unknown as Blob // Cast the object as `Blob` for TypeScript
-  //   );
+
+  // if (
+  //   formInfo.signatureFile &&
+  //   formInfo.signatureFile.startsWith("data:image")
+  // ) {
+  //   const res = await fetch(formInfo.signatureFile);
+  //   const blob = await res.blob();
+
+  //   const file = {
+  //     uri: formInfo.signatureFile,
+  //     name: "signature.png",
+  //     type: "image/png",
+  //   };
+
+  //   formData.append("signatureFile", file as unknown as Blob);
   // }
-  console.log("FormInfowithsignature", formInfo.signatureFile);
+  if (
+    formInfo.signatureFile &&
+    formInfo.signatureFile.startsWith("data:image")
+  ) {
+    let fileUri = formInfo.signatureFile;
+
+    if (Platform.OS === "android") {
+      fileUri = await saveBase64AsFile(formInfo.signatureFile, "signature.png");
+    }
+
+    const file = {
+      uri: fileUri,
+      name: "signature.png",
+      type: "image/png",
+    };
+
+    formData.append("signatureFile", file as any);
+  }
   // console.log(formInfo);
   for (const key in formInfo) {
     const value = formInfo[key as keyof typeof formInfo];

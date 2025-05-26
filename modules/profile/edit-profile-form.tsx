@@ -115,60 +115,18 @@ const EditProfileForm = ({ id }: { id: string }) => {
       });
     }
   };
-  // const { mutate: onSubmit, isPending } = useMutation({
-  //   mutationFn: async () => {
-  //     const reqBody = {
-  //       ...staffData,
-  //       ...form,
-  //       dateOfBirth: dateOfBirth,
-  //     };
-  //     return profileService.handleEditStaffProfile(
-  //       Number(staffData?.staffId),
-  //       user?.userId as string,
-  //       reqBody as StaffProfile
-  //     ); // Ensure this API call works
-  //   },
-  //   onSuccess: ({ data }) => {
-  //     showMessage({
-  //       message: data?.message,
-  //       type: "success",
-  //     });
 
-  //     router.back();
-  //     return queryClient.invalidateQueries({
-  //       queryKey: ["staff", { id: staffData?.staffId }],
-  //     });
-  //   },
-
-  //   onError: (error: any) => {
-  //     showMessage({
-  //       message: error.response?.data?.message,
-  //       type: "danger",
-  //     });
-  //   },
-  // });
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
+      if (signature && signature.startsWith("data:image")) {
+        handleInputChange("signatureFile", signature);
+      }
       const reqBody = {
         ...staffData,
         ...form,
         dateOfBirth: dateOfBirth,
+        signatureFile: signature ?? null, // add explicitly here
       };
-
-      // If there's a new signature captured (as base64)
-      if (signature && signature.startsWith("data:image")) {
-        const sigBlob = await fetch(signature).then((res) => res.blob());
-
-        // Manually add the signature blob to reqBody
-        // Even though it's not typed in StaffProfile, we'll inject it
-        // (reqBody as StaffProfile).signatureFile = {
-        //   uri: signature,
-        //   name: "signature.png",
-        //   type: "image/png",
-        // };
-        console.log(sigBlob);
-        handleInputChange("signatureFile", signature);
-      }
 
       return profileService.handleEditStaffProfile(
         Number(staffData?.staffId),

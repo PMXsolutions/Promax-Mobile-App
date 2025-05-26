@@ -4,7 +4,7 @@ import Signature from "react-native-signature-canvas";
 import * as ImagePicker from "expo-image-picker";
 import Modal from "react-native-modal";
 import Text from "../shared/text";
-import { captureRef } from "react-native-view-shot";
+import ViewShot, { captureRef } from "react-native-view-shot";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { THEME } from "@/constants/theme";
 import TextInput from "../shared/input";
@@ -36,6 +36,7 @@ const SignatureComponent = ({ visible, onClose, onSave }: Props) => {
       mediaTypes: ["images"],
       base64: true,
       allowsEditing: true,
+      quality: 0.6,
     });
 
     if (!result.canceled) {
@@ -72,9 +73,13 @@ const SignatureComponent = ({ visible, onClose, onSave }: Props) => {
       isVisible={visible}
       onBackdropPress={onClose}
       onBackButtonPress={onClose}
+      backdropOpacity={0.5} // 👈 Makes the backdrop dim
+      backdropColor="#000" // 👈 Dim color
     >
       <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>Signature</Text>
+        <Text style={styles.modalTitle} weight="bold">
+          Signature
+        </Text>
         <TouchableOpacity onPress={onClose}>
           <Text style={styles.closeIcon} size="3xl" weight="bold">
             ×
@@ -134,12 +139,14 @@ const SignatureComponent = ({ visible, onClose, onSave }: Props) => {
             <Signature
               ref={signatureRef}
               onOK={handleSignature}
+              minWidth={1}
+              maxWidth={1.2}
               onEmpty={() => Alert.alert("Please sign before saving.")}
               penColor="black"
-              backgroundColor="#fff"
+              //   backgroundColor="#fff"
               clearText="Clear"
               confirmText="Save"
-              descriptionText="Sign above"
+              descriptionText="Sign here"
               webStyle={`
   .m-signature-pad {
     box-shadow: none; 
@@ -188,9 +195,9 @@ const SignatureComponent = ({ visible, onClose, onSave }: Props) => {
 
             {/* Live Signature Preview */}
             {typedSignature && (
-              <View ref={typedSigRef} style={styles.previewBox}>
+              <ViewShot ref={typedSigRef} style={styles.previewBox}>
                 <Text style={styles.previewSignature}>{typedSignature}</Text>
-              </View>
+              </ViewShot>
             )}
 
             <TouchableOpacity
@@ -206,9 +213,11 @@ const SignatureComponent = ({ visible, onClose, onSave }: Props) => {
           <View style={styles.uploadContainer}>
             <TouchableOpacity
               onPress={handleUpload}
-              style={styles.purpleButton}
+              style={styles.uploadButton}
             >
-              <Text style={styles.buttonText}>Pick from Gallery</Text>
+              <Text style={[styles.buttonText, { color: "black" }]}>
+                Pick from Gallery
+              </Text>
             </TouchableOpacity>
             {uploadedImage && (
               <Image
@@ -256,21 +265,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   greenButton: {
-    backgroundColor: "#22c55e",
+    backgroundColor: THEME.colors.primary,
     marginTop: 12,
     padding: 12,
     borderRadius: 6,
     alignItems: "center",
   },
-  purpleButton: {
-    backgroundColor: "#7e22ce",
-    padding: 12,
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  cancelButton: {
-    backgroundColor: "#ef4444",
-    marginTop: 16,
+  uploadButton: {
+    backgroundColor: THEME.colors.secondary,
     padding: 12,
     borderRadius: 6,
     alignItems: "center",
@@ -278,11 +280,11 @@ const styles = StyleSheet.create({
 
   uploadContainer: {
     alignItems: "center",
-    marginTop: 10,
+    marginVertical: 20,
   },
   uploadedImage: {
     width: 200,
-    height: 100,
+    height: 200,
     marginTop: 10,
     borderRadius: 6,
   },
@@ -299,10 +301,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   saveButton: {
-    backgroundColor: "#22c55e", // green
+    backgroundColor: THEME.colors.primary,
   },
   clearButton: {
-    backgroundColor: "#ef4444", // red
+    backgroundColor: THEME.colors.error, // red
   },
   buttonText: {
     color: "#fff",
@@ -317,7 +319,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    color: "white",
   },
   closeIcon: {
     paddingHorizontal: 8,
@@ -328,13 +330,9 @@ const styles = StyleSheet.create({
     height: 100,
     justifyContent: "center",
     alignItems: "center",
-    borderColor: "#ddd",
-    borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: "#f9f9f9",
   },
   previewSignature: {
-    fontSize: 36,
+    fontSize: 40,
     fontFamily: "DancingScript_400Regular", // Make sure you've loaded the font
     color: "#333",
   },
