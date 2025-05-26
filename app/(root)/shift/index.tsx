@@ -19,6 +19,7 @@ import ShiftMessage from "@/components/shift/shift-message";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomBackdrop from "@/components/ui/custom-backdrop";
+import MapPreviewBottomSheet from "@/components/shift/map-preview-modal";
 
 const ShiftDetail = () => {
   const { user } = useAuthStore();
@@ -34,6 +35,10 @@ const ShiftDetail = () => {
     modalVisible,
     setModalVisible,
     distanceCheckLoading,
+    lastDistance,
+    setShowMapModal,
+    showMapModal,
+    staffLocation,
   } = useClockIn(
     user?.userId as string,
     shift?.shiftRosterId!,
@@ -100,11 +105,7 @@ const ShiftDetail = () => {
       )}
 
       {/* <Button title="Try me " onPress={openModal} /> */}
-      <ShiftDetailContent
-        shift={shift!}
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-      />
+      <ShiftDetailContent shift={shift!} />
 
       {shift && (
         <ShiftAction
@@ -127,6 +128,19 @@ const ShiftDetail = () => {
           )}
       </>
       {/* <>{shift && <TransportButton shiftId={shift?.shiftRosterId!} />}</> */}
+      {staffLocation && (
+        <MapPreviewBottomSheet
+          visible={showMapModal}
+          onClose={() => setShowMapModal(false)}
+          staffLocation={staffLocation!}
+          clientLocation={{
+            latitude: shift?.profile?.latitude!,
+            longitude: shift?.profile?.longitude!,
+          }}
+          distance={lastDistance ?? 0}
+          lightweight={false}
+        />
+      )}
 
       <BottomSheetModal
         snapPoints={["50%"]}

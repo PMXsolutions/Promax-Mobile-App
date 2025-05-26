@@ -9,18 +9,8 @@ import Text from "@/components/shared/text";
 import { FontAwesome } from "@expo/vector-icons";
 import ListDisplay from "@/components/shared/list-display";
 import { THEME } from "@/constants/theme";
-import ModalPop from "@/components/shared/modal";
-import ShiftMessage from "@/components/shift/shift-message";
 
-const ShiftDetailContent = ({
-  shift,
-  modalVisible,
-  setModalVisible,
-}: {
-  shift: ShiftRosterType;
-  setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  modalVisible: boolean;
-}) => {
+const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
   const shiftActivities = shift?.activities.split(",");
 
   return (
@@ -178,7 +168,7 @@ const styles = StyleSheet.create({
   },
   content: {
     // rowGap: THEME.spacing.lg,
-    flex: 1,
+    // flex: 1,
     backgroundColor: THEME.colors.white,
     paddingHorizontal: THEME.spacing.md,
     // marginTop: 10,

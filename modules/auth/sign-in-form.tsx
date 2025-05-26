@@ -22,6 +22,15 @@ const SignInForm = () => {
     resolver: zodResolver(signInFormSchema),
   });
   const authstore = useAuthStore();
+  // const clearAll = async () => {
+  //   try {
+  //     await AsyncStorage.clear();
+  //   } catch (e) {
+  //     // clear error
+  //   }
+
+  //   console.log("Done.");
+  // };
 
   const onSignIn = async (data: SigninFormSchema) => {
     setLoading(true);
@@ -43,7 +52,7 @@ const SignInForm = () => {
         } else {
           Alert.alert(
             "Info",
-            " Thank you for your interest in our mobile app. At this time, the app is exclusively available for staff members. In the meantime, you can continue to access our web platform for all your needs."
+            "Thank you for your interest in our mobile app. At this time, the app is exclusively available for staff members. In the meantime, you can continue to access our web platform for all your needs."
           );
           setLoading(false);
         }
@@ -53,7 +62,7 @@ const SignInForm = () => {
 
       if (error.response?.data?.message === "User Not Found") {
         showMessage({
-          message: "Email not found",
+          message: "User not found",
           type: "danger",
         });
       } else if (error.response?.data?.message === "Email Not Confirmed") {
@@ -73,7 +82,7 @@ const SignInForm = () => {
         router.navigate(`/(auth)/otp-verification/${data.email}`);
       } else if (error.response?.data?.message === "Invalid Login Attempt") {
         showMessage({
-          message: "Incorrect Password",
+          message: "Incorrect Email or Password",
           type: "danger",
         });
       } else {
@@ -131,6 +140,7 @@ const SignInForm = () => {
           disabled={loading}
         />
       </View>
+      {/* <Button onPress={clearAll}>Clear All</Button> */}
     </View>
   );
 };

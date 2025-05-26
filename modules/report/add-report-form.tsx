@@ -366,11 +366,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
               {shift?.staff?.signatureUrl && (
                 <Image
                   source={{ uri: shift?.staff.signatureUrl }}
-                  style={{
-                    height: 50,
-                    width: 140,
-                    resizeMode: "contain",
-                  }}
+                  style={styles.signatureImage}
                 />
               )}
             </View>
@@ -407,5 +403,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginVertical: THEME.spacing.md,
+  },
+  signatureImage: {
+    marginTop: 10,
+    width: 140,
+    paddingHorizontal: 10,
+    height: 80,
+    resizeMode: "contain",
+    borderRadius: 6,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    backgroundColor: "#f4f4f4",
   },
 });

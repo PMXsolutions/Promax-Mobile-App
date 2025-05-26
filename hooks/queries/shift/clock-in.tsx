@@ -7,10 +7,20 @@ import { ShiftRosterService } from "@/services/shift";
 import { showMessage } from "react-native-flash-message";
 import { isAxiosError } from "axios";
 
+type ClockInCheckResult =
+  | { success: true; distance: number }
+  | {
+      success: false;
+      errorType: "NO_CLIENT_LOCATION" | "OUT_OF_RANGE";
+      distance?: number;
+      message: string;
+    };
+
 interface StaffLocationProps {
   latitude: number;
   longitude: number;
 }
+
 const useClockIn = (
   userId: string,
   shiftRosterId: number,
@@ -18,36 +28,54 @@ const useClockIn = (
   clientLng: number
 ) => {
   const queryClient = useQueryClient();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [distanceCheckLoading, setDistanceCheckLoading] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [staffLocation, setStaffLocation] = useState<StaffLocationProps | null>(
+    null
+  );
+  const [lastDistance, setLastDistance] = useState<number | null>(null);
 
-  // Get the current location of the staff
-  const getCurrentLocation = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission to access location was denied");
+  const getCurrentLocation = async (): Promise<StaffLocationProps | null> => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        showMessage({
+          message: "Location Access Denied",
+          description:
+            "We need location access to clock you in. Please enable it in settings.",
+          type: "danger",
+        });
+        return null;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      return {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+    } catch (error) {
+      showMessage({
+        message: "Unable to fetch location",
+        description: "Please ensure your GPS is enabled.",
+        type: "danger",
+      });
       return null;
     }
-
-    const location = await Location.getCurrentPositionAsync({});
-    return {
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-    };
   };
 
-  // Check if the staff can clock in based on their location
   const canClockIn = (
     staffLocation: StaffLocationProps,
     thresholdDistance = 1000
-  ) => {
-    // Set thresholdDistance to 1000 meters (1 km)
+  ): ClockInCheckResult => {
     if (!clientLat || !clientLng || clientLat === 0 || clientLng === 0) {
-      Alert.alert(
-        "Clock In Failed",
-        "Unable to read client location. Kindly contact admin to update client address."
-      );
-      return { success: false, message: "Client location unavailable" }; // Include message
+      return {
+        success: false,
+        errorType: "NO_CLIENT_LOCATION",
+        message:
+          "We couldn't retrieve the client’s location. Please contact your admin to update the client’s address.",
+      };
     }
 
     const distance = getDistance(
@@ -58,15 +86,15 @@ const useClockIn = (
     if (distance > thresholdDistance) {
       return {
         success: false,
-        message: `You are currently too far from the client’s location. Please move closer (within approximately 1 kilometer) and try clocking in again.`,
+        errorType: "OUT_OF_RANGE",
         distance,
-      }; // Notify about the distance
+        message: `You're currently ${distance} meters away from the client location. You need to be within ${thresholdDistance} meters to clock in.`,
+      };
     }
 
-    return { success: true, distance }; // Return success with distance information
+    return { success: true, distance };
   };
 
-  // Use mutation to handle the clock-in process
   const { mutate: clockIn, isPending: clockInPending } = useMutation({
     mutationFn: async (staffLocation: StaffLocationProps) => {
       return ShiftRosterService.clockIn(
@@ -74,20 +102,11 @@ const useClockIn = (
         shiftRosterId,
         staffLocation.latitude,
         staffLocation.longitude
-      ); // Ensure this API call works
+      );
     },
-
     onSuccess: ({ data }) => {
       setModalVisible(true);
-      // showMessage({
-      //   message: data.message || "You’ve clocked in and are ready to go",
-      //   description: "Have a productive shift!",
-      //   type: "success",
-      // });
-
-      return queryClient.invalidateQueries({
-        queryKey: ["shifts"],
-      });
+      return queryClient.invalidateQueries({ queryKey: ["shifts"] });
     },
     onError: (error) => {
       if (isAxiosError(error)) {
@@ -100,27 +119,38 @@ const useClockIn = (
     },
   });
 
-  // Function to initiate the clock-in process
   const handleClock = async () => {
-    setDistanceCheckLoading(true); // Start distance check loading state
+    setDistanceCheckLoading(true);
 
-    const staffLocation = await getCurrentLocation();
-
-    if (!staffLocation) {
-      setDistanceCheckLoading(false); // Stop loading if location is not available
+    const location = await getCurrentLocation();
+    if (!location) {
+      setDistanceCheckLoading(false);
       return;
     }
 
-    const checkResult = canClockIn(staffLocation);
+    setStaffLocation(location);
+
+    const checkResult = canClockIn(location);
+    setLastDistance(checkResult.distance ?? null);
 
     if (!checkResult.success) {
-      setDistanceCheckLoading(false); // Stop loading if clock-in is not allowed
-      Alert.alert("Clock In Error", checkResult.message);
-      return; // Return early if cannot clock in
+      setDistanceCheckLoading(false);
+
+      if (checkResult.errorType === "NO_CLIENT_LOCATION") {
+        Alert.alert("Clock-In Failed", checkResult.message);
+      } else if (checkResult.errorType === "OUT_OF_RANGE") {
+        Alert.alert("Too Far to Clock In", checkResult.message, [
+          { text: "Close" },
+          { text: "View Map", onPress: () => setShowMapModal(true) },
+        ]);
+      }
+
+      return;
     }
 
-    setDistanceCheckLoading(false); // Stop distance check loading state
-    clockIn(staffLocation); // Proceed with the clock-in mutation
+    // All checks passed
+    clockIn(location);
+    setDistanceCheckLoading(false);
   };
 
   return {
@@ -128,7 +158,11 @@ const useClockIn = (
     modalVisible,
     setModalVisible,
     clockInPending,
-    distanceCheckLoading, // Expose distance check loading state
+    distanceCheckLoading,
+    showMapModal,
+    setShowMapModal,
+    staffLocation,
+    lastDistance,
   };
 };
 

@@ -69,18 +69,10 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (fontLoaded && isOnboardingComplete !== null) {
+    if (fontLoaded) {
       SplashScreen.hideAsync();
-
-      if (!isOnboardingComplete) {
-        router.replace("/(auth)/welcome");
-      } else if (isAuthenticated) {
-        router.replace("/");
-      } else {
-        router.replace("/(auth)/sign-in");
-      }
     }
-  }, [fontLoaded, isOnboardingComplete, isAuthenticated]);
+  }, [fontLoaded]);
 
   if (!fontLoaded || isOnboardingComplete === null) {
     return (

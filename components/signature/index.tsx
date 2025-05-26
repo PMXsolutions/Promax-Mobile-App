@@ -139,8 +139,8 @@ const SignatureComponent = ({ visible, onClose, onSave }: Props) => {
             <Signature
               ref={signatureRef}
               onOK={handleSignature}
-              minWidth={1}
-              maxWidth={1.2}
+              //   minWidth={1}
+              //   maxWidth={1.2}
               onEmpty={() => Alert.alert("Please sign before saving.")}
               penColor="black"
               //   backgroundColor="#fff"
