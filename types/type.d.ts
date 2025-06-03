@@ -47,6 +47,7 @@ declare interface GoogleInputProps {
   icon?: keyof typeof Feather.glyphMap;
   initialLocation?: string;
   containerStyle?: StyleProp<ViewStyle>;
+  placeHolder?: string;
 
   textInputBackgroundColor?: string;
   handlePress: ({

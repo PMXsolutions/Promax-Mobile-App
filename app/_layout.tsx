@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Slot, router } from "expo-router";
+import React, { useEffect } from "react";
+import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DancingScript_400Regular } from "@expo-google-fonts/dancing-script";
 import {
   useFonts,
@@ -22,32 +21,22 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { queryClient } from "@/libs/query";
 import { Platform, StatusBar, View } from "react-native";
 import "react-native-get-random-values";
-import useAuthStore from "@/store/use-auth-store";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
-import usePushNotifications from "@/hooks/usePushNotification";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { NetworkProvider } from "@/context/NetworkProvider";
 import NoConnectionOverlay from "@/components/no-connection";
 
 SplashScreen.preventAutoHideAsync();
 
-export const unstable_settings = {
-  initialRouteName: "(root)/(tabs)",
-};
-
 export default function RootLayout() {
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState<
-    boolean | null
-  >(null);
-
-  const { isAuthenticated, user } = useAuthStore();
+  // const { isAuthenticated, user } = useAuthStore();
   // const pushToken = usePushNotifications(
   //   user?.userId ?? "",
   //   user?.companyId ?? 0
   // );
 
-  const [fontLoaded, fontLoadError] = useFonts({
+  const [fontLoaded] = useFonts({
     Inter_100Thin,
     Inter_200ExtraLight,
     Inter_300Light,
@@ -61,25 +50,17 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      const status = await AsyncStorage.getItem("onboardingComplete");
-      setIsOnboardingComplete(status === "true");
-    };
-    checkOnboardingStatus();
-  }, []);
-
-  useEffect(() => {
     if (fontLoaded) {
       SplashScreen.hideAsync();
     }
   }, [fontLoaded]);
 
-  if (!fontLoaded || isOnboardingComplete === null) {
+  if (!fontLoaded) {
     return (
       <Loader
         name="2-curves"
         color={THEME.colors.secondary}
-        title="Loading.."
+        title="Loading..."
       />
     );
   }
@@ -99,7 +80,7 @@ export default function RootLayout() {
       </NetworkProvider>
       <FlashMessage
         position={Platform.OS === "ios" ? "top" : "bottom"}
-        floating={true}
+        floating
       />
       <PortalHost />
     </View>
