@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Text,
@@ -6,8 +6,9 @@ import {
   View,
   Dimensions,
   Platform,
+  Pressable,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useNetwork } from "@/context/NetworkProvider";
 import { THEME } from "@/constants/theme";
 
@@ -16,26 +17,39 @@ const { width } = Dimensions.get("window");
 const NoConnectionToast = () => {
   const { isConnected } = useNetwork();
   const slideY = useRef(new Animated.Value(-100)).current;
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (!isConnected) {
+    if (!isConnected && !dismissed) {
       Animated.spring(slideY, {
         toValue: Platform.OS === "ios" ? 60 : 40,
         useNativeDriver: true,
       }).start();
-
-      // Auto-hide after 4 seconds
-      setTimeout(() => {
-        Animated.timing(slideY, {
-          toValue: -100,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      }, 4000);
     }
-  }, [isConnected]);
 
-  if (isConnected) return null;
+    // If connection is restored, slide out
+    if (isConnected) {
+      Animated.timing(slideY, {
+        toValue: -100,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setDismissed(false); // reset for future disconnections
+      });
+    }
+  }, [isConnected, dismissed]);
+
+  if (isConnected || dismissed) return null;
+
+  const handleDismiss = () => {
+    Animated.timing(slideY, {
+      toValue: -100,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setDismissed(true);
+    });
+  };
 
   return (
     <Animated.View
@@ -54,6 +68,9 @@ const NoConnectionToast = () => {
           style={{ marginRight: 8 }}
         />
         <Text style={styles.toastText}>No internet connection</Text>
+        <Pressable onPress={handleDismiss} style={styles.dismissBtn}>
+          <MaterialIcons name="close" size={18} color="#fff" />
+        </Pressable>
       </View>
     </Animated.View>
   );
@@ -76,7 +93,8 @@ const styles = StyleSheet.create({
   toastContent: {
     backgroundColor: THEME?.colors?.error || "#d9534f",
     borderRadius: 8,
-    padding: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "center",
@@ -85,10 +103,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
     elevation: 6,
+    maxWidth: "95%",
   },
   toastText: {
     color: "#fff",
     fontWeight: "600",
     fontSize: 15,
+    flexShrink: 1,
+  },
+  dismissBtn: {
+    marginLeft: 12,
+    padding: 4,
   },
 });

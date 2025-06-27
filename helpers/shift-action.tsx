@@ -9,6 +9,12 @@ import { AxiosResponse } from "axios";
 import CustomButton from "@/components/shared/custom-button";
 import { router } from "expo-router";
 
+type KnownStatus =
+  | "Not Started"
+  | "Absent"
+  | "Present"
+  | "Shift Completed"
+  | "Shift In progress";
 interface ShiftProps {
   activity: ShiftRosterType;
   clockInPending: boolean;
@@ -18,6 +24,88 @@ interface ShiftProps {
   now: Date;
 }
 
+// 2. Define the config object with strong typing
+const statusConfigs: Record<
+  KnownStatus,
+  {
+    bgColor: string;
+    textColor: string;
+    borderColor: string;
+    icon: string;
+  }
+> = {
+  "Not Started": {
+    bgColor: THEME.colors.secondary + "20",
+    textColor: THEME.colors.secondary,
+    borderColor: THEME.colors.secondary + "40",
+    icon: "⏰",
+  },
+  Absent: {
+    bgColor: "#fef2f2",
+    textColor: "#dc2626",
+    borderColor: "#fecaca",
+    icon: "❌",
+  },
+  Present: {
+    bgColor: "#f0fdf4",
+    textColor: "#16a34a",
+    borderColor: "#bbf7d0",
+    icon: "✅",
+  },
+  "Shift Completed": {
+    bgColor: "#f0fdf4",
+    textColor: "#16a34a",
+    borderColor: "#bbf7d0",
+    icon: "✅",
+  },
+  "Shift In progress": {
+    bgColor: "#fef3c7",
+    textColor: "#d97706",
+    borderColor: "#fed7aa",
+    icon: "🔄",
+  },
+};
+
+// 3. Type guard for KnownStatus
+function isKnownStatus(status: string): status is KnownStatus {
+  return status in statusConfigs;
+}
+
+// 4. Safely return config based on status
+export const getStatusConfig = (status: string) => {
+  if (isKnownStatus(status)) {
+    return statusConfigs[status];
+  }
+
+  // Default fallback config for unknown status
+  return {
+    bgColor: "transparent",
+    textColor: THEME.colors.black,
+    borderColor: "transparent",
+    icon: "",
+  };
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const config = getStatusConfig(status);
+
+  return (
+    <View
+      style={[
+        styles.statusBadge,
+        {
+          backgroundColor: config.bgColor,
+          borderColor: config.borderColor,
+        },
+      ]}
+    >
+      <Text style={[styles.statusText, { color: config.textColor }]}>
+        {status}
+      </Text>
+    </View>
+  );
+};
+
 const ShiftAction = ({
   activity,
   clockInPending,
@@ -26,174 +114,120 @@ const ShiftAction = ({
   clockOutPending,
   now,
 }: ShiftProps) => {
+  const status = getActivityDetailStatus(activity, now);
+
+  const navigateToCancel = () => {
+    router.push({
+      pathname: "/(root)/shift/cancel",
+      params: { id: activity?.shiftRosterId },
+    });
+  };
+
+  const navigateToReport = (isEdit = false) => {
+    router.push({
+      pathname: isEdit ? "/(root)/report" : "/(root)/report/create",
+      params: isEdit
+        ? { reportId: 0, rosterId: activity?.shiftRosterId }
+        : { rosterId: activity?.shiftRosterId },
+    });
+  };
+
+  if (!activity) return null;
+
   return (
-    <View style={styles.buttonCont}>
-      {activity && (
-        <>
-          {getActivityDetailStatus(activity, now) === "Upcoming" ? (
-            <View style={styles.footer}>
-              <View
-                style={{
-                  backgroundColor: THEME.colors.secondary + "50",
-                  borderRadius: 5,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 10,
-                  // marginBottom: 20,
-                }}
-              >
-                <Text
-                  size="base"
-                  weight="semiBold"
-                  style={[
-                    styles.cancelButtonText,
-                    {
-                      textAlign: "center",
-                      color: THEME.colors.black,
-                    },
-                  ]}
-                >
-                  Not Started
-                </Text>
-              </View>
-              <CustomButton
-                bgVariant="light"
-                onPress={() =>
-                  router.push({
-                    pathname: "/(root)/shift/cancel",
-                    params: {
-                      id: activity?.shiftRosterId,
-                    },
-                  })
-                }
-                title="Request to Cancel Shift"
-                textVariant="primary"
-              />
-            </View>
-          ) : getActivityDetailStatus(activity, now) === "Clock-In" ? (
-            <View style={styles.footer}>
-              <CustomButton
-                onPress={clockIn}
-                disabled={clockInPending}
-                loading={clockInPending}
-                title="Clock In"
-              />
-              <CustomButton
-                bgVariant="light"
-                onPress={() =>
-                  router.push({
-                    pathname: "/(root)/shift/cancel",
-                    params: {
-                      id: activity?.shiftRosterId,
-                    },
-                  })
-                }
-                title="Request to Cancel Shift"
-                textVariant="primary"
-              />
-            </View>
-          ) : (
-            <>
-              <View
-                style={{
-                  backgroundColor:
-                    getActivityDetailStatus(activity, now) === "Absent"
-                      ? "#b91c1c"
-                      : getActivityDetailStatus(activity, now) === "Present"
-                      ? "#047857"
-                      : "transparent",
-                  display:
-                    getActivityDetailStatus(activity, now) === "Absent"
-                      ? "flex"
-                      : getActivityDetailStatus(activity, now) === "Present"
-                      ? "flex"
-                      : "none",
-
-                  borderRadius: 5,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 8,
-                  marginBottom: 20,
-                }}
-              >
-                <Text
-                  style={[
-                    styles.cancelButtonText,
-                    {
-                      textAlign: "center",
-                      color:
-                        getActivityDetailStatus(activity, now) === "Absent"
-                          ? "#fff"
-                          : getActivityDetailStatus(activity, now) === "Present"
-                          ? "#fff"
-                          : "transparent",
-                      display:
-                        getActivityDetailStatus(activity, now) === "Absent"
-                          ? "flex"
-                          : getActivityDetailStatus(activity, now) === "Present"
-                          ? "flex"
-                          : "none",
-                    },
-                  ]}
-                >
-                  {getActivityDetailStatus(activity, now) === "Absent"
-                    ? "Absent"
-                    : getActivityDetailStatus(activity, now) === "Present"
-                    ? "Shift Completed"
-                    : getActivityDetailStatus(activity, now)}
-                </Text>
-              </View>
-
-              {getActivityDetailStatus(activity, now) ===
-                "Shift In progress" && (
-                <>
-                  {!activity?.isShiftReportSigned && (
-                    <View style={styles.footer}>
-                      <CustomButton
-                        onPress={() =>
-                          router.push({
-                            pathname: "/(root)/report/create",
-                            params: {
-                              rosterId: activity?.shiftRosterId,
-                            },
-                          })
-                        }
-                        title="Fill Shift Report"
-                      />
-                    </View>
-                  )}
-
-                  {activity?.isShiftReportSigned && (
-                    <View style={styles.footer}>
-                      <CustomButton
-                        bgVariant="light"
-                        onPress={() =>
-                          router.push({
-                            pathname: "/(root)/report",
-                            params: {
-                              reportId: 0,
-                              rosterId: activity?.shiftRosterId,
-                            },
-                          })
-                        }
-                        title="Edit Shift Report"
-                        textVariant="primary"
-                      />
-
-                      <CustomButton
-                        onPress={() => clockOut()}
-                        disabled={clockOutPending}
-                        loading={clockOutPending}
-                        title="Clock Out"
-                      />
-                    </View>
-                  )}
-                </>
-              )}
-            </>
-          )}
-        </>
+    <View style={styles.container}>
+      {/* Status Badge - Always visible when there's a meaningful status */}
+      {status !== "Clock-In" && (
+        <View style={styles.statusContainer}>
+          <StatusBadge
+            status={
+              status === "Present"
+                ? "Shift Completed"
+                : status === "Upcoming"
+                ? "Not Started"
+                : status
+            }
+          />
+        </View>
       )}
+
+      {/* Action Buttons */}
+      <View style={styles.actionContainer}>
+        {status === "Upcoming" && (
+          <>
+            <Text style={styles.infoText}>
+              Your shift hasn't started yet. You can request to cancel if
+              needed.
+            </Text>
+            <CustomButton
+              bgVariant="light"
+              onPress={navigateToCancel}
+              title="Request to Cancel Shift"
+              textVariant="primary"
+            />
+          </>
+        )}
+
+        {status === "Clock-In" && (
+          <>
+            <CustomButton
+              onPress={clockIn}
+              disabled={clockInPending}
+              loading={clockInPending}
+              title="Clock In"
+            />
+            <CustomButton
+              bgVariant="light"
+              onPress={navigateToCancel}
+              title="Request to Cancel Shift"
+              textVariant="primary"
+            />
+          </>
+        )}
+
+        {status === "Shift In progress" && (
+          <>
+            {!activity?.isShiftReportSigned ? (
+              <>
+                <Text style={styles.infoText}>
+                  Please fill out your shift report before clocking out.
+                </Text>
+                <CustomButton
+                  onPress={() => navigateToReport(false)}
+                  title="Fill Shift Report"
+                />
+              </>
+            ) : (
+              <>
+                <Text style={styles.infoText}>
+                  Your shift report is complete. You can now clock out or edit
+                  your report.
+                </Text>
+                <CustomButton
+                  bgVariant="light"
+                  onPress={() => navigateToReport(true)}
+                  title="Edit Shift Report"
+                  textVariant="primary"
+                />
+                <CustomButton
+                  onPress={() => clockOut()}
+                  disabled={clockOutPending}
+                  loading={clockOutPending}
+                  title="Clock Out"
+                />
+              </>
+            )}
+          </>
+        )}
+
+        {(status === "Absent" || status === "Present") && (
+          <Text style={styles.infoText}>
+            {status === "Absent"
+              ? "This shift was marked as absent. Contact your supervisor if this is incorrect."
+              : "Great job! Your shift has been completed successfully."}
+          </Text>
+        )}
+      </View>
     </View>
   );
 };
@@ -201,8 +235,45 @@ const ShiftAction = ({
 export default ShiftAction;
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 20,
+  },
+  statusContainer: {
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  statusBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 120,
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  actionContainer: {
+    gap: THEME.spacing.md,
+  },
+  infoText: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  // Legacy styles for backward compatibility
   buttonCont: {
     paddingHorizontal: 20,
+  },
+  footer: {
+    paddingHorizontal: THEME.spacing.xs,
+    paddingVertical: THEME.spacing.md,
+    gap: THEME.spacing.md,
   },
   clockInButton: {
     backgroundColor: THEME.colors.primary,
@@ -211,7 +282,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-
   clockInButtonText: {
     color: "#fff",
   },
@@ -223,11 +293,5 @@ const styles = StyleSheet.create({
     padding: 30,
     borderRadius: 10,
     alignItems: "center",
-  },
-
-  footer: {
-    paddingHorizontal: THEME.spacing.xs,
-    paddingVertical: THEME.spacing.md,
-    gap: THEME.spacing.md,
   },
 });
