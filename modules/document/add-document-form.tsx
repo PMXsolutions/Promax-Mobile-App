@@ -28,7 +28,11 @@ const AddForm = () => {
   const { user, staff } = useAuthStore();
   const [docName, setDocName] = useState("");
   const [otherDocName, setOtherDocName] = useState(""); // Separate state for "Other Name"
-  const [expiryDate, setExpiryDate] = useState(" ");
+  const [expiryDate, setExpiryDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0]; // "YYYY-MM-DD"
+  });
+
   const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
   const [selectedDocument, setSelectedDocument] =
     useState<DocumentPickerAsset | null>(null);

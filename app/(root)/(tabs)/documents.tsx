@@ -1,6 +1,8 @@
 import {
   Animated,
   FlatList,
+  Modal,
+  Pressable,
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
@@ -21,6 +23,9 @@ import EmptyData from "@/components/shared/empty-data";
 import Text from "@/components/shared/text";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { FlashList } from "@shopify/flash-list";
+import storageUtil from "@/utils/storage";
+import ErrorState from "@/components/shared/error-state";
 
 const Document = () => {
   const { staff } = useAuthStore();
@@ -29,10 +34,26 @@ const Document = () => {
     setSearchTerm(text.trim());
     // You can fetch or filter results here based on `text`
   };
+  const [isPressed, setIsPressed] = React.useState(false);
+  const [showTooltip, setShowTooltip] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkTooltip = async () => {
+      const hasSeenTooltip = await storageUtil.getItem("hasSeenUploadTooltip");
+      if (!hasSeenTooltip) {
+        setShowTooltip(true);
+      }
+    };
+    checkTooltip();
+  }, []);
+  const dismissTooltip = async () => {
+    await storageUtil.setItem("hasSeenUploadTooltip", "true");
+    setShowTooltip(false);
+  };
 
   const {
     data: documentData,
-    isError,
+    isError: error,
     isRefetching,
     refetch,
     isPending: isLoading,
@@ -133,55 +154,81 @@ const Document = () => {
             onSearch={handleSearch}
           />
         </View>
-        {docData?.length > 0 && (
-          <FlatList
-            data={docData}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => <DocumentLabel item={item} />}
-            contentContainerStyle={{ ...styles.content, paddingBottom: 30 }}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefetching}
-                progressBackgroundColor={"#fff"}
-                colors={[THEME.colors.primary]}
-                onRefresh={onRefresh}
-              />
-            }
+        {error ? (
+          <ErrorState
+            message="Unable to load shift reports."
+            onRetry={onRefresh}
+            icon="file-alert-outline" // Or any icon you want
           />
-        )}
+        ) : (
+          <>
+            {docData?.length > 0 && (
+              <FlashList
+                data={docData}
+                estimatedItemSize={80}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={({ item }) => <DocumentLabel item={item} />}
+                contentContainerStyle={{ ...styles.content, paddingBottom: 30 }}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isRefetching}
+                    progressBackgroundColor={"#fff"}
+                    colors={[THEME.colors.primary]}
+                    onRefresh={onRefresh}
+                  />
+                }
+              />
+            )}
 
-        {!isLoading &&
-          documentData &&
-          documentData?.length <= 0 &&
-          searchTerm.trim().length < 1 && <EmptyData />}
-        {docData?.length <= 0 && searchTerm.trim().length > 0 && (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              size="lg"
-              weight="semiBold"
-              style={{
-                color: THEME.colors.grayBg,
-              }}
-            >
-              No Document found for "{searchTerm}"
-            </Text>
-          </View>
+            {!isLoading &&
+              documentData &&
+              documentData?.length <= 0 &&
+              searchTerm.trim().length < 1 && <EmptyData />}
+            {docData?.length <= 0 && searchTerm.trim().length > 0 && (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  size="lg"
+                  weight="semiBold"
+                  style={{
+                    color: THEME.colors.grayBg,
+                  }}
+                >
+                  No Document found for "{searchTerm}"
+                </Text>
+              </View>
+            )}
+          </>
         )}
 
         <TouchableOpacity
           style={styles.floatingButton}
           onPress={() => router.push("/(root)/document/add-document")}
+          onPressIn={() => setIsPressed(true)}
+          onPressOut={() => setIsPressed(false)}
         >
-          <MaterialIcons name="add" size={30} color="#fff" />
+          <MaterialIcons
+            name={isPressed ? "upload-file" : "add"}
+            size={30}
+            color="#fff"
+          />
         </TouchableOpacity>
       </View>
+      <Modal visible={showTooltip} transparent animationType="fade">
+        <Pressable style={styles.tooltipOverlay} onPress={dismissTooltip}>
+          <View style={styles.tooltipBubble}>
+            <Text style={{ color: "#fff" }}>
+              Tap the + button to upload a document
+            </Text>
+          </View>
+        </Pressable>
+      </Modal>
     </ScreenWrapper>
   );
 };
@@ -214,5 +261,20 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 5,
+  },
+  tooltipOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    padding: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+  },
+  tooltipBubble: {
+    backgroundColor: "#333",
+    padding: 10,
+    borderRadius: 8,
+    maxWidth: 200,
+    marginBottom: 70, // distance above the button
+    marginRight: 10,
   },
 });

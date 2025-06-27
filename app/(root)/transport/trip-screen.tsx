@@ -7,8 +7,14 @@ import MapViewTrip from "@/components/transport/MapViewTrip";
 import TripControls from "@/components/transport/TripControls";
 import TripSummary from "@/components/transport/TripSummary";
 import { Coord } from "@/types/map";
+import { isAxiosError } from "axios";
+import { reportService } from "@/services/report";
+import { showMessage } from "react-native-flash-message";
+import { router, useLocalSearchParams } from "expo-router";
 
 export default function TripScreen() {
+  const query = useLocalSearchParams();
+
   const {
     tripState,
     route,
@@ -24,6 +30,8 @@ export default function TripScreen() {
     getTripDuration,
     initialPosition,
   } = useTripTracker();
+
+  const id = query.id as unknown as string;
 
   const [showSummary, setShowSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -119,11 +127,18 @@ export default function TripScreen() {
         endTime: new Date(),
       };
 
-      console.log("Submit payload to backend:", tripData);
-
+      // console.log("Submit payload to backend:", tripData);
+      const data = await reportService.fetchStaffKm(
+        Number(id),
+        0,
+        tripData.distance
+      );
+      showMessage({
+        message: data.message,
+        type: "success",
+      });
       // TODO: Replace with actual API call
       // await submitTripToAPI(tripData);
-
       // Reset trip state after successful submission
       resetTrip();
       setShowSummary(false);
@@ -131,10 +146,17 @@ export default function TripScreen() {
       Alert.alert("Trip Saved", "Your trip has been saved successfully!", [
         { text: "OK" },
       ]);
-    } catch (error) {
-      Alert.alert("Error", "Failed to save trip. Please try again.", [
-        { text: "OK" },
-      ]);
+    } catch (error: unknown) {
+      if (isAxiosError(error)) {
+        showMessage({
+          message: error.response?.data?.message,
+          type: "danger",
+        });
+      } else {
+        Alert.alert("Error", "Failed to save trip. Please try again.", [
+          { text: "OK" },
+        ]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -176,16 +198,10 @@ export default function TripScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Search Input */}
       <GoogleTextInput
         icon="map-pin"
         handlePress={handleDestinationSelect}
-        containerStyle={[
-          styles.input,
-          { top: insets.top + 10 }, // Adjust for safe area
-        ]}
-
-        // placeholder="Where do you want to go?"
+        containerStyle={[styles.input, { top: insets.top + 10 }]}
       />
 
       {/* Map */}

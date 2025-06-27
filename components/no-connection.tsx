@@ -1,49 +1,37 @@
 import React, { useEffect, useRef } from "react";
 import {
-  View,
+  Animated,
   Text,
   StyleSheet,
-  Animated,
+  View,
   Dimensions,
-  Image,
+  Platform,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { THEME } from "@/constants/theme"; // Optional: your color palette
 import { useNetwork } from "@/context/NetworkProvider";
+import { THEME } from "@/constants/theme";
 
-const { height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
-const NoConnectionOverlay = () => {
+const NoConnectionToast = () => {
   const { isConnected } = useNetwork();
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(-height)).current;
+  const slideY = useRef(new Animated.Value(-100)).current;
 
   useEffect(() => {
     if (!isConnected) {
-      Animated.parallel([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(opacity, {
-          toValue: 0,
+      Animated.spring(slideY, {
+        toValue: Platform.OS === "ios" ? 60 : 40,
+        useNativeDriver: true,
+      }).start();
+
+      // Auto-hide after 4 seconds
+      setTimeout(() => {
+        Animated.timing(slideY, {
+          toValue: -100,
           duration: 300,
           useNativeDriver: true,
-        }),
-        Animated.timing(translateY, {
-          toValue: -height,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+        }).start();
+      }, 4000);
     }
   }, [isConnected]);
 
@@ -52,62 +40,55 @@ const NoConnectionOverlay = () => {
   return (
     <Animated.View
       style={[
-        styles.overlay,
+        styles.toastContainer,
         {
-          opacity,
-          transform: [{ translateY }],
+          transform: [{ translateY: slideY }],
         },
       ]}
     >
-      <View style={styles.card}>
+      <View style={styles.toastContent}>
         <MaterialCommunityIcons
           name="wifi-off"
-          size={64}
-          color={THEME?.colors?.grayBg || "#888"}
-          style={{ marginBottom: 20 }}
+          size={20}
+          color="#fff"
+          style={{ marginRight: 8 }}
         />
-        <Text style={styles.title}>No Internet Connection</Text>
-        <Text style={styles.message}>
-          You're offline. Please check your connection and try again.
-        </Text>
+        <Text style={styles.toastText}>No internet connection</Text>
       </View>
     </Animated.View>
   );
 };
 
-export default NoConnectionOverlay;
+export default NoConnectionToast;
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    alignItems: "center",
-    justifyContent: "center",
+  toastContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: width,
     zIndex: 9999,
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "ios" ? 50 : 30,
+    paddingBottom: 10,
+    backgroundColor: "transparent",
   },
-  card: {
-    backgroundColor: "#fff",
-    paddingVertical: 40,
-    paddingHorizontal: 25,
-    borderRadius: 16,
+  toastContent: {
+    backgroundColor: THEME?.colors?.error || "#d9534f",
+    borderRadius: 8,
+    padding: 12,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    width: "80%",
+    alignSelf: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 6,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 10,
-  },
-  message: {
+  toastText: {
+    color: "#fff",
+    fontWeight: "600",
     fontSize: 15,
-    color: "#555",
-    textAlign: "center",
   },
 });

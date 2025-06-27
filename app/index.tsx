@@ -1,46 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import Loader from "@/components/shared/loader";
-import useAuthStore from "@/store/use-auth-store";
 import { THEME } from "@/constants/theme";
+import storageUtil from "@/utils/storage";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 const Index = () => {
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState<
-    boolean | null
-  >(null);
-  const { isAuthenticated } = useAuthStore();
-
   useEffect(() => {
-    const handleRouting = async () => {
-      const onboarding = await AsyncStorage.getItem("onboardingComplete");
-      const isDone = onboarding === "true";
-      setIsOnboardingComplete(isDone);
+    const checkOnboarding = async () => {
+      const hasOnboarded = await storageUtil.getItem(STORAGE_KEYS.ONBOARDED);
 
-      if (!isDone) {
-        router.replace("/(auth)/welcome");
-      } else if (!isAuthenticated) {
+      if (hasOnboarded) {
         router.replace("/(auth)/sign-in");
       } else {
-        router.replace("/(root)/(tabs)"); // or "/" if you're routing to (tabs)
+        router.replace("/(auth)/welcome");
       }
     };
 
-    handleRouting();
-  }, [isAuthenticated]);
+    checkOnboarding();
+  }, []);
 
-  if (isOnboardingComplete === null) {
-    return (
-      <Loader
-        name="2-curves"
-        color={THEME.colors.secondary}
-        title="Loading..."
-      />
-    );
-  }
-
-  return <View />; // This will never be shown because router.replace() will redirect
+  // Optional loading UI
+  return (
+    <Loader name="2-curves" color={THEME.colors.secondary} title="Loading..." />
+  );
 };
 
 export default Index;

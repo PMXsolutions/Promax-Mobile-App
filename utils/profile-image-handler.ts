@@ -14,7 +14,7 @@ export const pickImageOrUseCamera = async (): Promise<string | undefined> => {
       [
         {
           text: "Cancel",
-          style: "cancel",
+          style: "destructive",
           onPress: () => resolve(undefined),
         },
         {

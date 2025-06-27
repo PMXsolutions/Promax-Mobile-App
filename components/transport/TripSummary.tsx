@@ -14,6 +14,7 @@ import { GOOGLE_MAPS_API_KEY } from "@/constants/api-key";
 import { generateStaticMapUrl } from "@/utils/generateStaticMap";
 import ScreenWrapper from "../wrapper/screen-wrapper";
 import { Coord } from "@/types/map";
+import { THEME } from "@/constants/theme";
 
 type TripSummaryProps = {
   route: Coord[];
@@ -361,7 +362,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   primaryButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: THEME.colors.primary,
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

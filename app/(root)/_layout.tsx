@@ -1,31 +1,32 @@
+import AuthWrapper from "@/components/wrapper/auth-wrapper";
 import { Stack } from "expo-router";
 
 const Layout = () => {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        gestureEnabled: true,
-        gestureDirection: "horizontal",
-        animation: "slide_from_right",
-      }}
-    >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      {/* <Stack.Screen name="find-ride" options={{ headerShown: false }} /> */}
-      {/* <Stack.Screen
+    <AuthWrapper mode="protected">
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          gestureEnabled: true,
+          gestureDirection: "horizontal",
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* <Stack.Screen name="find-ride" options={{ headerShown: false }} /> */}
+        {/* <Stack.Screen
         name="confirm-ride"
         options={{
           headerShown: false,
         }}
       /> */}
-      {/* <Stack.Screen
+        {/* <Stack.Screen
         name="book-ride"
         options={{
           headerShown: false,
         }}
       /> */}
-    </Stack>
+      </Stack>
+    </AuthWrapper>
   );
 };
-
 export default Layout;

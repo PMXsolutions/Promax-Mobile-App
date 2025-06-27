@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  Image,
-  ImageBackground,
-} from "react-native";
+import { View, StyleSheet, Image, ImageBackground } from "react-native";
 
 import { ShiftRosterType } from "@/types/shift";
 import { formattedTime } from "@/helpers/shift-service";
@@ -19,135 +13,189 @@ const PendingCard = ({ item }: { item: ShiftRosterType }) => {
   const defaultImage = require("../../assets/images/user-avatar.png");
 
   return (
-    <TouchableWithoutFeedback>
-      <View style={styles.item}>
-        <View style={styles.imageContainer}>
-          <View style={styles.avatarContainer}>
+    <View style={styles.item}>
+      <View style={styles.header}>
+        <View style={styles.avatarContainer}>
+          <ImageBackground
+            source={defaultImage}
+            style={styles.userImg}
+            imageStyle={styles.userImgStyle}
+          >
+            {item?.profile.imageUrl && (
+              <Image
+                source={{ uri: item?.profile.imageUrl }}
+                style={styles.userImg}
+                resizeMode="cover"
+              />
+            )}
+          </ImageBackground>
+          {clientArr?.length > 1 && (
             <ImageBackground
               source={defaultImage}
-              style={styles.userImg}
-              imageStyle={styles.userImg}
+              style={[styles.userImg, styles.overlayImg]}
+              imageStyle={styles.userImgStyle}
             >
-              {item?.profile.imageUrl && (
-                <Image
-                  source={{ uri: item?.profile.imageUrl }}
-                  style={styles.userImg}
-                  resizeMode="cover"
-                />
-              )}
-            </ImageBackground>
-            {clientArr?.length > 1 && (
-              <ImageBackground
+              <Image
                 source={defaultImage}
-                style={[styles.userImg, styles.overlayImg]}
-                imageStyle={styles.userImg}
-              >
-                <Image
-                  source={defaultImage}
-                  style={styles.userImg}
-                  resizeMode="cover"
-                />
-              </ImageBackground>
-            )}
-          </View>
+                style={styles.userImg}
+                resizeMode="cover"
+              />
+            </ImageBackground>
+          )}
         </View>
 
-        <View style={styles.detailsContainer}>
-          <Text weight="semiBold" size="md">
+        <View style={styles.headerText}>
+          <Text weight="semiBold" size="lg" style={styles.clientName}>
             {item?.clients}
           </Text>
-          <Text weight="medium" size="md" style={styles.subtext}>
-            Date: {formattedTime(item?.dateCreated, "d MMMM, yyyy")}
-          </Text>
-          <Text weight="medium" size="md" style={styles.subtext}>
-            Start Time: {formattedTime(item?.dateFrom, "h:mm a")}
-          </Text>
-          <Text weight="medium" size="md" style={styles.subtext}>
-            End Time: {formattedTime(item?.dateTo, "h:mm a")}
-          </Text>
-
-          <View style={styles.btnContainer}>
-            <CustomButton
-              title="Fill Report"
-              onPress={() =>
-                router.push({
-                  pathname: "/(root)/report/create",
-                  params: {
-                    rosterId: item?.shiftRosterId,
-                  },
-                })
-              }
-            />
+          <View style={styles.statusBadge}>
+            <Text weight="medium" size="xs" style={styles.statusText}>
+              PENDING
+            </Text>
           </View>
         </View>
       </View>
-    </TouchableWithoutFeedback>
+
+      <View style={styles.divider} />
+
+      <View style={styles.detailsSection}>
+        <View style={styles.detailRow}>
+          <Text weight="medium" size="sm" style={styles.label}>
+            Date
+          </Text>
+          <Text weight="semiBold" size="sm" style={styles.value}>
+            {formattedTime(item?.dateCreated, "d MMM, yyyy")}
+          </Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text weight="medium" size="sm" style={styles.label}>
+            Time
+          </Text>
+          <Text weight="semiBold" size="sm" style={styles.value}>
+            {formattedTime(item?.dateFrom, "h:mm a")} -{" "}
+            {formattedTime(item?.dateTo, "h:mm a")}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.actionSection}>
+        <CustomButton
+          title="Fill Report"
+          onPress={() =>
+            router.push({
+              pathname: "/(root)/report/create",
+              params: {
+                rosterId: item?.shiftRosterId,
+              },
+            })
+          }
+        />
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   item: {
-    flexDirection: "row",
-    padding: THEME.spacing.sm,
-    borderColor: THEME.colors.border,
     backgroundColor: THEME.colors.light,
-    borderRadius: 5,
+    borderRadius: 16,
+    padding: THEME.spacing.md,
+    marginVertical: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
     borderWidth: 1,
-    marginTop: 20,
-  },
-  imageContainer: {
-    marginRight: THEME.spacing.sm,
-  },
-  avatarContainer: {
-    paddingHorizontal: 5,
-    height: 50,
-    position: "relative",
-  },
-  userImg: {
-    width: 30,
-    height: 30,
-    borderRadius: 17.5,
-    overflow: "hidden",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: THEME.colors.lightGray,
-  },
-  overlayImg: {
-    position: "absolute",
-    left: 15, // Adjust this value to control the overlap
-    borderColor: "#fff", // Optional: Add a border to separate the images
-  },
-  detailsContainer: {
-    flex: 1,
-    gap: 4,
-    position: "relative",
-  },
-  statusIcon: {
-    position: "absolute",
-    top: 0,
-    right: 0,
+    borderColor: "#F3F4F6",
   },
 
-  subtext: {
-    color: "#5C5C5C",
-  },
-  btnContainer: {
+  header: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
-    gap: 4,
+    alignItems: "center",
+    marginBottom: THEME.spacing.sm,
   },
-  inProgressBadge: {
-    paddingVertical: 3,
-    paddingHorizontal: 6,
-    borderRadius: 4,
-    backgroundColor: THEME.colors.secondary,
+
+  avatarContainer: {
+    position: "relative",
+    marginRight: THEME.spacing.sm,
+  },
+
+  userImg: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: THEME.colors.lightGray,
+    borderWidth: 3,
+    borderColor: "#fff",
+  },
+
+  userImgStyle: {
+    borderRadius: 24,
+  },
+
+  overlayImg: {
+    position: "absolute",
+    right: -12,
+    top: 4,
+  },
+
+  headerText: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  clientName: {
+    color: THEME.colors.dark,
+    flex: 1,
   },
 
   statusBadge: {
-    paddingVertical: 3,
-    paddingHorizontal: 6,
-    borderRadius: 4,
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+
+  statusText: {
+    color: "#D97706",
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#F3F4F6",
+    marginVertical: THEME.spacing.sm,
+  },
+
+  detailsSection: {
+    gap: 8,
+    marginBottom: THEME.spacing.md,
+  },
+
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  label: {
+    color: "#6B7280",
+  },
+
+  value: {
+    color: THEME.colors.dark,
+  },
+
+  actionSection: {
+    // alignItems: "flex-end",
   },
 });
 

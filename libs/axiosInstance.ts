@@ -22,7 +22,7 @@ const axiosInstance = axios.create({
   baseURL:
     process.env.EXPO_PUBLIC_API_BASEURL ||
     "https://profitmax-001-site10.ctempurl.com/api",
-  timeout: 60000,
+  timeout: 30000,
 });
 
 axiosInstance.interceptors.request.use(

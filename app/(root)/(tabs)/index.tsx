@@ -1,21 +1,28 @@
 import { Animated, StyleSheet, View } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import { THEME } from "@/constants/theme";
 import useAuthStore from "@/store/use-auth-store";
 import { shiftQuery } from "@/hooks/queries/shift";
-import ShiftCalendar from "@/modules/shift/shift-calendar";
 import Header from "@/components/shared/header";
 import { getActivityDetailStatus } from "@/helpers/shift-service";
 import MiniLoader from "@/components/shared/mini-loader";
 import PendingShift from "@/components/shift/banner/pending-shift";
+import BeautifulCalendarAgenda from "@/components/shift/beatiful-shift";
+import { AgendaProps } from "@/types/shift";
+import ErrorState from "@/components/shared/error-state";
 
 const Activity = () => {
   const { staff, user } = useAuthStore();
-  const { data, isLoading, isError, refetch, isRefetching } =
-    shiftQuery.useShiftRoster(staff?.staffId!);
+  const {
+    data,
+    isLoading,
+    isError: error,
+    refetch,
+    isRefetching,
+  } = shiftQuery.useShiftRoster(staff?.staffId!);
   const [now, setNow] = useState(new Date());
-
+  const shiftData = Array.isArray(data) ? data : [];
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(new Date());
@@ -27,13 +34,12 @@ const Activity = () => {
   const onRefresh = async () => {
     await refetch();
   };
-  const filteredShifts =
-    data?.filter(
-      (activity) =>
-        activity.status !== "Cancelled" &&
-        getActivityDetailStatus(activity, now) === "Present" &&
-        !activity?.isShiftReportSigned
-    ) || [];
+  const filteredShifts = shiftData?.filter(
+    (activity) =>
+      activity.status !== "Cancelled" &&
+      getActivityDetailStatus(activity, now) === "Present" &&
+      !activity?.isShiftReportSigned
+  );
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -50,6 +56,24 @@ const Activity = () => {
   // if (isLoading) {
   //   return <Loader name="2-curves" color={THEME.colors.secondary} />;
   // }
+
+  const agendaShifts: AgendaProps[] = useMemo(() => {
+    return (shiftData || []).map((shift) => ({
+      shiftRosterId: shift.shiftRosterId,
+      staff: shift.staff.fullName,
+      staffFirstName: shift.staff.firstName,
+      staffLastName: shift.staff.middleName ?? "",
+      staffImage: shift.staff.imageUrl ?? "",
+      client: shift.clients,
+      activities: shift.activities,
+      dateFrom: new Date(shift.dateFrom),
+      dateTo: new Date(shift.dateTo),
+      status: shift.status,
+      isEnded: shift.isEnded,
+      attendance: shift.attendance,
+      image: shift.profile?.imageUrl ?? "",
+    }));
+  }, [shiftData]);
 
   return (
     <ScreenWrapper
@@ -76,11 +100,16 @@ const Activity = () => {
       {filteredShifts.length > 0 && (
         <PendingShift num={filteredShifts.length} />
       )}
+      {error && (
+        <ErrorState
+          message="Unable to load shift."
+          onRetry={onRefresh}
+          icon="file-alert-outline" // Or any icon you want
+        />
+      )}
       <View style={styles.container}>
-        <ShiftCalendar
-          isError={isError}
-          isLoading={isLoading}
-          shiftData={data || []}
+        <BeautifulCalendarAgenda
+          shiftData={agendaShifts}
           isRefetching={isRefetching}
           onRefresh={onRefresh}
         />
@@ -96,13 +125,4 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: THEME.colors.white,
   },
-  // header: {
-  //   position: "absolute",
-  //   width: "100%",
-  //   zIndex: 1,
-  //   height: 130,
-  //   alignItems: "stretch",
-  //   justifyContent: "flex-end",
-  //   gap: 20,
-  // },
 });

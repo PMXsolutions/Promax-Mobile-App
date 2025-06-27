@@ -1,9 +1,10 @@
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 
 import { Feather } from "@expo/vector-icons";
 import { GoogleInputProps } from "@/types/type";
 import { GOOGLE_MAPS_API_KEY } from "@/constants/api-key";
+import { router } from "expo-router";
 
 const GoogleTextInput = ({
   icon,
@@ -72,7 +73,7 @@ const GoogleTextInput = ({
           key: GOOGLE_MAPS_API_KEY,
           language: "en",
         }}
-        renderLeftButton={() => (
+        renderRightButton={() => (
           <View
             style={{
               justifyContent: "center",
@@ -83,6 +84,19 @@ const GoogleTextInput = ({
           >
             <Feather name={icon ? icon : "search"} size={24} />
           </View>
+        )}
+        renderLeftButton={() => (
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              width: 24,
+              height: 24,
+            }}
+          >
+            <Feather name={"arrow-left"} size={24} />
+          </TouchableOpacity>
         )}
         textInputProps={{
           placeholderTextColor: "gray",

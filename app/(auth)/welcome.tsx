@@ -8,6 +8,8 @@ import CustomButton from "@/components/shared/custom-button";
 import { THEME } from "@/constants/theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
+import storageUtil from "@/utils/storage";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 const Welcome = () => {
   const swiperRef = useRef<Swiper>(null);
@@ -16,7 +18,7 @@ const Welcome = () => {
   const isLastSlide = activeIndex === onboarding.length - 1;
 
   const completeOnboarding = async () => {
-    await AsyncStorage.setItem("onboardingComplete", "true");
+    await storageUtil.setItem(STORAGE_KEYS.ONBOARDED, "true");
     router.replace("/"); // 👈 This fixes the bug by re-running _layout.tsx logic
   };
 

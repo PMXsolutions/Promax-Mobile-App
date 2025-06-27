@@ -1,10 +1,4 @@
-import {
-  Animated,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Animated, RefreshControl, StyleSheet, View } from "react-native";
 import React, { useRef, useState } from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import { THEME } from "@/constants/theme";
@@ -17,6 +11,7 @@ import Text from "@/components/shared/text";
 import Search from "@/components/shared/search-bar";
 import MiniLoader from "@/components/shared/mini-loader";
 import ErrorState from "@/components/shared/error-state";
+import { FlashList } from "@shopify/flash-list";
 
 const Report = () => {
   const { staff } = useAuthStore();
@@ -105,12 +100,13 @@ const Report = () => {
         ) : (
           <>
             {reportData?.length > 0 && (
-              <FlatList
+              <FlashList
                 data={reportData}
                 keyExtractor={(item) => item.shiftReportId.toString()}
                 renderItem={({ item }) => <ShiftReportCard item={item} />}
                 contentContainerStyle={styles.content}
                 showsVerticalScrollIndicator={false}
+                estimatedItemSize={88}
                 refreshControl={
                   <RefreshControl
                     refreshing={isRefetching}

@@ -35,7 +35,7 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
       await downloadAndSaveDocument(
         item.documentUrl || "https://pdfobject.com/pdf/sample.pdf",
         `${item.documentName}.pdf`,
-        setStatusMessage // Pass the status updater function
+        setStatusMessage
       );
     }
     setLoading(false);
@@ -43,7 +43,7 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
 
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
-      return reportService.handleDeleteDoc(item.documentId as number); // Ensure this API call works
+      return reportService.handleDeleteDoc(item.documentId as number);
     },
     onSuccess: ({ data }) => {
       showMessage({
@@ -67,7 +67,7 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
   });
 
   const handleDocDelete = () => {
-    onSubmit(); // Should call the mutation function
+    onSubmit();
   };
 
   const aus_timezone = "Australia/Sydney";
@@ -77,49 +77,38 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
   const isExpired = item?.expirationDate! < nowInAustraliaTime;
 
   let status = item.status;
-  let statusBadgeStyle = styles.statusBadge;
-  let statusTextStyle = styles.statusText;
+  const badgeColor = isExpired
+    ? "#FEE2E2"
+    : item.status === "Rejected"
+    ? "#F3F4F6"
+    : item.status === "Pending"
+    ? "#FEF3C7"
+    : item.status === "Accepted"
+    ? "#D1FAE5"
+    : undefined;
 
-  if (isExpired) {
-    status = "Expired";
-    statusBadgeStyle = {
-      ...styles.statusBadge,
-      backgroundColor: THEME.colors.red,
-    };
-    statusTextStyle = { color: THEME.colors.white };
-  } else if (item.status === "Rejected") {
-    statusBadgeStyle = {
-      ...styles.statusBadge,
-      backgroundColor: THEME.colors.lightGray,
-    };
-    statusTextStyle = { color: THEME.colors.black };
-  } else if (item.status === "Pending") {
-    statusBadgeStyle = {
-      ...styles.statusBadge,
-      backgroundColor: THEME.colors.secondary,
-    };
-    statusTextStyle = { color: THEME.colors.black };
-  } else if (item.status === "Accepted") {
-    statusBadgeStyle = {
-      ...styles.statusBadge,
-      backgroundColor: "green",
-    };
-    statusTextStyle = { color: THEME.colors.white };
-  }
+  const textColor = isExpired
+    ? "#DC2626"
+    : item.status === "Rejected"
+    ? "#6B7280"
+    : item.status === "Pending"
+    ? "#D97706"
+    : item.status === "Accepted"
+    ? "#059669"
+    : undefined;
+
+  if (isExpired) status = "Expired";
 
   return (
     <View style={styles.wrap}>
-      <TouchableWithoutFeedback
-        onPress={onItemPress}
-        // onLongPress={() => navigation.navigate("UploadDocument")}
-      >
+      <TouchableWithoutFeedback onPress={onItemPress}>
         <View style={styles.contContainer}>
           <View style={styles.container}>
             <View style={styles.image}>
               <MaterialIcons
-                name={"description"}
-                size={25}
-                color={THEME.colors.grayBg}
+                name="description"
+                size={28}
+                color={THEME.colors.brand}
               />
             </View>
 
@@ -128,96 +117,136 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
                 weight="semiBold"
                 size="md"
                 style={styles.title}
-                numberOfLines={1}
+                numberOfLines={2}
                 ellipsizeMode="tail"
               >
                 {item.documentName}
               </Text>
-              <View style={{ flexDirection: "row" }}>
-                <View style={statusBadgeStyle}>
-                  <Text weight="regular" size="sm" style={statusTextStyle}>
-                    {status}
-                  </Text>
-                </View>
+              <View
+                style={[
+                  styles.statusBadge,
+                  badgeColor && { backgroundColor: badgeColor },
+                ]}
+              >
+                <Text
+                  weight="medium"
+                  size="sm"
+                  style={[styles.statusText, textColor && { color: textColor }]}
+                >
+                  {status}
+                </Text>
               </View>
-              {/* <Text style={styles.text}>{item.status}</Text> */}
             </View>
           </View>
-          <View style={styles.iconButton}>
+          <View style={styles.expandButton}>
+            <Text weight="medium" size="xs" style={styles.expandText}>
+              {expanded ? "Less" : "More"}
+            </Text>
             <MaterialIcons
-              name={expanded ? "keyboard-arrow-down" : "keyboard-arrow-right"}
+              name={expanded ? "keyboard-arrow-up" : "keyboard-arrow-down"}
               size={20}
               color={THEME.colors.grayBg}
             />
           </View>
         </View>
       </TouchableWithoutFeedback>
+
       <CollapsableContainer expanded={expanded}>
-        <View style={{ paddingVertical: 5, flex: 1 }}>
+        <View style={styles.expandedContent}>
           {item?.expirationDate && item?.expirationDate.length > 5 && (
-            <Text style={[styles.details, styles.text]}>
-              Date Expired:{" "}
-              {formattedTime(new Date(item.expirationDate), "d MMMM, yyyy")}
-            </Text>
+            <View style={styles.infoRow}>
+              <MaterialIcons name="schedule" size={16} color="#6B7280" />
+              <Text style={styles.infoText}>
+                Expires:{" "}
+                {formattedTime(new Date(item.expirationDate), "d MMMM, yyyy")}
+              </Text>
+            </View>
           )}
+
           {item?.rejectReason && (
-            <Text style={[styles.details, styles.text]}>
-              Reason: {item?.rejectReason}
-            </Text>
+            <View style={styles.infoRow}>
+              <MaterialIcons name="info" size={16} color="#DC2626" />
+              <Text style={styles.infoText}>Reason: {item?.rejectReason}</Text>
+            </View>
           )}
 
           {item?.documentUrl && (
-            <View style={styles.downloadContainer}>
-              <TouchableOpacity
-                onPress={handleDownload}
-                style={[
-                  styles.downloadButton,
-                  { backgroundColor: THEME.colors.black },
-                ]}
-              >
-                {loading ? (
-                  <ActivityIndicator color={THEME.colors.white} />
-                ) : (
-                  <MaterialIcons
-                    name="download"
-                    size={24}
-                    color={THEME.colors.white}
-                  />
-                )}
-              </TouchableOpacity>
-              {item?.documentId && (
+            <View style={styles.actionsContainer}>
+              <Text weight="semiBold" size="sm" style={styles.actionsTitle}>
+                What would you like to do?
+              </Text>
+
+              <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  onPress={() =>
-                    router.push(`/(root)/document/${item.documentId}`)
-                  }
-                  style={styles.downloadButton}
+                  onPress={handleDownload}
+                  style={[styles.actionButton, styles.downloadButton]}
                 >
-                  <MaterialIcons
-                    name="edit-document"
-                    size={24}
-                    color={THEME.colors.white}
-                  />
-                </TouchableOpacity>
-              )}
-              {item?.documentId && (
-                <TouchableOpacity
-                  onPress={handleDocDelete}
-                  style={[
-                    styles.downloadButton,
-                    { backgroundColor: THEME.colors.red },
-                  ]}
-                >
-                  {isPending ? (
-                    <ActivityIndicator color={THEME.colors.white} />
-                  ) : (
-                    <MaterialIcons
-                      name="delete"
-                      size={24}
+                  {loading ? (
+                    <ActivityIndicator
                       color={THEME.colors.white}
+                      size="small"
                     />
+                  ) : (
+                    <>
+                      <MaterialIcons
+                        name="download"
+                        size={20}
+                        color={THEME.colors.white}
+                      />
+                      <Text weight="medium" size="sm" style={styles.buttonText}>
+                        Download
+                      </Text>
+                    </>
                   )}
                 </TouchableOpacity>
-              )}
+
+                {item?.documentId && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push(`/(root)/document/${item.documentId}`)
+                    }
+                    style={[styles.actionButton, styles.editButton]}
+                  >
+                    <MaterialIcons
+                      name="edit"
+                      size={20}
+                      color={THEME.colors.white}
+                    />
+                    <Text weight="medium" size="sm" style={styles.buttonText}>
+                      Edit
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {item?.documentId && (
+                  <TouchableOpacity
+                    onPress={handleDocDelete}
+                    style={[styles.actionButton, styles.deleteButton]}
+                  >
+                    {isPending ? (
+                      <ActivityIndicator
+                        color={THEME.colors.white}
+                        size="small"
+                      />
+                    ) : (
+                      <>
+                        <MaterialIcons
+                          name="delete"
+                          size={20}
+                          color={THEME.colors.white}
+                        />
+                        <Text
+                          weight="medium"
+                          size="sm"
+                          style={styles.buttonText}
+                        >
+                          Delete
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           )}
         </View>
@@ -238,9 +267,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 10,
-    borderBottomWidth: 0.5,
-    borderColor: THEME.colors.lightGray,
+    padding: 16,
   },
   container: {
     flexDirection: "row",
@@ -248,58 +275,92 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   image: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-    borderRadius: 5,
+    width: 48,
+    height: 48,
+    marginRight: 12,
+    borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: THEME.colors.light,
+    backgroundColor: "#F3F4F6",
   },
-  textContainer: { justifyContent: "space-around", flex: 1, gap: 4 },
-  details: { marginHorizontal: 10, marginVertical: 3 },
+  textContainer: {
+    justifyContent: "center",
+    flex: 1,
+    gap: 6,
+  },
   title: {
-    lineHeight: 24,
-    letterSpacing: 0.2,
+    lineHeight: 20,
+    color: "#1F2937",
   },
-  text: { opacity: 0.7, fontStyle: "normal" },
-  iconButton: {
-    borderWidth: 1,
-    padding: 4,
-    borderRadius: 5,
-    borderColor: THEME.colors.lightGray,
+  expandButton: {
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  expandText: {
+    color: "#6B7280",
+    marginBottom: 2,
   },
   statusBadge: {
-    paddingVertical: 3,
-    paddingHorizontal: 6,
-    borderRadius: 4,
-    backgroundColor: "transparent",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    alignSelf: "flex-start",
   },
-  statusText: {},
-
-  actionContainer: {
+  statusText: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  expandedContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#F3F4F6",
+  },
+  infoRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    width: 150,
-    paddingHorizontal: 10,
-    backgroundColor: "#000",
-  },
-  downloadContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around", // Aligns the button to the right
-    alignItems: "center", // Vertically aligns the button
-    paddingHorizontal: 10, // Optional: Adjust spacing
-    marginTop: 5,
+    marginBottom: 8,
     gap: 8,
   },
-
-  downloadButton: {
-    width: 40,
-    aspectRatio: 1,
+  infoText: {
+    color: "#6B7280",
+    fontSize: 14,
+    flex: 1,
+  },
+  actionsContainer: {
+    marginTop: 16,
+  },
+  actionsTitle: {
+    color: "#374151",
+    marginBottom: 12,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  actionButton: {
+    flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 6,
+    minWidth: 90,
     justifyContent: "center",
-    borderRadius: 20, // Makes it a circular button
+  },
+  downloadButton: {
+    backgroundColor: THEME.colors.primary,
+  },
+  editButton: {
     backgroundColor: THEME.colors.grayBg,
+  },
+  deleteButton: {
+    backgroundColor: THEME.colors.error,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 13,
   },
 });

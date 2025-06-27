@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HapticTab } from "@/components/haptic";
+import { BlurView } from "expo-blur";
+import { StyleSheet } from "react-native";
 
 type CustomTabButtonProps = PressableProps & {
   accessibilityState?: AccessibilityState;
@@ -55,13 +57,13 @@ export default function TabLayout() {
         // tabBarButton: HapticTab,
         // tabBarBackground: TabBarBackground,
 
-        // tabBarBackground: () => (
-        //   <BlurView
-        //     tint="light"
-        //     intensity={100}
-        //     style={StyleSheet.absoluteFill}
-        //   />
-        // ),
+        tabBarBackground: () => (
+          <BlurView
+            tint="light"
+            intensity={50}
+            style={StyleSheet.absoluteFill}
+          />
+        ),
         tabBarStyle: {
           backgroundColor: "#ffffff",
           paddingTop: 5,
@@ -86,7 +88,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Shift Roster",
-          // tabBarButton: (props) => <CustomTabButton {...props} />,
+          tabBarButton: HapticTab,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "calendar-text" : "calendar-today"}
@@ -100,7 +102,7 @@ export default function TabLayout() {
         name="reports"
         options={{
           title: "Reports",
-          // tabBarButton: (props) => <CustomTabButton {...props} />,
+          tabBarButton: HapticTab,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name={
@@ -128,12 +130,12 @@ export default function TabLayout() {
                 borderWidth: 2,
                 borderColor: "#fff",
 
-                marginTop: -20, // Ensure central alignment on iOS
+                marginTop: -10, // Ensure central alignment on iOS
                 shadowColor: "#000",
                 shadowOpacity: 0.2,
                 shadowOffset: { width: 0, height: 2 },
                 shadowRadius: 4,
-                elevation: 5,
+                elevation: 4,
               }}
             >
               <FontAwesome6 name={"calendar-plus"} size={25} color={"white"} />
@@ -145,7 +147,7 @@ export default function TabLayout() {
         name="documents"
         options={{
           title: "Documents",
-          // tabBarButton: (props) => <CustomTabButton {...props} />,
+          tabBarButton: HapticTab,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "folder-open" : "folder-open-outline"}
@@ -159,7 +161,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          // tabBarButton: (props) => <CustomTabButton {...props} />,
+          tabBarButton: HapticTab,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "account" : "account-outline"}

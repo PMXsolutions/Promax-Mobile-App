@@ -84,8 +84,11 @@ const EditProfileForm = ({ id }: { id: string }) => {
       });
     }
   }, [staffData]);
-  const [dateOfBirth, setDateOfBirth] = useState(staffData?.dateOfBirth || "");
-  const imageUri = signature ?? staffData?.signatureUrl;
+  const [dateOfBirth, setDateOfBirth] = useState(() => {
+    if (staffData?.dateOfBirth) return staffData.dateOfBirth;
+    const today = new Date();
+    return today.toISOString().split("T")[0]; // "YYYY-MM-DD"
+  });
   const handleInputChange = <K extends keyof StaffProfile>(
     name: K,
     value: StaffProfile[K]

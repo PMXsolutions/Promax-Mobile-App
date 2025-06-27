@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { StaffProfileTypes, UserProfileType } from "@/types/auth";
-import tokenService from "@/helpers/token-service";
+import storageUtil from "@/utils/storage";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -33,13 +33,13 @@ const useAuthStore = create<AuthState>()(
       logout: () => {
         // Reset the state
         set({ isAuthenticated: false, user: null, token: null, staff: null });
-        tokenService.removeItem("auth-storage");
+        storageUtil.removeItem("auth-storage");
         // Optionally clear tokens on logout
       },
     }),
     {
       name: "auth-storage", // name of the item in the storage (must be unique)
-      storage: createJSONStorage(() => tokenService), // (optional) by default, 'localStorage' is used
+      storage: createJSONStorage(() => storageUtil), // (optional) by default, 'localStorage' is used
     }
   )
 );

@@ -20,6 +20,21 @@ const fetchStaffReport = async (staffId: number) => {
     throw new Error("Unable to fetch shift reports");
   }
 };
+const fetchStaffKm = async (
+  shiftId: number,
+  startKm: number,
+  endKm: number
+) => {
+  try {
+    const { data } = await axiosInstance.get(
+      `/ShiftRosters/fill_mileage?shiftId=${shiftId}&startKm=${startKm}&endKm=${endKm}`
+    );
+    return data;
+  } catch (error) {
+    throw new Error("Unable to update shift distance");
+  }
+};
+
 const fetchReportInfo = async (reportId: number, shiftId: number) => {
   try {
     const response = await axiosInstance.get(
@@ -158,4 +173,5 @@ export const reportService = {
   handleDeleteDoc,
   fetchStaffDocumentDetail,
   handleEditStaffDocument,
+  fetchStaffKm,
 };

@@ -23,6 +23,7 @@ import {
 import MiniLoader from "@/components/shared/mini-loader";
 import ModalPop from "@/components/shared/modal";
 import Button from "@/components/shared/button";
+import Constants from "expo-constants";
 
 const Profile = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -49,6 +50,8 @@ const Profile = () => {
   if (error) {
     return <Text>Error fetching data</Text>;
   }
+
+  const appVersion = Constants.expoConfig?.version;
   return (
     <ScreenWrapper
       statusBgColor={THEME.colors.brand}
@@ -120,6 +123,15 @@ const Profile = () => {
             </View>
           </TouchableWithoutFeedback>
         </ScrollView>
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 20,
+          }}
+        >
+          <Text size="md" weight="medium">{`v. ${appVersion}`}</Text>
+        </View>
       </View>
       <ModalPop
         modalVisible={modalVisible}

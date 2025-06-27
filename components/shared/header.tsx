@@ -89,9 +89,9 @@ const Header = ({ opacityTitle, translateTitle, name, image }: Props) => {
             aspectRatio: 1,
             alignItems: "center",
             justifyContent: "center",
-            borderRadius: 52,
-            // borderWidth: 1,
-            backgroundColor: THEME.colors.grayBg,
+            borderRadius: 99,
+            borderWidth: 1,
+            borderColor: THEME.colors.grayBg,
           }}
           onPress={() => router.push("/(root)/notification")}
         >
