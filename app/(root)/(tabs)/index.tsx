@@ -100,14 +100,14 @@ const Activity = () => {
       {filteredShifts.length > 0 && (
         <PendingShift num={filteredShifts.length} />
       )}
-      {error && (
-        <ErrorState
-          message="Unable to load shift."
-          onRetry={onRefresh}
-          icon="file-alert-outline" // Or any icon you want
-        />
-      )}
       <View style={styles.container}>
+        {error && (
+          <ErrorState
+            message="Unable to load shift."
+            onRetry={onRefresh}
+            icon="file-alert-outline" // Or any icon you want
+          />
+        )}
         <BeautifulCalendarAgenda
           shiftData={agendaShifts}
           isRefetching={isRefetching}

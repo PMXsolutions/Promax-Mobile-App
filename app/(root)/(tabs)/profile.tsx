@@ -24,6 +24,7 @@ import MiniLoader from "@/components/shared/mini-loader";
 import ModalPop from "@/components/shared/modal";
 import Button from "@/components/shared/button";
 import Constants from "expo-constants";
+import ErrorState from "@/components/shared/error-state";
 
 const Profile = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -44,12 +45,21 @@ const Profile = () => {
   const {
     data: staffData,
     isLoading,
-    error,
+    // error,
+    // refetch,
   } = profileQuery.useFetchStaffProfile(staff?.staffId as number);
-
-  if (error) {
-    return <Text>Error fetching data</Text>;
-  }
+  // const onRefresh = async () => {
+  //   await refetch();
+  // };
+  // if (error) {
+  //   return (
+  //     <ErrorState
+  //       message="Unable to load profile."
+  //       onRetry={onRefresh}
+  //       icon="file-alert-outline" // Or any icon you want
+  //     />
+  //   );
+  // }
 
   const appVersion = Constants.expoConfig?.version;
   return (
