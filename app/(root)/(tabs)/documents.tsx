@@ -156,7 +156,7 @@ const Document = () => {
         </View>
         {error ? (
           <ErrorState
-            message="Unable to load shift reports."
+            message="Unable to load documents."
             onRetry={onRefresh}
             icon="file-alert-outline" // Or any icon you want
           />

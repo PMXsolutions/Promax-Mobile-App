@@ -27,7 +27,7 @@ const ErrorState = ({
       <Text size="lg" weight="semiBold" style={styles.message}>
         {message}
       </Text>
-      <CustomButton title="Retry" onPress={onRetry} />
+      <CustomButton title="Retry" onPress={onRetry} bgVariant="danger" />
     </View>
   );
 };

@@ -19,7 +19,7 @@ const ChangePassword = () => {
           <Text size="2xl" weight="semiBold" style={styles.title}>
             Change Password
           </Text>
-          <Text size="md" weight="regular" style={styles.desc}>
+          <Text size="md" weight="semiBold" style={styles.subtitle}>
             Enter the 6-digit code sent to your email and create a new password.{" "}
           </Text>
         </View>
@@ -44,9 +44,8 @@ const styles = StyleSheet.create({
     marginBottom: THEME.spacing.sm,
     color: THEME.colors.dark,
   },
-  desc: {
-    lineHeight: 18,
-    color: THEME.colors.neutral[300],
+  subtitle: {
+    color: "#929292",
   },
 });
 

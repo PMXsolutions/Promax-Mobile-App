@@ -22,7 +22,7 @@ export default function Signin() {
           <View style={styles.header}>
             <TouchableOpacity
               style={{
-                backgroundColor: THEME.colors.lightGray,
+                backgroundColor: THEME.colors.light,
                 padding: 2,
                 borderRadius: 99,
                 marginBottom: 10,

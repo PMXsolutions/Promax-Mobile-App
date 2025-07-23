@@ -17,7 +17,8 @@ const ForgotPassword = () => {
           <Text size="2xl" weight="semiBold" style={styles.title}>
             Forgot Password
           </Text>
-          <Text size="md" weight="regular" style={styles.desc}>
+
+          <Text style={styles.subtitle} size="md" weight="semiBold">
             Enter the email address you used to create the account to receive
             instructions on how to reset your password
           </Text>
@@ -44,9 +45,8 @@ const styles = StyleSheet.create({
     marginBottom: THEME.spacing.sm,
     color: THEME.colors.dark,
   },
-  desc: {
-    lineHeight: 18,
-    color: THEME.colors.neutral[300],
+  subtitle: {
+    color: "#929292",
   },
 });
 

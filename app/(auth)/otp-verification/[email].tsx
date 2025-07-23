@@ -141,7 +141,7 @@ const OtpVerfication: React.FC = () => {
           <Text size="2xl" weight="semiBold" style={styles.title}>
             Verification Code
           </Text>
-          <Text size="md" weight="regular" style={styles.desc}>
+          <Text size="md" weight="semiBold" style={styles.subtitle}>
             Confirm the email sent to <Text weight="bold">{email}</Text> and
             enter the verification code. Code expires in{" "}
             <Timer
@@ -236,9 +236,8 @@ const styles = StyleSheet.create({
     marginBottom: THEME.spacing.sm,
     color: THEME.colors.dark,
   },
-  desc: {
-    lineHeight: 18,
-    color: THEME.colors.neutral[300],
+  subtitle: {
+    color: "#929292",
   },
   cell: {
     width: 45,
