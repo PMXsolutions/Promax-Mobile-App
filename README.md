@@ -1,50 +1,60 @@
-# Welcome to your Expo app 👋
+# Mobile React App for Shift Management and Invoicing
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# Overview
 
-## Get started
+Welcome to our Mobile App designed to streamline shift management, roster creation, and invoicing processes. This application is built to cater to the needs of businesses that require efficient task assignment, scheduling, and financial management for their workforce.
 
-1. Install dependencies
+# Features
 
-   ```bash
-   npm install
-   ```
+## Shift Assignment
 
-2. Start the app
+- Assign shifts to employees based on their availability and skill sets.
+- Easily view and manage assigned shifts through an intuitive user interface.
+- Receive notifications for any shift changes or updates.
 
-   ```bash
-    npx expo start
-   ```
+## Roster Creation
 
-In the output, you'll find options to open the app in a
+- Create customizable rosters tailored to your business requirements.
+- Effortlessly manage employee schedules, ensuring optimal coverage for all shifts.
+- Access comprehensive views of past and upcoming rosters for better planning and organization.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Invoicing
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Generate invoices for completed shifts and services rendered.
+- Customize invoice templates to include relevant details and branding.
+- Track payment statuses and manage billing efficiently.
 
-## Get a fresh project
+# Technologies Used
 
-When you're ready, run:
+- Frontend: Expo App, Zustand for state management.
+- Backend: .NET Core for API development, MySQL for database management.
+- Authentication: JSON Web Tokens (JWT) for secure authentication.
+- Deployment: Docker for containerization, AWS for cloud hosting.
 
-```bash
-npm run reset-project
-```
+# Installation
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+1. Clone the repository:
 
-## Learn more
+### `git clone https://github.com/your-repo-name.git`
 
-To learn more about developing your project with Expo, look at the following resources:
+2. Navigate to the project directory:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### `cd your-project-directory`
 
-## Join the community
+3. Install dependencies:
 
-Join our community of developers creating universal apps.
+### `npm install`
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+4. Start the development server:
+
+### `npm start`
+
+# Usage
+
+# Contributing
+
+- We welcome contributions from the community to enhance the functionality and usability of our application. If you'd like to contribute, please fork the repository, make your changes, and submit a pull request.
+
+# License
+
+This project is licensed under the (MIT License.)
