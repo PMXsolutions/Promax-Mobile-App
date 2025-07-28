@@ -28,6 +28,8 @@ import {
 import DateModal from "@/components/shared/date-modal";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
 import SignatureComponent from "@/components/signature";
+import * as ImagePicker from "expo-image-picker";
+import { ImageSourceModal } from "@/components/shared/image-source-modal";
 
 // type StaffProfileWithSig = StaffProfile & {
 //   signatureFile?: {
@@ -41,6 +43,8 @@ const EditProfileForm = ({ id }: { id: string }) => {
   const { data: staffData } = profileQuery.useFetchStaffProfile(Number(id));
   const { user } = useAuthStore();
   const [signatureModalVisible, setSignatureModalVisible] = useState(false);
+  const [imageSourceModalVisible, setImageSourceModalVisible] = useState(false);
+
   const [signature, setSignature] = useState<string | null>(null); // base64
 
   const [loadingSig, setLoadingSig] = useState(false);
@@ -119,6 +123,64 @@ const EditProfileForm = ({ id }: { id: string }) => {
     }
   };
 
+  const handleImageSourceSelect = async (
+    source: "camera" | "gallery" | "cancel"
+  ) => {
+    if (source === "cancel") {
+      setImageSourceModalVisible(false);
+      return;
+    }
+
+    try {
+      const permission =
+        source === "camera"
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        showMessage({
+          message: `${
+            source === "camera" ? "Camera" : "Gallery"
+          } permission required.`,
+          type: "danger",
+        });
+        return;
+      }
+
+      // ✅ Launch the picker immediately without closing the modal first
+      const result =
+        source === "camera"
+          ? await ImagePicker.launchCameraAsync({
+              mediaTypes: ["images"],
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 1,
+            })
+          : await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ["images"],
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 1,
+            });
+
+      if (!result.canceled && result.assets?.length > 0) {
+        const imageUri = result.assets[0].uri;
+        if (imageUri) {
+          handleInputChange("imageFile", imageUri);
+        }
+      }
+    } catch (error) {
+      console.log("Image Picker Error:", error);
+      showMessage({
+        message: "Failed to select image",
+        type: "danger",
+      });
+    } finally {
+      // ✅ Close modal after picker finishes
+      setImageSourceModalVisible(false);
+    }
+  };
+
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
       if (signature && signature.startsWith("data:image")) {
@@ -189,7 +251,8 @@ const EditProfileForm = ({ id }: { id: string }) => {
 
               <TouchableOpacity
                 style={styles.cameraIcon}
-                onPress={handleImagePick}
+                // onPress={handleImagePick}
+                onPress={() => setImageSourceModalVisible(true)}
               >
                 <Feather name="camera" size={28} color={THEME.colors.primary} />
               </TouchableOpacity>
@@ -342,6 +405,10 @@ const EditProfileForm = ({ id }: { id: string }) => {
           </View>
         </ScrollView>
       </KeyboardAwareWrapper>
+      <ImageSourceModal
+        visible={imageSourceModalVisible}
+        onSelect={handleImageSourceSelect}
+      />
 
       {/* <View style={styles.footer}></View> */}
     </>

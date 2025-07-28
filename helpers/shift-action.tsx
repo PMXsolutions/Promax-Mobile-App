@@ -237,6 +237,7 @@ export default ShiftAction;
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   statusContainer: {
     marginBottom: 16,

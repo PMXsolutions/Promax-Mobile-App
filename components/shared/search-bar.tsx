@@ -31,6 +31,7 @@ const Search = ({
       </View>
       <TextInput
         placeholder={placeholder}
+        placeholderTextColor={THEME.colors.grayBg}
         style={styles.searchInput}
         value={search}
         onChangeText={handleText}
@@ -65,6 +66,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingVertical: 10,
     fontSize: THEME.fontSize.md,
+    color: "#000",
   },
   closeIcon: {
     backgroundColor: THEME.colors.border,

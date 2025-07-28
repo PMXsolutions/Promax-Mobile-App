@@ -101,9 +101,9 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
               style={{
                 ...styles.section,
                 borderRadius: 5,
-                borderWidth: 1,
                 padding: 10,
                 // flex: 1,
+                borderWidth: 1,
                 borderColor: THEME.colors.lightGray,
               }}
             >
@@ -121,7 +121,7 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
           }
         />
       )}
-      {shift && (
+      {shift.appointment && (
         <ListDisplay
           iconName={"description"}
           title={"Client Appointment Request"}
@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   section: {
+    flex: 1,
     // margin: THEME.spacing.xs,
     marginTop: THEME.spacing.sm,
     width: "100%",

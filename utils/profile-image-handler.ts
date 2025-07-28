@@ -1,4 +1,5 @@
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { Alert } from "react-native";
@@ -139,18 +140,3 @@ export const convertImageToBase64 = async (fileUri: string) => {
     return null;
   }
 };
-
-// export const downloadAndSaveDocument = async () => {
-//   console.log(123);
-
-//   const url = "https://pdfobject.com/pdf/sample.pdf"; // Document URL
-//   const destination = new Directory(Paths.cache, "pdfs"); // Destination directory
-//   try {
-//     destination.create();
-//     const output = await File.downloadFileAsync(url, destination);
-//     console.log(output.exists); // true
-//     console.log(output.uri); // path to the downloaded file, e.g. '${cacheDirectory}/pdfs/sample.pdf'
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };

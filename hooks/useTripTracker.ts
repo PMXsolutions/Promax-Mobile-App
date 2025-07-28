@@ -3,6 +3,7 @@ import * as Location from "expo-location";
 import { getDistance } from "geolib";
 import { Coord } from "@/types/map";
 import { router } from "expo-router";
+import { Alert, Linking } from "react-native";
 
 export function useTripTracker() {
   const [tripState, setTripState] = useState<
@@ -49,9 +50,26 @@ export function useTripTracker() {
   }, []);
 
   const startTracking = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status, canAskAgain } =
+      await Location.requestForegroundPermissionsAsync();
+
     if (status !== "granted") {
-      console.warn("Location permission not granted");
+      if (canAskAgain) {
+        Alert.alert(
+          "Location Needed",
+          "This app requires location access to start a trip.",
+          [{ text: "OK" }]
+        );
+      } else {
+        Alert.alert(
+          "Permission Denied",
+          "Enable location permission in settings to start a trip.",
+          [
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+            { text: "Cancel" },
+          ]
+        );
+      }
       return;
     }
 

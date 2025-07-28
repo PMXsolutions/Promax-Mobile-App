@@ -17,10 +17,12 @@
     "ios": {
       "infoPlist": {
         "UIViewControllerBasedStatusBarAppearance": true,
+        "NSCameraUsageDescription": "This app needs access to your camera to take and upload pictures.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload images.",
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location.",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.promax-app",
       "config": {
         "googleMapsApiKey": "AIzaSyAtJmwd6aD38O2iZ2MdQbnyBUuj2wxPP58"

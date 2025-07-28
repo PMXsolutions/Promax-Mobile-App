@@ -28,7 +28,7 @@ import { NetworkProvider } from "@/context/NetworkProvider";
 import NoConnectionOverlay from "@/components/no-connection";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
-import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+// import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -75,9 +75,9 @@ export default function RootLayout() {
     <View style={{ flex: 1 }}>
       <StatusBar barStyle={"dark-content"} />
       <NetworkProvider>
-        <PersistQueryClientProvider
+        <QueryClientProvider
           client={queryClient}
-          persistOptions={{ persister: asyncStoragePersister }}
+          // persistOptions={{ persister: asyncStoragePersister }}
         >
           <GestureHandlerRootView style={{ flex: 1 }}>
             <BottomSheetModalProvider>
@@ -85,7 +85,7 @@ export default function RootLayout() {
               <NoConnectionOverlay />
             </BottomSheetModalProvider>
           </GestureHandlerRootView>
-        </PersistQueryClientProvider>
+        </QueryClientProvider>
       </NetworkProvider>
       <FlashMessage
         position={Platform.OS === "ios" ? "top" : "bottom"}

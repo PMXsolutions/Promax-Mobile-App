@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: THEME.fontFamily.medium,
     fontSize: THEME.fontSize.md,
+    color: "#000",
   },
   inputLabel: {
     fontSize: THEME.fontSize.md,
