@@ -120,7 +120,18 @@ const EditReportForm = ({
   });
 
   const handleFormSubmit = () => {
-    onSubmit(); // Should call the mutation function
+    const cleanedGoalProgress = form.goal_Progress.replace(/\s/g, "");
+
+    if (!form.goal_Progress || cleanedGoalProgress.length < 100) {
+      showMessage({
+        message:
+          "Please provide at least 100 characters for 'Support plan progress and activities'",
+        type: "danger",
+      });
+      return;
+    }
+
+    onSubmit(); // Call the mutation only if valid
   };
 
   return (
@@ -317,6 +328,11 @@ const EditReportForm = ({
               style={styles.inputStyle}
               textAlign="left"
             />
+            <Text style={{ textAlign: "right", fontSize: 12, color: "gray" }}>
+              {form.goal_Progress.replace(/\s/g, "").length} / 100 characters
+              (excluding spaces)
+            </Text>
+
             {/* section 5 */}
             <TextInput
               label="Provide any details of contact with family and friends:"

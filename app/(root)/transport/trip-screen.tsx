@@ -10,7 +10,8 @@ import { Coord } from "@/types/map";
 import { isAxiosError } from "axios";
 import { reportService } from "@/services/report";
 import { showMessage } from "react-native-flash-message";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import ActionSheetModal from "@/components/shared/action-sheet-modal";
 
 export default function TripScreen() {
   const query = useLocalSearchParams();
@@ -29,6 +30,8 @@ export default function TripScreen() {
     calculateDistance,
     getTripDuration,
     initialPosition,
+    // tripStart,
+    // tripEnd,
   } = useTripTracker();
 
   const id = query.id as unknown as string;
@@ -36,6 +39,47 @@ export default function TripScreen() {
   const [showSummary, setShowSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const insets = useSafeAreaInsets();
+
+  const [confirmModal, setConfirmModal] = useState<{
+    visible: boolean;
+    title: string;
+    subtitle?: string;
+    options: {
+      key: string;
+      label: string;
+      description?: string;
+      icon?: string;
+    }[];
+    onSelect: (key: string) => void;
+  }>({
+    visible: false,
+    title: "",
+    options: [],
+    onSelect: () => {},
+  });
+
+  const showConfirm = (
+    title: string,
+    subtitle: string,
+    options: {
+      key: string;
+      label: string;
+      icon?: string;
+      description?: string;
+    }[],
+    onSelect: (key: string) => void
+  ) => {
+    setConfirmModal({
+      visible: true,
+      title,
+      subtitle,
+      options,
+      onSelect: (key) => {
+        setConfirmModal((prev) => ({ ...prev, visible: false }));
+        onSelect(key);
+      },
+    });
+  };
 
   // Handle back button or app state changes during active trip
   useEffect(() => {
@@ -89,27 +133,27 @@ export default function TripScreen() {
   };
 
   const handlePause = () => {
-    Alert.alert("Pause Trip", "Are you sure you want to pause the trip?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Pause", onPress: pauseTracking },
-    ]);
+    showConfirm(
+      "Pause Trip",
+      "Are you sure you want to pause the trip?",
+      [{ key: "pause", label: "Pause", icon: "⏸️" }],
+      (key) => {
+        if (key === "pause") pauseTracking();
+      }
+    );
   };
 
-  const handleStopTrip = () => {
-    Alert.alert(
+  const handleStopTrip = async () => {
+    showConfirm(
       "Stop Trip",
       "Are you sure you want to stop the trip? This will end your current journey.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Stop",
-          style: "destructive",
-          onPress: () => {
-            stopTracking();
-            setShowSummary(true);
-          },
-        },
-      ]
+      [{ key: "stop", label: "Stop Trip", icon: "🛑" }],
+      (key) => {
+        if (key === "stop") {
+          stopTracking();
+          setShowSummary(true);
+        }
+      }
     );
   };
 
@@ -230,6 +274,13 @@ export default function TripScreen() {
           {/* You could add real-time trip info here */}
         </View>
       )}
+      <ActionSheetModal
+        visible={confirmModal.visible}
+        title={confirmModal.title}
+        subtitle={confirmModal.subtitle}
+        options={confirmModal.options}
+        onSelect={confirmModal.onSelect}
+      />
     </View>
   );
 }

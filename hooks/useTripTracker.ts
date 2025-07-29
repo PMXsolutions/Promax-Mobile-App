@@ -6,6 +6,8 @@ import { router } from "expo-router";
 import { Alert, Linking } from "react-native";
 
 export function useTripTracker() {
+  const tripEnd = useRef<Date | null>(null);
+
   const [tripState, setTripState] = useState<
     "IDLE" | "STARTED" | "PAUSED" | "STOPPED"
   >("IDLE");
@@ -140,6 +142,7 @@ export function useTripTracker() {
       watchId.current.remove();
       watchId.current = null;
     }
+    tripEnd.current = new Date(); // 🧠 Save when trip was stopped
     setTripState("STOPPED");
   };
 
@@ -149,6 +152,7 @@ export function useTripTracker() {
     setStops([]);
     setDestination(null);
     tripStart.current = null;
+    tripEnd.current = null; // 🧽 clear end time
     setTripState("IDLE");
     router.back();
   };
@@ -165,8 +169,9 @@ export function useTripTracker() {
 
   const getTripDuration = (): number => {
     if (!tripStart.current) return 0;
-    const now = tripState === "STOPPED" ? new Date() : new Date();
-    return Math.floor((now.getTime() - tripStart.current.getTime()) / 1000);
+
+    const endTime = tripEnd.current ?? new Date();
+    return Math.floor((endTime.getTime() - tripStart.current.getTime()) / 1000);
   };
 
   const getCurrentSpeed = (): number => {
@@ -190,5 +195,7 @@ export function useTripTracker() {
     calculateDistance,
     getTripDuration,
     getCurrentSpeed,
+    tripStart: tripStart.current,
+    tripEnd: tripEnd.current,
   };
 }
