@@ -1,6 +1,6 @@
 import { formatInTimeZone } from "date-fns-tz";
 import { subMinutes } from "date-fns";
-import { AgendaProps, ShiftRosterType } from "@/types/shift";
+import type { AgendaProps, ShiftRosterType } from "@/types/shift";
 
 const aus_timezone = "Australia/Sydney";
 const comparableDateFormat = "yyyy-MM-dd'T'HH:mm:ss";
