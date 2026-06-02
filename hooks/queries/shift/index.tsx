@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 const useShiftRoster = (staffId: number) => {
   const notifyOnChangeProps = useFocusNotifyOnChangeProps();
   return useQuery<ShiftRosterType[]>({
-    queryKey: ["shifts"],
+    queryKey: ["shifts", staffId],
     queryFn: () => ShiftRosterService.fetchStaffShift(staffId),
     notifyOnChangeProps,
     refetchOnWindowFocus: true,

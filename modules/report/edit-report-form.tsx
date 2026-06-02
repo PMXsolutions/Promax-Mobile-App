@@ -39,7 +39,7 @@ const EditReportForm = ({
     medicationAvailable: "",
     medicatioErrors: "",
     isMealManagementPlan: false,
-    details_IfNotMealMaganementPlan: "",
+    details_IfNotMealMaganagementPlan: "",
     isDrinkingProblem: false,
     details_IfProblemExist: "",
     isHealthIssues: false,
@@ -60,7 +60,7 @@ const EditReportForm = ({
         medicationAvailable: data.medicationAvailable || "",
         medicatioErrors: data.medicatioErrors || "",
         isMealManagementPlan: data.isMealManagementPlan,
-        details_IfNotMealMaganementPlan:
+        details_IfNotMealMaganagementPlan:
           data.details_IfNotMealMaganagementPlan || "",
         isDrinkingProblem: data.isDrinkingProblem,
         details_IfProblemExist: data.details_IfProblemExist || "",
@@ -237,7 +237,7 @@ const EditReportForm = ({
               {form.isMealManagementPlan === false && (
                 <TextInput
                   label="Details if Not Meal Management Plan"
-                  value={form.details_IfNotMealMaganementPlan}
+                  value={form.details_IfNotMealMaganagementPlan}
                   onChangeText={(value) =>
                     handleInputChange(
                       "details_IfNotMealMaganagementPlan",

@@ -124,10 +124,13 @@ const ShiftAction = ({
   };
 
   const navigateToReport = (isEdit = false) => {
+    const reportId = activity?.reportId;
+    const canEditReport = isEdit && !!reportId;
+
     router.push({
-      pathname: isEdit ? "/(root)/report" : "/(root)/report/create",
-      params: isEdit
-        ? { reportId: 0, rosterId: activity?.shiftRosterId }
+      pathname: canEditReport ? "/(root)/report" : "/(root)/report/create",
+      params: canEditReport
+        ? { reportId, rosterId: activity?.shiftRosterId }
         : { rosterId: activity?.shiftRosterId },
     });
   };

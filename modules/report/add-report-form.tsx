@@ -32,7 +32,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
     medicationAvailable: "",
     medicatioErrors: "",
     isMealManagementPlan: true,
-    details_IfNotMealMaganementPlan: "",
+    details_IfNotMealMaganagementPlan: "",
     isDrinkingProblem: false,
     details_IfProblemExist: "",
     isHealthIssues: false,
@@ -204,9 +204,12 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
               {form.isMealManagementPlan === false && (
                 <TextInput
                   label="Details if Not Meal Management Plan"
-                  value={form.details_IfNotMealMaganementPlan}
+                  value={form.details_IfNotMealMaganagementPlan}
                   onChangeText={(value) =>
-                    handleInputChange("details_IfNotMealMaganementPlan", value)
+                    handleInputChange(
+                      "details_IfNotMealMaganagementPlan",
+                      value
+                    )
                   }
                   multiline
                   containerStyle={styles.inputContainerStyle}

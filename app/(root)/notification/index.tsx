@@ -121,7 +121,9 @@ const Notification = () => {
           setCurrentlyOpenRow(null); // Reset currently open row when closed
         }
       }}
-      ref={(ref) => (rowRefs.current[index] = ref)} // Store the ref for each item
+      ref={(ref) => {
+        rowRefs.current[index] = ref;
+      }} // Store the ref for each item
     >
       <TouchableWithoutFeedback
         onPress={() => router.push(`/(root)/notification/${item.messageId}`)}
