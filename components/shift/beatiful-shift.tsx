@@ -16,8 +16,21 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
+import { formatInTimeZone } from "date-fns-tz";
 const CALENDAR_HEIGHT = 100;
 const ROW_HEIGHT = 370;
+const CALENDAR_TIMEZONE = "Australia/Sydney";
+const calendarDateKey = (date: Date) =>
+  formatInTimeZone(date, CALENDAR_TIMEZONE, "yyyy-MM-dd");
+const addDayToDateKey = (dateKey: string) => {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const nextDate = new Date(Date.UTC(year, month - 1, day + 1));
+  const nextYear = nextDate.getUTCFullYear();
+  const nextMonth = `${nextDate.getUTCMonth() + 1}`.padStart(2, "0");
+  const nextDay = `${nextDate.getUTCDate()}`.padStart(2, "0");
+
+  return `${nextYear}-${nextMonth}-${nextDay}`;
+};
 interface Props {
   shiftData: AgendaProps[];
   isRefetching: boolean;
@@ -67,9 +80,17 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
   const groupedShifts = useMemo(() => {
     const grouped: { [date: string]: AgendaProps[] } = {};
     shiftData.forEach((shift) => {
-      const dateKey = new Date(shift.dateFrom).toDateString();
-      if (!grouped[dateKey]) grouped[dateKey] = [];
-      grouped[dateKey].push(shift);
+      const startKey = calendarDateKey(new Date(shift.dateFrom));
+      const endKey = calendarDateKey(new Date(shift.dateTo));
+
+      for (
+        let dateKey = startKey;
+        dateKey <= endKey;
+        dateKey = addDayToDateKey(dateKey)
+      ) {
+        if (!grouped[dateKey]) grouped[dateKey] = [];
+        grouped[dateKey].push(shift);
+      }
     });
     return grouped;
   }, [shiftData]);
@@ -105,7 +126,7 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
   }, [displayDates, viewMode]);
 
   const selectedDateShifts = useMemo(() => {
-    const key = selectedDate.toDateString();
+    const key = calendarDateKey(selectedDate);
     return groupedShifts[key] || [];
   }, [groupedShifts, selectedDate]);
 
@@ -187,7 +208,7 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
   );
 
   const DateCell = ({ date }: { date: Date }) => {
-    const key = date.toDateString();
+    const key = calendarDateKey(date);
     const isSelected = isSameDay(date, selectedDate);
     const isCurrentDay = isToday(date);
     const isPast = isBefore(date, new Date()) && !isCurrentDay;

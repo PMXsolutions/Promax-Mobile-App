@@ -23,7 +23,7 @@ const useFetchCompanyData = (companyId: number) => {
 };
 const useFetchAvailability = (staffId: number) => {
   return useQuery<StaffAvailability[]>({
-    queryKey: ["availability"],
+    queryKey: ["availability", staffId],
     queryFn: () => profileService.fetchStaffAvailability(staffId),
     enabled: !!staffId, // Only run the query if companyId is defined
   });

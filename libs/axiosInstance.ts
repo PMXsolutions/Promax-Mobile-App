@@ -46,11 +46,14 @@ axiosInstance.interceptors.response.use(
     if (response) {
       switch (response.status) {
         case 401: // Unauthorized
-        case 403: // Forbidden
           // toast.error("Session Time Out!!");
           useAuthStore.getState().logout();
           //   localStorage.setItem("redirectPath", window.location.pathname);
 
+          break;
+
+        case 403:
+          // Keep the session alive for resource-level permission errors.
           break;
 
         case 404:

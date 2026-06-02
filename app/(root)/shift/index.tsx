@@ -83,6 +83,8 @@ const ShiftDetail = () => {
   }, []);
 
   // const load = true;
+  const shiftStatus = shift ? getActivityDetailStatus(shift, now) : undefined;
+
   if (isLoading) {
     return (
       <Loader
@@ -100,7 +102,7 @@ const ShiftDetail = () => {
         visible={distanceCheckLoading}
         title="Calculating your distance to client's location.."
       />
-      {shift && getActivityDetailStatus(shift, now) === "Shift In progress" && (
+      {shift && shiftStatus === "Shift In progress" && (
         <ProgressBanner shiftId={shift.shiftRosterId} />
       )}
 
@@ -121,8 +123,7 @@ const ShiftDetail = () => {
 
       <>
         {shift &&
-          // getActivityDetailStatus(shift, now) === "Present" &&
-          // getActivityDetailStatus(shift, now) === "Absent" &&
+          shiftStatus === "Shift In progress" &&
           shiftActivities?.includes("Transport") && (
             <TransportButton shiftId={shift?.shiftRosterId!} />
           )}

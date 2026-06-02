@@ -9,9 +9,11 @@ interface AuthWrapperProps {
 }
 
 export default function AuthWrapper({ children, mode }: AuthWrapperProps) {
-  const { user } = useAuthStore();
+  const { hasHydrated, user } = useAuthStore();
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (mode === "auth" && user) {
       router.replace("/(root)/(tabs)");
     }
@@ -19,7 +21,9 @@ export default function AuthWrapper({ children, mode }: AuthWrapperProps) {
     if (mode === "protected" && !user) {
       router.replace("/(auth)/sign-in");
     }
-  }, [user]);
+  }, [hasHydrated, mode, user]);
+
+  if (!hasHydrated) return null;
 
   return <>{children}</>;
 }

@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 const useNotification = (user: string) => {
   const notifyOnChangeProps = useFocusNotifyOnChangeProps();
   return useQuery<NotificationType[]>({
-    queryKey: ["notifications"],
+    queryKey: ["notifications", user],
     queryFn: () => notificationService.fetchNotification(user),
     notifyOnChangeProps,
     // refetchOnWindowFocus: false,

@@ -49,8 +49,14 @@ const submitCancellationReason = async (
   reason: string,
   shiftid: number
 ) => {
+  const params = new URLSearchParams({
+    userId: user,
+    reason,
+    shiftid: shiftid.toString(),
+  });
+
   return axiosInstance.get(
-    `/ShiftRosters/shift_cancellation?userId=${user}&reason=${reason}&shiftid=${shiftid}`
+    `/ShiftRosters/shift_cancellation?${params.toString()}`
   );
 };
 
