@@ -24,7 +24,7 @@ const EditReportForm = ({
   reportId: string;
   rosterId: string;
 }) => {
-  const { user } = useAuthStore();
+  const { user, staff } = useAuthStore();
   const { data, isLoading } = reportQuery.useFetchReportInfo(
     Number(reportId),
     Number(rosterId)
@@ -39,7 +39,7 @@ const EditReportForm = ({
     medicationAvailable: "",
     medicatioErrors: "",
     isMealManagementPlan: false,
-    details_IfNotMealMaganementPlan: "",
+    details_IfNotMealMaganagementPlan: "",
     isDrinkingProblem: false,
     details_IfProblemExist: "",
     isHealthIssues: false,
@@ -60,7 +60,7 @@ const EditReportForm = ({
         medicationAvailable: data.medicationAvailable || "",
         medicatioErrors: data.medicatioErrors || "",
         isMealManagementPlan: data.isMealManagementPlan,
-        details_IfNotMealMaganementPlan:
+        details_IfNotMealMaganagementPlan:
           data.details_IfNotMealMaganagementPlan || "",
         isDrinkingProblem: data.isDrinkingProblem,
         details_IfProblemExist: data.details_IfProblemExist || "",
@@ -106,14 +106,17 @@ const EditReportForm = ({
       });
 
       router.back();
-      return queryClient.invalidateQueries({
-        queryKey: ["staffReports", user?.userId],
-      });
+      return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["staffReports", staff?.staffId],
+        }),
+        queryClient.invalidateQueries({ queryKey: ["shifts"] }),
+      ]);
     },
 
     onError: (error: any) => {
       showMessage({
-        message: error.response?.data?.message,
+        message: error.response?.data?.message || "Unable to update report.",
         type: "danger",
       });
     },
@@ -126,6 +129,14 @@ const EditReportForm = ({
       showMessage({
         message:
           "Please provide at least 100 characters for 'Support plan progress and activities'",
+        type: "danger",
+      });
+      return;
+    }
+
+    if (form.isIncident && !form.details_IfIsIncipient.trim()) {
+      showMessage({
+        message: "Please provide incident details before submitting.",
         type: "danger",
       });
       return;
@@ -237,7 +248,7 @@ const EditReportForm = ({
               {form.isMealManagementPlan === false && (
                 <TextInput
                   label="Details if Not Meal Management Plan"
-                  value={form.details_IfNotMealMaganementPlan}
+                  value={form.details_IfNotMealMaganagementPlan}
                   onChangeText={(value) =>
                     handleInputChange(
                       "details_IfNotMealMaganagementPlan",

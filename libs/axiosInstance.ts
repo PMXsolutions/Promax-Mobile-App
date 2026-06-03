@@ -18,10 +18,17 @@ interface DataStructure {
   // Add other fields as per your response data
 }
 
+const baseURL =
+  process.env.EXPO_PUBLIC_API_BASEURL ||
+  "https://profitmax-001-site10.ctempurl.com/api";
+
+export const publicAxios = axios.create({
+  baseURL,
+  timeout: 30000,
+});
+
 const axiosInstance = axios.create({
-  baseURL:
-    process.env.EXPO_PUBLIC_API_BASEURL ||
-    "https://profitmax-001-site10.ctempurl.com/api",
+  baseURL,
   timeout: 30000,
 });
 
@@ -46,11 +53,15 @@ axiosInstance.interceptors.response.use(
     if (response) {
       switch (response.status) {
         case 401: // Unauthorized
-        case 403: // Forbidden
           // toast.error("Session Time Out!!");
-          useAuthStore.getState().logout();
+          void useAuthStore.getState().logout();
           //   localStorage.setItem("redirectPath", window.location.pathname);
 
+          break;
+
+        case 403:
+          // Forbidden responses are authorization failures for one action, not
+          // proof that the whole session is invalid.
           break;
 
         case 404:

@@ -10,6 +10,23 @@ interface reqBodyType {
   staffName: string | undefined;
 }
 
+const getDocumentMimeType = (file: DocumentPickerAsset) => {
+  if (file.mimeType) return file.mimeType;
+
+  const extension = file.name.split(".").pop()?.toLowerCase();
+
+  switch (extension) {
+    case "pdf":
+      return "application/pdf";
+    case "doc":
+      return "application/msword";
+    case "docx":
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    default:
+      return "application/octet-stream";
+  }
+};
+
 const fetchStaffReport = async (staffId: number) => {
   try {
     const { data } = await axiosInstance.get(
@@ -102,7 +119,7 @@ const handleUploadStaffDocument = async (
     formData.append("DocumentFile", {
       uri: formInfo.docFile.uri, // Use the URI of the file
       name: formInfo.docFile.name, // Use the filename
-      type: formInfo.docFile.mimeType, // Use the MIME type
+      type: getDocumentMimeType(formInfo.docFile), // Use the MIME type
     } as unknown as Blob);
   }
   formData.append("CompanyId", formInfo.companyId?.toString() as string); // Using optional chaining and nullish coalescing
@@ -135,7 +152,7 @@ const handleEditStaffDocument = async (
     formData.append("DocumentFile", {
       uri: formInfo.docFile.uri, // Use the URI of the file
       name: formInfo.docFile.name, // Use the filename
-      type: formInfo.docFile.mimeType, // Use the MIME type
+      type: getDocumentMimeType(formInfo.docFile), // Use the MIME type
     } as unknown as Blob);
   }
 

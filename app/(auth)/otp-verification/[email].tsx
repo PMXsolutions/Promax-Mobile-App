@@ -2,7 +2,7 @@ import GoBack from "@/components/go-back";
 import CustomButton from "@/components/shared/custom-button";
 import Text from "@/components/shared/text";
 import { THEME } from "@/constants/theme";
-import axiosInstance from "@/libs/axiosInstance";
+import { publicAxios } from "@/libs/axiosInstance";
 import Timer from "@/modules/auth/timer";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
@@ -69,7 +69,7 @@ const OtpVerfication: React.FC = () => {
     if (expired) {
       setError("");
       try {
-        const { data } = await axiosInstance.get(
+        const { data } = await publicAxios.get(
           `/Account/resend_otp?email=${email}`
         );
         if (data.status === "Success") {
@@ -111,7 +111,7 @@ const OtpVerfication: React.FC = () => {
     setError("");
     setLoading(true);
     try {
-      const { data } = await axiosInstance.post("/Account/post_otp", postData);
+      const { data } = await publicAxios.post("/Account/post_otp", postData);
       showMessage({
         type: "success",
         message: data.message,

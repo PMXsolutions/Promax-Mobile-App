@@ -2,10 +2,13 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { StaffProfileTypes, UserProfileType } from "@/types/auth";
 import storageUtil from "@/utils/storage";
+import { queryClient } from "@/libs/query";
+
+type AuthUser = Omit<UserProfileType, "token">;
 
 interface AuthState {
   isAuthenticated: boolean;
-  user: UserProfileType | null;
+  user: AuthUser | null;
   staff: StaffProfileTypes | null;
   token: string | null;
   login: (
@@ -13,7 +16,7 @@ interface AuthState {
     staff: StaffProfileTypes,
     token: string
   ) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const useAuthStore = create<AuthState>()(
@@ -23,18 +26,19 @@ const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       staff: null,
-      login: (userData, staffData, token) =>
+      login: (userData, staffData, token) => {
+        const { token: _token, ...userWithoutToken } = userData;
         set({
           isAuthenticated: true,
-          user: userData,
+          user: userWithoutToken,
           token,
           staff: staffData,
-        }),
-      logout: () => {
-        // Reset the state
+        });
+      },
+      logout: async () => {
         set({ isAuthenticated: false, user: null, token: null, staff: null });
-        storageUtil.removeItem("auth-storage");
-        // Optionally clear tokens on logout
+        queryClient.clear();
+        await storageUtil.removeItem("auth-storage");
       },
     }),
     {

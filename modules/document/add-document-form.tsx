@@ -189,7 +189,10 @@ const AddForm = () => {
                   {selectedDocument?.name}
                 </Text>
                 <TouchableWithoutFeedback
-                  onPress={() => setUploadedDocument(null)}
+                  onPress={() => {
+                    setUploadedDocument(null);
+                    setSelectedDocument(null);
+                  }}
                 >
                   <Feather name="x" color="red" size={20} />
                 </TouchableWithoutFeedback>

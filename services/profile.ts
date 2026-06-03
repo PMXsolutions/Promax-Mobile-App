@@ -75,10 +75,13 @@ const handleEditStaffProfile = async (
 
     formData.append("signatureFile", file as any);
   }
-  // console.log(formInfo);
+  const fileFieldKeys = new Set(["imageFile", "signatureFile"]);
+
   for (const key in formInfo) {
+    if (fileFieldKeys.has(key)) continue;
+
     const value = formInfo[key as keyof typeof formInfo];
-    if (value === null) {
+    if (value === null || value === undefined) {
       formData.append(key, ""); // Pass empty string if value is null
     } else {
       formData.append(key, value.toString());

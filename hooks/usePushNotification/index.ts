@@ -9,6 +9,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),
@@ -39,7 +41,7 @@ const usePushNotifications = (
   userId: string,
   companyId: number
 ): UsePushNotificationsResult => {
-  const shouldSkip = !userId || !companyId;
+  const shouldSkip = Platform.OS === "web" || !userId || !companyId;
   const [expoPushToken, setExpoPushToken] = useState<string>("");
   const [fcmToken, setFcmToken] = useState<string>("");
   const [channels, setChannels] = useState<Notifications.NotificationChannel[]>(

@@ -1,5 +1,5 @@
 // components/auth/AuthWrapper.tsx
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import useAuthStore from "@/store/use-auth-store";
 
@@ -9,17 +9,43 @@ interface AuthWrapperProps {
 }
 
 export default function AuthWrapper({ children, mode }: AuthWrapperProps) {
-  const { user } = useAuthStore();
+  const { user, token, isAuthenticated } = useAuthStore();
+  const [hasHydrated, setHasHydrated] = useState(
+    useAuthStore.persist.hasHydrated()
+  );
+
+  const hasValidSession =
+    hasHydrated &&
+    isAuthenticated &&
+    !!user &&
+    !!token &&
+    user.role === "Staff";
 
   useEffect(() => {
-    if (mode === "auth" && user) {
+    const unsubscribe = useAuthStore.persist.onFinishHydration(() => {
+      setHasHydrated(true);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    if (mode === "auth" && hasValidSession) {
       router.replace("/(root)/(tabs)");
     }
 
-    if (mode === "protected" && !user) {
+    if (mode === "protected" && !hasValidSession) {
       router.replace("/(auth)/sign-in");
     }
-  }, [user]);
+  }, [hasHydrated, hasValidSession, mode]);
+
+  if (!hasHydrated) return null;
+
+  if (mode === "protected" && !hasValidSession) return null;
+
+  if (mode === "auth" && hasValidSession) return null;
 
   return <>{children}</>;
 }

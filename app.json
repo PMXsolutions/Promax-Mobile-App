@@ -25,9 +25,6 @@
       },
       "supportsTablet": false,
       "bundleIdentifier": "com.promax-app",
-      "config": {
-        "googleMapsApiKey": "AIzaSyAtJmwd6aD38O2iZ2MdQbnyBUuj2wxPP58"
-      },
       "runtimeVersion": {
         "policy": "appVersion"
       }
@@ -37,11 +34,6 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyAtJmwd6aD38O2iZ2MdQbnyBUuj2wxPP58"
-        }
       },
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",

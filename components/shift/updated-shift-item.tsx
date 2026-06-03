@@ -10,7 +10,7 @@ import {
 import { FontAwesome } from "@expo/vector-icons";
 
 import { AgendaProps } from "@/types/shift";
-import { formattedDate, getActivityStatus } from "@/helpers/shift-service";
+import { formattedTime, getActivityStatus } from "@/helpers/shift-service";
 import Text from "../shared/text";
 import { router } from "expo-router";
 
@@ -154,8 +154,8 @@ const UpdatedShiftItem = ({ item }: { item: AgendaProps }) => {
                 style={styles.timeIcon}
               />
               <Text weight="medium" size="sm" style={styles.timeText}>
-                {formattedDate(item?.dateFrom, "h:mm a")} -{" "}
-                {formattedDate(item?.dateTo, "h:mm a")}
+                {formattedTime(item?.dateFrom, "h:mm a")} -{" "}
+                {formattedTime(item?.dateTo, "h:mm a")}
               </Text>
             </View>
           </View>

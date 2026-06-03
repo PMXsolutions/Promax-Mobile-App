@@ -8,13 +8,15 @@ import { UseMutateFunction } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import CustomButton from "@/components/shared/custom-button";
 import { router } from "expo-router";
+import { showMessage } from "react-native-flash-message";
 
 type KnownStatus =
   | "Not Started"
   | "Absent"
   | "Present"
   | "Shift Completed"
-  | "Shift In progress";
+  | "Shift In progress"
+  | "Cancelled";
 interface ShiftProps {
   activity: ShiftRosterType;
   clockInPending: boolean;
@@ -63,6 +65,12 @@ const statusConfigs: Record<
     textColor: "#d97706",
     borderColor: "#fed7aa",
     icon: "🔄",
+  },
+  Cancelled: {
+    bgColor: "#fecaca",
+    textColor: "#dc2626",
+    borderColor: "#ef4444",
+    icon: "❌",
   },
 };
 
@@ -124,10 +132,18 @@ const ShiftAction = ({
   };
 
   const navigateToReport = (isEdit = false) => {
+    if (isEdit && !activity?.reportId) {
+      showMessage({
+        message: "Unable to open this shift report. Please refresh and try again.",
+        type: "danger",
+      });
+      return;
+    }
+
     router.push({
       pathname: isEdit ? "/(root)/report" : "/(root)/report/create",
       params: isEdit
-        ? { reportId: 0, rosterId: activity?.shiftRosterId }
+        ? { reportId: activity?.reportId, rosterId: activity?.shiftRosterId }
         : { rosterId: activity?.shiftRosterId },
     });
   };
