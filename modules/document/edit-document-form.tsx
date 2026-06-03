@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { THEME } from "@/constants/theme";
-import { convertImageToBase64, uploadDoc } from "@/utils/profile-image-handler";
+import { uploadDoc } from "@/utils/profile-image-handler";
 import { showMessage } from "react-native-flash-message";
 import Text from "@/components/shared/text";
 import { DocumentPickerAsset } from "expo-document-picker";
@@ -44,6 +44,7 @@ const EditForm = ({ id }: { id: string }) => {
         documentName: docData.documentName,
         documentFile: "",
       });
+      setExpiryDate(docData.expirationDate || "");
     }
   }, [docData]);
 
@@ -63,7 +64,6 @@ const EditForm = ({ id }: { id: string }) => {
       const docUri = await uploadDoc();
       if (docUri) {
         setSelectedDocument(docUri);
-        const baseFile = await convertImageToBase64(docUri.uri);
         setUploadedDocument(docUri.uri);
       }
     } catch (error) {
@@ -97,14 +97,20 @@ const EditForm = ({ id }: { id: string }) => {
       });
 
       router.back();
-      return queryClient.invalidateQueries({
-        queryKey: ["staffDocument", "edit", { id: staff?.staffId }],
-      });
+      return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["staffDocument", { id: staff?.staffId }],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["staffDocument", "edit", { id: Number(id) }],
+        }),
+      ]);
     },
 
     onError: (error: any) => {
       showMessage({
-        message: "Document Submission failed",
+        message:
+          error.response?.data?.message || "Document Submission failed",
         type: "danger",
       });
     },
@@ -116,14 +122,6 @@ const EditForm = ({ id }: { id: string }) => {
         message: "Document name is required",
         type: "info",
       });
-      return;
-    }
-    if (!uploadedDocument) {
-      showMessage({
-        message: "Please upload a document",
-        type: "info",
-      });
-
       return;
     }
     onSubmit(); // Should call the mutation function
@@ -177,7 +175,10 @@ const EditForm = ({ id }: { id: string }) => {
                 {selectedDocument?.name}
               </Text>
               <TouchableWithoutFeedback
-                onPress={() => setUploadedDocument(null)}
+                onPress={() => {
+                  setUploadedDocument(null);
+                  setSelectedDocument(null);
+                }}
               >
                 <Feather name="x" color="red" size={20} />
               </TouchableWithoutFeedback>

@@ -14,7 +14,7 @@ const useFetchReportInfo = (reportId: number, shiftId: number) => {
   return useQuery<ShiftReport>({
     queryKey: ["staffReport", reportId, shiftId],
     queryFn: () => reportService.fetchReportInfo(reportId, shiftId),
-    enabled: !!shiftId, // Only run the query if id and uid are defined
+    enabled: !!reportId && !!shiftId, // Only run the query if id and uid are defined
   });
 };
 

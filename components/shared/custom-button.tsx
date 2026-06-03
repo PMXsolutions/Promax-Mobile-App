@@ -53,13 +53,24 @@ const CustomButton = ({
   IconLeft,
   IconRight,
   loading = false,
+  disabled = false,
+  style,
   ...props
 }: ButtonProps) => {
+  const isDisabled = loading || disabled;
+
   return (
     <TouchableOpacity
-      onPress={onPress}
-      style={[styles.buttonBase, getBgVariantStyle(bgVariant)]}
       {...props}
+      onPress={isDisabled ? undefined : onPress}
+      disabled={isDisabled}
+      activeOpacity={isDisabled ? 1 : props.activeOpacity}
+      style={[
+        styles.buttonBase,
+        getBgVariantStyle(bgVariant),
+        style,
+        isDisabled && styles.disabled,
+      ]}
     >
       {IconLeft && <IconLeft />}
 
@@ -125,6 +136,9 @@ const styles = StyleSheet.create({
     borderColor: THEME.colors.primary, // neutral-300
     borderWidth: 0.5,
     backgroundColor: THEME.colors.white,
+  },
+  disabled: {
+    opacity: 0.6,
   },
 
   textDefault: {

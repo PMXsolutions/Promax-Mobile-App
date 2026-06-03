@@ -30,15 +30,24 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
   const [statusMessage, setStatusMessage] = useState("");
 
   const handleDownload = async () => {
+    if (!item.documentUrl) {
+      showMessage({
+        message: "No document file is available to download.",
+        type: "danger",
+      });
+      return;
+    }
+
     setLoading(true);
-    if (item) {
+    try {
       await downloadAndSaveDocument(
-        item.documentUrl || "https://pdfobject.com/pdf/sample.pdf",
+        item.documentUrl,
         `${item.documentName}.pdf`,
         setStatusMessage
       );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const { mutate: onSubmit, isPending } = useMutation({

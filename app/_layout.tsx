@@ -28,15 +28,17 @@ import { NetworkProvider } from "@/context/NetworkProvider";
 import NoConnectionOverlay from "@/components/no-connection";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import useAuthStore from "@/store/use-auth-store";
+import usePushNotifications from "@/hooks/usePushNotification";
 // import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // const { isAuthenticated, user } = useAuthStore();
-  // const pushToken = usePushNotifications(
-  //   user?.userId ?? "",
-  //   user?.companyId ?? 0
-  // );
+  const { isAuthenticated, user } = useAuthStore();
+  usePushNotifications(
+    isAuthenticated ? user?.userId ?? "" : "",
+    isAuthenticated ? user?.companyId ?? 0 : 0
+  );
 
   const asyncStoragePersister = createAsyncStoragePersister({
     storage: AsyncStorage,

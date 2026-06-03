@@ -11,6 +11,7 @@ import Text from "../shared/text";
 import { AgendaProps } from "@/types/shift";
 import { FlashList } from "@shopify/flash-list";
 import UpdatedShiftItem from "./updated-shift-item";
+import { formatInTimeZone } from "date-fns-tz";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -18,6 +19,7 @@ import Animated, {
 } from "react-native-reanimated";
 const CALENDAR_HEIGHT = 100;
 const ROW_HEIGHT = 370;
+const ROSTER_TIMEZONE = "Australia/Sydney";
 interface Props {
   shiftData: AgendaProps[];
   isRefetching: boolean;
@@ -63,11 +65,13 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
   const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
   const isToday = (date: Date) => isSameDay(date, new Date());
   const isBefore = (a: Date, b: Date) => a < b;
+  const getRosterDateKey = (date: Date) =>
+    formatInTimeZone(date, ROSTER_TIMEZONE, "yyyy-MM-dd");
 
   const groupedShifts = useMemo(() => {
     const grouped: { [date: string]: AgendaProps[] } = {};
     shiftData.forEach((shift) => {
-      const dateKey = new Date(shift.dateFrom).toDateString();
+      const dateKey = getRosterDateKey(new Date(shift.dateFrom));
       if (!grouped[dateKey]) grouped[dateKey] = [];
       grouped[dateKey].push(shift);
     });
@@ -105,7 +109,7 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
   }, [displayDates, viewMode]);
 
   const selectedDateShifts = useMemo(() => {
-    const key = selectedDate.toDateString();
+    const key = getRosterDateKey(selectedDate);
     return groupedShifts[key] || [];
   }, [groupedShifts, selectedDate]);
 
@@ -187,7 +191,7 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
   );
 
   const DateCell = ({ date }: { date: Date }) => {
-    const key = date.toDateString();
+    const key = getRosterDateKey(date);
     const isSelected = isSameDay(date, selectedDate);
     const isCurrentDay = isToday(date);
     const isPast = isBefore(date, new Date()) && !isCurrentDay;

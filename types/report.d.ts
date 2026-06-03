@@ -58,7 +58,7 @@ export type ReportFormState = {
   medicationAvailable: string;
   medicatioErrors: string;
   isMealManagementPlan: boolean;
-  details_IfNotMealMaganementPlan: string;
+  details_IfNotMealMaganagementPlan: string;
   isDrinkingProblem: boolean;
   details_IfProblemExist: string;
   isHealthIssues: boolean;

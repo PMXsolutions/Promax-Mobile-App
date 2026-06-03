@@ -1,10 +1,10 @@
-import axiosInstance from "@/libs/axiosInstance";
+import { publicAxios } from "@/libs/axiosInstance";
 import { ForgotpasswordSchema, SigninFormSchema } from "@/modules/auth/types";
 import { isAxiosError } from "axios";
 
 const loginUser = async (payload: SigninFormSchema) => {
   try {
-    const { data } = await axiosInstance.post("/Account/auth_login", payload);
+    const { data } = await publicAxios.post("/Account/auth_login", payload);
 
     return data;
   } catch (error: unknown) {
@@ -16,7 +16,7 @@ const loginUser = async (payload: SigninFormSchema) => {
 
 const forgotPassword = async ({ email }: ForgotpasswordSchema) => {
   try {
-    const { data } = await axiosInstance.get(
+    const { data } = await publicAxios.get(
       `/Account/forgot_password?email=${email}`
     );
 

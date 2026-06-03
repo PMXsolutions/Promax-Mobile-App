@@ -34,7 +34,7 @@ const Report = () => {
   };
 
   const reportSorted =
-    report?.sort(
+    [...(report ?? [])].sort(
       (a, b) =>
         new Date(b.shiftRoster?.dateCreated).getTime() -
         new Date(a.shiftRoster?.dateCreated).getTime()

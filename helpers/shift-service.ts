@@ -3,6 +3,7 @@ import { subMinutes, formatDate } from "date-fns";
 import { AgendaProps, ShiftRosterType } from "@/types/shift";
 
 const aus_timezone = "Australia/Sydney";
+const activityTimestampFormat = "yyyy-MM-dd'T'HH:mm:ss";
 
 // const date = new Date();
 
@@ -17,36 +18,36 @@ export const formattedDate = (timeVal: Date, formatStr: string) => {
   return formatDate(timeVal, formatStr);
 };
 
+const toDate = (timeVal: Date | string | number) =>
+  timeVal instanceof Date ? timeVal : new Date(timeVal);
+
+const formattedActivityTime = (timeVal: Date | string | number) =>
+  formatInTimeZone(toDate(timeVal), aus_timezone, activityTimestampFormat);
+
 export function getActivityStatus(activity: AgendaProps) {
   const nowInAustraliaTime = formatInTimeZone(
     new Date(),
     aus_timezone,
-    "yyyy-MM-dd'T'HH:mm:ss"
+    activityTimestampFormat
   );
-  const subMinDateFrom = subMinutes(activity?.dateFrom, 10);
-  const activityDateFrom = formattedDate(
-    subMinDateFrom,
-    "yyyy-MM-dd'T'HH:mm:ss"
-  );
-  const activityDateTo = activity?.dateTo;
+  const subMinDateFrom = subMinutes(toDate(activity?.dateFrom), 10);
+  const activityDateFrom = formattedActivityTime(subMinDateFrom);
+  const activityDateTo = formattedActivityTime(activity?.dateTo);
 
-  if (activityDateFrom > nowInAustraliaTime) {
-    return "Upcoming";
-  } else if (activity.status === "Cancelled") {
+  if (activity.status === "Cancelled") {
     return "Cancelled";
+  } else if (activityDateFrom > nowInAustraliaTime) {
+    return "Upcoming";
   } else if (
-    activityDateTo.toString() < nowInAustraliaTime &&
+    activityDateTo < nowInAustraliaTime &&
     activity.attendance &&
     activity.isEnded
   ) {
     return "Present";
-  } else if (
-    activityDateTo.toString() < nowInAustraliaTime &&
-    !activity.attendance
-  ) {
+  } else if (activityDateTo < nowInAustraliaTime && !activity.attendance) {
     return "Absent";
   } else if (
-    activityDateTo.toString() < nowInAustraliaTime ||
+    activityDateTo < nowInAustraliaTime ||
     (activity.attendance && !activity.isEnded)
   ) {
     return "Shift In progress";
@@ -61,32 +62,26 @@ export function getActivityDetailStatus(activity: ShiftRosterType, now: Date) {
   const nowInAustraliaTime = formatInTimeZone(
     now || new Date(),
     aus_timezone,
-    "yyyy-MM-dd'T'HH:mm:ss"
+    activityTimestampFormat
   );
-  const subMinDateFrom = subMinutes(activity?.dateFrom, 10);
-  const activityDateFrom = formattedDate(
-    subMinDateFrom,
-    "yyyy-MM-dd'T'HH:mm:ss"
-  );
-  const activityDateTo = activity?.dateTo;
+  const subMinDateFrom = subMinutes(toDate(activity?.dateFrom), 10);
+  const activityDateFrom = formattedActivityTime(subMinDateFrom);
+  const activityDateTo = formattedActivityTime(activity?.dateTo);
 
-  if (activityDateFrom > nowInAustraliaTime) {
-    return "Upcoming";
-  } else if (activity.status === "Cancelled") {
+  if (activity.status === "Cancelled") {
     return "Cancelled";
+  } else if (activityDateFrom > nowInAustraliaTime) {
+    return "Upcoming";
   } else if (
-    activityDateTo.toString() < nowInAustraliaTime &&
+    activityDateTo < nowInAustraliaTime &&
     activity.attendance &&
     activity.isEnded
   ) {
     return "Present";
-  } else if (
-    activityDateTo.toString() < nowInAustraliaTime &&
-    !activity.attendance
-  ) {
+  } else if (activityDateTo < nowInAustraliaTime && !activity.attendance) {
     return "Absent";
   } else if (
-    activityDateTo.toString() < nowInAustraliaTime ||
+    activityDateTo < nowInAustraliaTime ||
     (activity.attendance && !activity.isEnded)
   ) {
     return "Shift In progress";
