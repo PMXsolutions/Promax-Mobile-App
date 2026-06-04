@@ -77,7 +77,10 @@ const usePushNotifications = (
 
       if (response.ok) {
         console.log("Token successfully sent to the backend.");
-        await AsyncStorage.setItem("fcmToken", fcmToken);
+        await AsyncStorage.multiSet([
+          ["fcmToken", fcmToken],
+          ["fcmTokenOwner", userId],
+        ]);
       } else {
         console.error("Failed to send token to backend:", response.status);
       }
@@ -99,8 +102,12 @@ const usePushNotifications = (
       if (fcmDeviceToken) {
         console.log(fcmDeviceToken);
         setFcmToken(fcmDeviceToken);
-        const storedToken = await AsyncStorage.getItem("fcmToken");
-        if (storedToken !== fcmDeviceToken) {
+        // Recently updated: token registration is scoped to the signed-in user to prevent shared-device bleed.
+        const [[, storedToken], [, storedOwner]] = await AsyncStorage.multiGet([
+          "fcmToken",
+          "fcmTokenOwner",
+        ]);
+        if (storedToken !== fcmDeviceToken || storedOwner !== userId) {
           await sendTokenToBackend(fcmDeviceToken);
         } else {
           console.log("FCM Token is already sent to backend");
@@ -136,7 +143,7 @@ const usePushNotifications = (
       notificationListener.current?.remove();
       responseListener.current?.remove();
     };
-  }, [shouldSkip]);
+  }, [shouldSkip, userId, companyId]);
 
   const schedulePushNotification = async (
     notificationData: NotificationData

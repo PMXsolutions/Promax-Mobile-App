@@ -9,8 +9,13 @@ import { router } from "expo-router";
 import CustomButton from "../shared/custom-button";
 
 const PendingCard = ({ item }: { item: ShiftRosterType }) => {
-  const clientArr = item?.clients!.split(", ");
+  // Recently updated: pending report actions now respect existing report IDs and partial API rows.
+  const clientArr = (item?.clients ?? "").split(", ").filter(Boolean);
   const defaultImage = require("../../assets/images/user-avatar.png");
+  const reportPath = item?.reportId ? "/(root)/report" : "/(root)/report/create";
+  const reportParams = item?.reportId
+    ? { reportId: item.reportId, rosterId: item.shiftRosterId }
+    : { rosterId: item?.shiftRosterId };
 
   return (
     <View style={styles.item}>
@@ -21,7 +26,7 @@ const PendingCard = ({ item }: { item: ShiftRosterType }) => {
             style={styles.userImg}
             imageStyle={styles.userImgStyle}
           >
-            {item?.profile.imageUrl && (
+            {item?.profile?.imageUrl && (
               <Image
                 source={{ uri: item?.profile.imageUrl }}
                 style={styles.userImg}
@@ -84,10 +89,8 @@ const PendingCard = ({ item }: { item: ShiftRosterType }) => {
           title="Fill Report"
           onPress={() =>
             router.push({
-              pathname: "/(root)/report/create",
-              params: {
-                rosterId: item?.shiftRosterId,
-              },
+              pathname: reportPath,
+              params: reportParams,
             })
           }
         />

@@ -30,8 +30,11 @@ const handleEditStaffProfile = async (
   formInfo: StaffProfile
 ) => {
   const formData = new FormData();
+  const isLocalUploadUri = (uri?: string | null) =>
+    Boolean(uri?.startsWith("file://") || uri?.startsWith("content://"));
 
-  if (formInfo?.imageFile) {
+  // Recently updated: only upload newly selected local images, not existing remote image URLs.
+  if (isLocalUploadUri(formInfo?.imageFile)) {
     formData.append(
       "imageFile",
       {

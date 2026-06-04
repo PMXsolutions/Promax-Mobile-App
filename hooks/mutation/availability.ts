@@ -21,7 +21,9 @@ export interface FormEditType {
 }
 const useSubmitStaffAvailability = (formInfo: FormSubmitType) => {
   return useMutation({
-    mutationFn: () => profileService.submitStaffAvailability(formInfo),
+    // Recently updated: accept fresh mutate-time variables to avoid stale availability payloads.
+    mutationFn: (nextInfo?: FormSubmitType) =>
+      profileService.submitStaffAvailability(nextInfo ?? formInfo),
     onSuccess: ({ data }) => {
       showMessage({
         type: "success",
@@ -45,7 +47,8 @@ const useSubmitStaffAvailability = (formInfo: FormSubmitType) => {
 };
 const useEditStaffAvailability = (formInfo: FormEditType) => {
   return useMutation({
-    mutationFn: () => profileService.editStaffAvailability(formInfo),
+    mutationFn: (nextInfo?: FormEditType) =>
+      profileService.editStaffAvailability(nextInfo ?? formInfo),
     onSuccess: ({ data }) => {
       showMessage({
         type: "success",
@@ -66,7 +69,8 @@ const useEditStaffAvailability = (formInfo: FormEditType) => {
 };
 const useDeleteStaffAvailability = (id: number) => {
   return useMutation({
-    mutationFn: () => profileService.deleteStaffAvailability(id),
+    mutationFn: (nextId?: number) =>
+      profileService.deleteStaffAvailability(nextId ?? id),
     onSuccess: ({ data }) => {
       showMessage({
         type: "success",

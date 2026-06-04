@@ -15,7 +15,8 @@ import Text from "../shared/text";
 import { router } from "expo-router";
 
 const UpdatedShiftItem = ({ item }: { item: AgendaProps }) => {
-  const clientArr = item?.client!.split(", ");
+  // Recently updated: partial roster rows should still render instead of crashing the shift list.
+  const clientArr = (item?.client ?? "").split(", ").filter(Boolean);
   const defaultImage = require("../../assets/images/user-avatar.png");
 
   const activityStatus = getActivityStatus(item);

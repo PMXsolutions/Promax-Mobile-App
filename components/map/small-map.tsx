@@ -6,13 +6,16 @@ import { THEME } from "@/constants/theme";
 import { mapStyle } from "@/constants/map-style";
 
 const SmallMap = ({ shiftInfo }: { shiftInfo: ShiftRosterType }) => {
+  // Recently updated: missing client coordinates should show the fallback map, not crash shift details.
+  const profile = shiftInfo?.profile;
+  const clientLatitude = profile?.latitude ?? 0;
+  const clientLongitude = profile?.longitude ?? 0;
+  const hasClientCoords = clientLatitude !== 0 && clientLongitude !== 0;
   const region =
-    shiftInfo &&
-    shiftInfo.profile.latitude !== 0 &&
-    shiftInfo.profile.longitude !== 0
+    hasClientCoords
       ? {
-          latitude: shiftInfo.profile.latitude,
-          longitude: shiftInfo.profile.longitude,
+          latitude: clientLatitude,
+          longitude: clientLongitude,
           latitudeDelta: 0.012,
           longitudeDelta: 0.012,
         }
@@ -22,29 +25,21 @@ const SmallMap = ({ shiftInfo }: { shiftInfo: ShiftRosterType }) => {
     <MapView
       style={styles.map}
       initialRegion={{
-        latitude:
-          shiftInfo?.profile?.latitude === 0
-            ? -33.86882
-            : shiftInfo?.profile?.latitude,
-        longitude:
-          shiftInfo?.profile?.longitude === 0
-            ? 151.20929
-            : shiftInfo?.profile?.longitude,
+        latitude: hasClientCoords ? clientLatitude : -33.86882,
+        longitude: hasClientCoords ? clientLongitude : 151.20929,
         latitudeDelta: 0.012,
         longitudeDelta: 0.012,
       }}
       customMapStyle={mapStyle}
       region={region} // Use the computed `region` value
     >
-      {shiftInfo &&
-        shiftInfo.profile.latitude !== 0 &&
-        shiftInfo.profile.longitude !== 0 && (
+      {hasClientCoords && (
           <Marker
             coordinate={{
-              latitude: shiftInfo.profile.latitude,
-              longitude: shiftInfo.profile.longitude,
+              latitude: clientLatitude,
+              longitude: clientLongitude,
             }}
-            title={shiftInfo.profile.fullName || "Client Location"}
+            title={profile?.fullName || "Client Location"}
             pinColor={THEME.colors.secondary}
           />
         )}

@@ -20,6 +20,7 @@ type KnownStatus =
 interface ShiftProps {
   activity: ShiftRosterType;
   clockInPending: boolean;
+  distanceCheckLoading?: boolean;
   clockIn: () => Promise<void>;
   clockOut: UseMutateFunction<AxiosResponse<any, any>, Error, void, unknown>;
   clockOutPending: boolean;
@@ -117,12 +118,14 @@ const StatusBadge = ({ status }: { status: string }) => {
 const ShiftAction = ({
   activity,
   clockInPending,
+  distanceCheckLoading = false,
   clockIn,
   clockOut,
   clockOutPending,
   now,
 }: ShiftProps) => {
   const status = getActivityDetailStatus(activity, now);
+  const reportComplete = Boolean(activity?.isShiftReportSigned || activity?.reportId);
 
   const navigateToCancel = () => {
     router.push({
@@ -131,7 +134,10 @@ const ShiftAction = ({
     });
   };
 
-  const navigateToReport = (isEdit = false) => {
+  const navigateToReport = () => {
+    // Recently updated: route by report existence to avoid duplicate shift reports from stale signed flags.
+    const isEdit = Boolean(activity?.reportId);
+
     if (isEdit && !activity?.reportId) {
       showMessage({
         message: "Unable to open this shift report. Please refresh and try again.",
@@ -188,8 +194,8 @@ const ShiftAction = ({
           <>
             <CustomButton
               onPress={clockIn}
-              disabled={clockInPending}
-              loading={clockInPending}
+              disabled={clockInPending || distanceCheckLoading}
+              loading={clockInPending || distanceCheckLoading}
               title="Clock In"
             />
             <CustomButton
@@ -203,13 +209,13 @@ const ShiftAction = ({
 
         {status === "Shift In progress" && (
           <>
-            {!activity?.isShiftReportSigned ? (
+            {!reportComplete ? (
               <>
                 <Text style={styles.infoText}>
                   Please fill out your shift report before clocking out.
                 </Text>
                 <CustomButton
-                  onPress={() => navigateToReport(false)}
+                  onPress={navigateToReport}
                   title="Fill Shift Report"
                 />
               </>
@@ -221,7 +227,7 @@ const ShiftAction = ({
                 </Text>
                 <CustomButton
                   bgVariant="light"
-                  onPress={() => navigateToReport(true)}
+                  onPress={navigateToReport}
                   title="Edit Shift Report"
                   textVariant="primary"
                 />

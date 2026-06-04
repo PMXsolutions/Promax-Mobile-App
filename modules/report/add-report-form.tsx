@@ -67,18 +67,23 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
         reqBody
       );
     },
-    onSuccess: ({ data }) => {
+    onSuccess: async ({ data }) => {
       showMessage({
         message: data.message,
         type: "success",
       });
-      router.push("/(root)/(tabs)");
-      return Promise.all([
+
+      await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["shifts"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["shifts", "detail", { id: Number(rosterId) }],
+        }),
         queryClient.invalidateQueries({
           queryKey: ["staffReports", staff?.staffId],
         }),
       ]);
+
+      router.push("/(root)/(tabs)");
     },
 
     onError: (error: any) => {
@@ -90,6 +95,37 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   });
 
   const handleFormSubmit = () => {
+    // Recently updated: prevent duplicate report creation when roster state already has a report.
+    if (isPending || isLoading) return;
+
+    if (!shift) {
+      showMessage({
+        message: "Unable to verify this shift. Please refresh and try again.",
+        type: "danger",
+      });
+      return;
+    }
+
+    if (shift.isShiftReportSigned || shift.reportId) {
+      if (!shift.reportId) {
+        showMessage({
+          message: "This shift report is already complete. Please refresh before editing.",
+          type: "info",
+        });
+        return;
+      }
+
+      showMessage({
+        message: "A report already exists for this shift. Opening the existing report.",
+        type: "info",
+      });
+      router.replace({
+        pathname: "/(root)/report",
+        params: { reportId: shift.reportId, rosterId },
+      });
+      return;
+    }
+
     const cleanedGoalProgress = form.goal_Progress.replace(/\s/g, "");
 
     if (!form.goal_Progress || cleanedGoalProgress.length < 100) {
@@ -404,6 +440,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
                 title={"Submit"}
                 onPress={() => handleFormSubmit()}
                 loading={isPending}
+                disabled={isPending || isLoading}
               />
             </View>
           </View>

@@ -20,6 +20,7 @@ import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomBackdrop from "@/components/ui/custom-backdrop";
 import MapPreviewBottomSheet from "@/components/shift/map-preview-modal";
+import ErrorState from "@/components/shared/error-state";
 
 const ShiftDetail = () => {
   const { user } = useAuthStore();
@@ -27,7 +28,13 @@ const ShiftDetail = () => {
 
   const id = query.id as unknown as string;
   const clients = query.clients as unknown as string;
-  const { data: shift, isLoading } = shiftQuery.useShiftDetail(Number(id));
+  const shiftId = Number(id);
+  const {
+    data: shift,
+    isLoading,
+    isError,
+    refetch,
+  } = shiftQuery.useShiftDetail(shiftId);
 
   const {
     clockInPending,
@@ -41,13 +48,13 @@ const ShiftDetail = () => {
     staffLocation,
   } = useClockIn(
     user?.userId as string,
-    shift?.shiftRosterId!,
+    shift?.shiftRosterId ?? 0,
     shift?.profile?.latitude!,
     shift?.profile?.longitude!
   );
   const { mutate: clockOut, isPending: clockOutPending } = useClockOut(
     user?.userId as string,
-    shift?.shiftRosterId!
+    shift?.shiftRosterId ?? 0
   );
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -70,7 +77,8 @@ const ShiftDetail = () => {
     return () => clearTimeout(timer);
   }, [modalVisible]);
 
-  const shiftActivities = shift?.activities.split(", ");
+  // Recently updated: keep shift detail recoverable when API data or route params are missing.
+  const shiftActivities = shift?.activities?.split(", ") ?? [];
   // Live time tracking state
   const [now, setNow] = useState(new Date());
 
@@ -93,6 +101,18 @@ const ShiftDetail = () => {
     );
   }
 
+  if (isError || !shift) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={clients || "Shift Details"} />
+        <ErrorState
+          message="Unable to load this shift. Please check your connection and try again."
+          onRetry={() => refetch()}
+        />
+      </ScreenWrapper>
+    );
+  }
+
   return (
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={clients} />
@@ -111,9 +131,10 @@ const ShiftDetail = () => {
         <ShiftAction
           clockIn={handleClock}
           clockInPending={clockInPending}
+          distanceCheckLoading={distanceCheckLoading}
           clockOut={clockOut}
           clockOutPending={clockOutPending}
-          activity={shift!}
+          activity={shift}
           now={now}
         />
       )}
@@ -128,7 +149,7 @@ const ShiftDetail = () => {
           )}
       </>
       {/* <>{shift && <TransportButton shiftId={shift?.shiftRosterId!} />}</> */}
-      {staffLocation && (
+      {staffLocation && shift.profile?.latitude && shift.profile?.longitude && (
         <MapPreviewBottomSheet
           visible={showMapModal}
           onClose={() => setShowMapModal(false)}
@@ -158,7 +179,7 @@ const ShiftDetail = () => {
         <BottomSheetView
           style={{ paddingBottom: insets.bottom + 30, paddingHorizontal: 20 }}
         >
-          <ShiftMessage shift={shift!} closeModal={closeModal} />
+          <ShiftMessage shift={shift} closeModal={closeModal} />
         </BottomSheetView>
       </BottomSheetModal>
     </ScreenWrapper>

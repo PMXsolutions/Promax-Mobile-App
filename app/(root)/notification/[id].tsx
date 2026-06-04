@@ -9,12 +9,13 @@ import { WebView } from "react-native-webview";
 import Text from "@/components/shared/text";
 import { queryClient } from "@/libs/query";
 import Loader from "@/components/shared/loader";
+import ErrorState from "@/components/shared/error-state";
 
 const NotificationDetail = () => {
   const query = useLocalSearchParams();
 
   const id = query.id as unknown as string;
-  const { data: messageData, isLoading } =
+  const { data: messageData, isLoading, isError, refetch } =
     notificationQuery.useNotificationDetail(Number(id));
 
   React.useEffect(() => {
@@ -37,9 +38,22 @@ const NotificationDetail = () => {
     );
   }
 
+  if (isError || !messageData) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name="Notification" />
+        <ErrorState
+          message="Unable to load this notification. Please try again."
+          onRetry={() => refetch()}
+        />
+      </ScreenWrapper>
+    );
+  }
+
   return (
     <ScreenWrapper barStyle="dark-content">
-      <HeaderWhite name={`#${messageData?.messageId.toString() as string}`} />
+      {/* Recently updated: guard nullable notification fields from failed/empty responses. */}
+      <HeaderWhite name={`#${messageData.messageId?.toString() ?? ""}`} />
 
       <View style={styles.content}>
         <Text weight="bold" size="2xl" style={{ marginBottom: 5 }}>
@@ -54,7 +68,7 @@ const NotificationDetail = () => {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
           </head><body style="padding:10px">${
-            messageData?.content as string
+            messageData.content ?? ""
           }</body></html>`,
         }}
       />

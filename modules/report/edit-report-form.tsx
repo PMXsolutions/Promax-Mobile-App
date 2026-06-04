@@ -89,12 +89,19 @@ const EditReportForm = ({
 
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
+      if (!data) {
+        throw new Error("Report details are not loaded.");
+      }
+
+      // Recently updated: send a whitelisted DTO instead of the fetched nested report object.
       const reqBody = {
-        ...data,
+        shiftReportId: data.shiftReportId,
+        shiftRosterId: data.shiftRosterId ?? Number(rosterId),
+        companyID: data.companyID ?? user?.companyId,
         ...form,
       };
       return reportService.handleEditShiftForm(
-        Number(data?.shiftReportId),
+        Number(data.shiftReportId),
         user?.userId as string,
         reqBody as ShiftReport
       ); // Ensure this API call works
@@ -123,6 +130,8 @@ const EditReportForm = ({
   });
 
   const handleFormSubmit = () => {
+    if (isPending || isLoading || !data) return;
+
     const cleanedGoalProgress = form.goal_Progress.replace(/\s/g, "");
 
     if (!form.goal_Progress || cleanedGoalProgress.length < 100) {
@@ -441,6 +450,7 @@ const EditReportForm = ({
             title={"Submit"}
             onPress={() => handleFormSubmit()}
             loading={isPending}
+            disabled={isPending || isLoading || !data}
           />
         </View>
       </ScrollView>
