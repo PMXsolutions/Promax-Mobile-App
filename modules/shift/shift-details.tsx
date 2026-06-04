@@ -21,13 +21,17 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
     >
       <View style={styles.header}>
         <UserHeader
-          image={shift?.staff?.imageUrl}
-          name={`${shift?.staff?.firstName ?? ""} ${shift?.staff?.surName ?? ""}`}
+          image={shift?.staff?.imageUrl ?? ""}
+          name={
+            `${shift?.staff?.firstName ?? ""} ${
+              shift?.staff?.surName ?? ""
+            }`.trim() || "Staff"
+          }
           role={"STAFF"}
         />
         <UserHeader
-          image={shift?.profile?.imageUrl}
-          name={shift?.clients}
+          image={shift?.profile?.imageUrl ?? ""}
+          name={shift?.clients ?? "Client"}
           role={"CLIENT"}
         />
       </View>
