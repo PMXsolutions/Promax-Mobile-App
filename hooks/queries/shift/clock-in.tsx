@@ -106,7 +106,12 @@ const useClockIn = (
     },
     onSuccess: ({ data }) => {
       setModalVisible(true);
-      return queryClient.invalidateQueries({ queryKey: ["shifts"] });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["shifts"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["shifts", "detail", { id: shiftRosterId }],
+        }),
+      ]);
     },
     onError: (error) => {
       if (isAxiosError(error)) {
@@ -117,9 +122,23 @@ const useClockIn = (
         });
       }
     },
+    onSettled: () => {
+      setDistanceCheckLoading(false);
+    },
   });
 
   const handleClock = async () => {
+    // Recently updated: keep GPS checks and the clock-in mutation as one locked action.
+    if (clockInPending || distanceCheckLoading) return;
+
+    if (!userId || !shiftRosterId) {
+      showMessage({
+        message: "Unable to clock in. Please refresh this shift and try again.",
+        type: "danger",
+      });
+      return;
+    }
+
     setDistanceCheckLoading(true);
 
     const location = await getCurrentLocation();
@@ -150,7 +169,6 @@ const useClockIn = (
 
     // All checks passed
     clockIn(location);
-    setDistanceCheckLoading(false);
   };
 
   return {

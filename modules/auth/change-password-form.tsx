@@ -30,11 +30,8 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
   const newPassword = form.watch("new_password");
 
   const onSubmitPasswordChange = async (data: ChangePasswordSchema) => {
-    console.log({
-      old_password: data.old_password,
-      new_password: data.new_password,
-      confirm_new_password: data.confirm_new_password,
-    });
+    // Recently updated: never log OTP or password fields from the reset flow.
+    void data;
 
     // updateUserPassword(
 

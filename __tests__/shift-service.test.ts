@@ -53,4 +53,32 @@ describe("getActivityDetailStatus", () => {
 
     expect(status).toBe("Cancelled");
   });
+
+  it("keeps overnight sleepover shifts clock-in eligible before next-day end time", () => {
+    const status = getActivityDetailStatus(
+      buildShift({
+        dateFrom: new Date("2026-06-03T22:00:00+10:00"),
+        dateTo: new Date("2026-06-03T06:00:00+10:00"),
+        isNightShift: true,
+        attendance: false,
+      }),
+      new Date("2026-06-03T23:00:00+10:00")
+    );
+
+    expect(status).toBe("Clock-In");
+  });
+
+  it("marks overnight shifts absent only after the rolled-over end time", () => {
+    const status = getActivityDetailStatus(
+      buildShift({
+        dateFrom: new Date("2026-06-03T22:00:00+10:00"),
+        dateTo: new Date("2026-06-03T06:00:00+10:00"),
+        isNightShift: true,
+        attendance: false,
+      }),
+      new Date("2026-06-04T07:00:00+10:00")
+    );
+
+    expect(status).toBe("Absent");
+  });
 });

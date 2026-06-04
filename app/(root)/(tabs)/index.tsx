@@ -58,14 +58,15 @@ const Activity = () => {
   // }
 
   const agendaShifts: AgendaProps[] = useMemo(() => {
+    // Recently updated: tolerate partial roster rows from the API while preserving visible shift data.
     return (shiftData || []).map((shift) => ({
       shiftRosterId: shift.shiftRosterId,
-      staff: shift.staff.fullName,
-      staffFirstName: shift.staff.firstName,
-      staffLastName: shift.staff.middleName ?? "",
-      staffImage: shift.staff.imageUrl ?? "",
-      client: shift.clients,
-      activities: shift.activities,
+      staff: shift.staff?.fullName ?? "",
+      staffFirstName: shift.staff?.firstName ?? "",
+      staffLastName: shift.staff?.middleName ?? "",
+      staffImage: shift.staff?.imageUrl ?? "",
+      client: shift.clients ?? "",
+      activities: shift.activities ?? "",
       dateFrom: new Date(shift.dateFrom),
       dateTo: new Date(shift.dateTo),
       status: shift.status,

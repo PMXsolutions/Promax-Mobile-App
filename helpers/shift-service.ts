@@ -1,5 +1,5 @@
 import { formatInTimeZone } from "date-fns-tz";
-import { subMinutes, formatDate } from "date-fns";
+import { addDays, subMinutes, formatDate } from "date-fns";
 import { AgendaProps, ShiftRosterType } from "@/types/shift";
 
 const aus_timezone = "Australia/Sydney";
@@ -24,15 +24,32 @@ const toDate = (timeVal: Date | string | number) =>
 const formattedActivityTime = (timeVal: Date | string | number) =>
   formatInTimeZone(toDate(timeVal), aus_timezone, activityTimestampFormat);
 
+// Recently updated: normalize roster end times so overnight/sleepover shifts stay active past midnight.
+const getRosterDateRange = (
+  activity: Pick<AgendaProps | ShiftRosterType, "dateFrom" | "dateTo"> & {
+    isNightShift?: boolean;
+  }
+) => {
+  const dateFrom = toDate(activity.dateFrom);
+  let dateTo = toDate(activity.dateTo);
+
+  if (activity.isNightShift || dateTo <= dateFrom) {
+    dateTo = addDays(dateTo, 1);
+  }
+
+  return { dateFrom, dateTo };
+};
+
 export function getActivityStatus(activity: AgendaProps) {
   const nowInAustraliaTime = formatInTimeZone(
     new Date(),
     aus_timezone,
     activityTimestampFormat
   );
-  const subMinDateFrom = subMinutes(toDate(activity?.dateFrom), 10);
+  const { dateFrom, dateTo } = getRosterDateRange(activity);
+  const subMinDateFrom = subMinutes(dateFrom, 10);
   const activityDateFrom = formattedActivityTime(subMinDateFrom);
-  const activityDateTo = formattedActivityTime(activity?.dateTo);
+  const activityDateTo = formattedActivityTime(dateTo);
 
   if (activity.status === "Cancelled") {
     return "Cancelled";
@@ -64,9 +81,10 @@ export function getActivityDetailStatus(activity: ShiftRosterType, now: Date) {
     aus_timezone,
     activityTimestampFormat
   );
-  const subMinDateFrom = subMinutes(toDate(activity?.dateFrom), 10);
+  const { dateFrom, dateTo } = getRosterDateRange(activity);
+  const subMinDateFrom = subMinutes(dateFrom, 10);
   const activityDateFrom = formattedActivityTime(subMinDateFrom);
-  const activityDateTo = formattedActivityTime(activity?.dateTo);
+  const activityDateTo = formattedActivityTime(dateTo);
 
   if (activity.status === "Cancelled") {
     return "Cancelled";

@@ -106,12 +106,18 @@ const AddAvailability = () => {
     newStartTime: string,
     newEndTime: string
   ) => {
-    setSubmitInfo({
+    const nextSubmitInfo = {
       day,
       newStartTime,
       newEndTime,
-    });
-    mutation.mutate();
+      user: user?.userId as string,
+      staffId: staff?.staffId as number,
+      companyID: user?.companyId as number,
+    };
+
+    // Recently updated: pass fresh availability variables into mutate to avoid stale React state.
+    setSubmitInfo({ day, newStartTime, newEndTime });
+    mutation.mutate(nextSubmitInfo);
   };
 
   const handleAddTimeSlot = (day: string) => {
@@ -155,7 +161,7 @@ const AddAvailability = () => {
     value: string
   ) => {
     const existingTimeSlot = availableHours[day].find((slot) => slot.id === id);
-    setEditInfo({
+    const nextEditInfo = {
       staffAvailibilityId: Number(id),
       days: day,
       fromTimeOfDay:
@@ -169,8 +175,10 @@ const AddAvailability = () => {
       user: user?.userId as string,
       staffId: staff?.staffId as number,
       companyID: user?.companyId as number,
-    });
-    editMutation.mutate();
+    };
+
+    setEditInfo(nextEditInfo);
+    editMutation.mutate(nextEditInfo);
   };
   const handleChangeTime = (
     day: string,
@@ -245,7 +253,7 @@ const AddAvailability = () => {
 
   const handleDelete = (id: number) => {
     setDelId(id);
-    delMutation.mutate();
+    delMutation.mutate(id);
   };
 
   const handleDeleteTimeSlot = async (

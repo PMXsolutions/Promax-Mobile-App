@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { StaffProfileTypes, UserProfileType } from "@/types/auth";
 import storageUtil from "@/utils/storage";
 import { queryClient } from "@/libs/query";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type AuthUser = Omit<UserProfileType, "token">;
 
@@ -38,6 +39,8 @@ const useAuthStore = create<AuthState>()(
       logout: async () => {
         set({ isAuthenticated: false, user: null, token: null, staff: null });
         queryClient.clear();
+        // Recently updated: clear user-scoped push registration state on shared devices.
+        await AsyncStorage.multiRemove(["fcmToken", "fcmTokenOwner"]);
         await storageUtil.removeItem("auth-storage");
       },
     }),

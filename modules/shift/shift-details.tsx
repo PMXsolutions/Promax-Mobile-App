@@ -11,7 +11,8 @@ import ListDisplay from "@/components/shared/list-display";
 import { THEME } from "@/constants/theme";
 
 const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
-  const shiftActivities = shift?.activities.split(",");
+  // Recently updated: tolerate partial shift payloads instead of crashing the detail screen.
+  const shiftActivities = shift?.activities?.split(",").filter(Boolean) ?? [];
 
   return (
     <ScrollView
@@ -20,12 +21,12 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
     >
       <View style={styles.header}>
         <UserHeader
-          image={shift?.staff.imageUrl!}
-          name={`${shift?.staff.firstName} ${shift?.staff.surName}`}
+          image={shift?.staff?.imageUrl}
+          name={`${shift?.staff?.firstName ?? ""} ${shift?.staff?.surName ?? ""}`}
           role={"STAFF"}
         />
         <UserHeader
-          image={shift?.profile.imageUrl}
+          image={shift?.profile?.imageUrl}
           name={shift?.clients}
           role={"CLIENT"}
         />
