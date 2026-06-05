@@ -16,13 +16,14 @@ import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import MiniLoader from "@/components/shared/mini-loader";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import { getReportFormValidationError } from "./report-validation";
 
 const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   const { user, staff } = useAuthStore();
+  const parsedRosterId = Number(rosterId);
+  const hasValidRosterId = Number.isFinite(parsedRosterId) && parsedRosterId > 0;
 
-  const { data: shift, isLoading } = shiftQuery.useShiftDetail(
-    Number(rosterId)
-  );
+  const { data: shift, isLoading } = shiftQuery.useShiftDetail(parsedRosterId);
 
   // Update the `useState` to match the type
   const [form, setForm] = useState({
@@ -57,9 +58,14 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
 
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
+      if (!hasValidRosterId) {
+        throw new Error("Invalid shift roster");
+      }
+
       const reqBody = {
         companyID: user?.companyId,
-        shiftRosterId: rosterId,
+        // Recently updated: send roster ID as a number to match the API model.
+        shiftRosterId: parsedRosterId,
         ...form,
       };
       return await reportService.submitShiftForm(
@@ -76,6 +82,9 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
       return Promise.all([
         queryClient.invalidateQueries({ queryKey: ["shifts"] }),
         queryClient.invalidateQueries({
+          queryKey: ["shifts", "detail", { id: parsedRosterId }],
+        }),
+        queryClient.invalidateQueries({
           queryKey: ["staffReports", staff?.staffId],
         }),
       ]);
@@ -90,20 +99,34 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   });
 
   const handleFormSubmit = () => {
-    const cleanedGoalProgress = form.goal_Progress.replace(/\s/g, "");
-
-    if (!form.goal_Progress || cleanedGoalProgress.length < 100) {
+    if (!hasValidRosterId) {
       showMessage({
-        message:
-          "Please provide at least 100 characters for 'Support plan progress and activities'.",
+        message: "Unable to submit this report. Please reopen the shift and try again.",
         type: "danger",
       });
       return;
     }
 
-    if (form.isIncident && !form.details_IfIsIncipient.trim()) {
+    if (shift?.isShiftReportSigned || shift?.reportId) {
       showMessage({
-        message: "Please provide incident details before submitting.",
+        message: "A shift report already exists for this shift.",
+        type: "warning",
+      });
+
+      if (shift?.reportId) {
+        router.replace({
+          pathname: "/(root)/report",
+          params: { reportId: shift.reportId, rosterId: parsedRosterId },
+        });
+      }
+
+      return;
+    }
+
+    const validationError = getReportFormValidationError(form);
+    if (validationError) {
+      showMessage({
+        message: validationError,
         type: "danger",
       });
       return;

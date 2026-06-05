@@ -17,9 +17,15 @@ export const useClockOut = (user: string, shiftRosterId: number) => {
         description: "Well done!",
         type: "success",
       });
-      return queryClient.invalidateQueries({
-        queryKey: ["shifts"],
-      });
+      // Recently updated: refresh both roster and detail state after attendance changes.
+      return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["shifts"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["shifts", "detail", { id: shiftRosterId }],
+        }),
+      ]);
     },
     onError: (error) => {
       if (isAxiosError(error)) {
