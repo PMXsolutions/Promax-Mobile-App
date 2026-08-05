@@ -1,13 +1,15 @@
 import { publicAxios } from "@/libs/axiosInstance";
 import { ForgotpasswordSchema, SigninFormSchema } from "@/modules/auth/types";
 import { isAxiosError } from "axios";
+import useAuthStore from "@/store/use-auth-store";
 
 const loginUser = async (payload: SigninFormSchema) => {
   try {
     // BE auth_login defaults medium to "Web" when omitted; staff app must tag Mobile.
+    const deviceId = useAuthStore.getState().getOrCreateDeviceId();
     const { data } = await publicAxios.post(
       "/Account/auth_login?medium=Mobile",
-      payload
+      { ...payload, deviceId }
     );
 
     return data;

@@ -1,22 +1,17 @@
 import useAuthStore from "@/store/use-auth-store";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { showMessage } from "react-native-flash-message";
+import { tryRefreshSession } from "@/services/session";
 
-// Define the structure of your API response data
 interface ApiResponse<T> {
   status: number;
   message: string;
   data: T;
-  // Add other fields if needed
 }
 
-// Define the structure of your specific response data
 interface DataStructure {
-  // Define the structure based on your API response
-  // For example:
   id: number;
   name: string;
-  // Add other fields as per your response data
 }
 
 // Fail closed: never fall back to a hardcoded hosted API URL (prevents
@@ -76,18 +71,42 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+type RetryConfig = InternalAxiosRequestConfig & { _wave11bRetry?: boolean };
+
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse<ApiResponse<DataStructure>>) => response,
-  (error: AxiosError<{ message?: string; Message?: string }>) => {
+  async (error: AxiosError<{ message?: string; Message?: string; Code?: string; code?: string }>) => {
     const { response } = error;
+    const original = error.config as RetryConfig | undefined;
+
     if (response) {
       switch (response.status) {
-        case 401: // Unauthorized
-          void useAuthStore.getState().logout();
+        case 401: {
+          if (original && !original._wave11bRetry) {
+            original._wave11bRetry = true;
+            const { refreshToken, deviceId } = useAuthStore.getState();
+            if (refreshToken && deviceId) {
+              const result = await tryRefreshSession({
+                refreshToken,
+                deviceId,
+              });
+              if (result.ok && result.accessToken) {
+                useAuthStore.getState().applyRefreshedTokens({
+                  token: result.accessToken,
+                  refreshToken: result.refreshToken,
+                  tokenExpiration: result.tokenExpiration,
+                });
+                original.headers = original.headers || {};
+                original.headers["Authorization"] = `Bearer ${result.accessToken}`;
+                return axiosInstance(original);
+              }
+            }
+          }
+          useAuthStore.getState().clearInvalidAuth();
           break;
+        }
 
         case 403:
-          // Forbidden is action-scoped (e.g. TenantAccess), not whole-session invalid.
           showMessage({
             message:
               response.data?.message ||

@@ -17,6 +17,9 @@ export interface UserProfileType {
   role: string;
   companyId: number;
   token: string;
+  /** Wave-11B rotating refresh (optional additive). */
+  refreshToken?: string;
+  refreshExpiresAtUtc?: string;
 }
 
 export interface StaffProfileTypes {

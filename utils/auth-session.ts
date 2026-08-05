@@ -23,7 +23,7 @@ export const readJwtExpiryMs = (token: string | null): number | null => {
 };
 
 /**
- * Fail-closed client session check (Wave-10).
+ * Fail-closed client session check (Wave-10/11B).
  * Prefer server-issued tokenExpiration; fall back to JWT exp; otherwise require reauthentication.
  */
 export const isAuthSessionExpired = (
@@ -46,4 +46,30 @@ export const isAuthSessionExpired = (
 
   // Missing/malformed expiry must not create an indefinite session.
   return true;
+};
+
+export type ClientAuthFailure =
+  | "expired"
+  | "revoked"
+  | "tenant_denied"
+  | "network"
+  | "ok";
+
+/** Map HTTP status + API code for UI draft-preserve / warn (Wave-11B). */
+export const mapAuthFailure = (
+  status?: number,
+  code?: string
+): ClientAuthFailure => {
+  if (!status) return "network";
+  if (status === 403) return "tenant_denied";
+  if (status === 401) {
+    if (
+      code === "reuse_detected" ||
+      code === "user_ineligible" ||
+      code === "org_or_user_blocked"
+    )
+      return "revoked";
+    return "expired";
+  }
+  return "ok";
 };

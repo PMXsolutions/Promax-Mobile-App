@@ -1,4 +1,8 @@
-import { isAuthSessionExpired, readJwtExpiryMs } from "@/utils/auth-session";
+import {
+  isAuthSessionExpired,
+  mapAuthFailure,
+  readJwtExpiryMs,
+} from "@/utils/auth-session";
 
 const baseUser = {
   userId: "u1",
@@ -75,5 +79,19 @@ describe("isAuthSessionExpired", () => {
   it("readJwtExpiryMs returns null for garbage", () => {
     expect(readJwtExpiryMs(null)).toBeNull();
     expect(readJwtExpiryMs("abc")).toBeNull();
+  });
+});
+
+describe("Wave-11B session failure classification", () => {
+  it("maps reuse to revoked", () => {
+    expect(mapAuthFailure(401, "reuse_detected")).toBe("revoked");
+  });
+
+  it("maps 403 to tenant_denied without logout semantics", () => {
+    expect(mapAuthFailure(403)).toBe("tenant_denied");
+  });
+
+  it("maps missing status to network", () => {
+    expect(mapAuthFailure(undefined)).toBe("network");
   });
 });
