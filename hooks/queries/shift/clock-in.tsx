@@ -19,6 +19,7 @@ type ClockInCheckResult =
 interface StaffLocationProps {
   latitude: number;
   longitude: number;
+  accuracy?: number;
 }
 
 const useClockIn = (
@@ -54,6 +55,7 @@ const useClockIn = (
       return {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
+        accuracy: location.coords.accuracy ?? undefined,
       };
     } catch (error) {
       showMessage({
@@ -101,7 +103,10 @@ const useClockIn = (
         userId,
         shiftRosterId,
         staffLocation.latitude,
-        staffLocation.longitude
+        staffLocation.longitude,
+        {
+          accuracy: staffLocation.accuracy,
+        }
       );
     },
     onSuccess: ({ data }) => {

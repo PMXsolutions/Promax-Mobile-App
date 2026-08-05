@@ -29,16 +29,29 @@ const fetchShiftDetails = async (shiftId: number) => {
   }
 };
 
-/** Wave-10: prefer POST; legacy GET remains on API for older clients. */
+/** Wave-10: prefer POST; legacy GET remains on API for older clients.
+ * Wave-11: optional accuracy / exceptionReason for server geofence. */
 const clockIn = async (
   userId: string,
   shiftId: number,
   latitude: number,
-  longitude: number
+  longitude: number,
+  options?: { accuracy?: number; exceptionReason?: string }
 ) => {
-  return axiosInstance.post(
-    `/Attendances/clock_in?userId=${userId}&shiftId=${shiftId}&lat=${latitude}&lng=${longitude}&medium=Mobile`
-  );
+  const params = new URLSearchParams({
+    userId: String(userId),
+    shiftId: String(shiftId),
+    lat: String(latitude),
+    lng: String(longitude),
+    medium: "Mobile",
+  });
+  if (options?.accuracy != null && Number.isFinite(options.accuracy)) {
+    params.set("accuracy", String(options.accuracy));
+  }
+  if (options?.exceptionReason) {
+    params.set("exceptionReason", options.exceptionReason);
+  }
+  return axiosInstance.post(`/Attendances/clock_in?${params.toString()}`);
 };
 const clockOut = async (userId: string, shiftId: number) => {
   return axiosInstance.post(
