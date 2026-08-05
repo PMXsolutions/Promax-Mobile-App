@@ -4,7 +4,11 @@ import { isAxiosError } from "axios";
 
 const loginUser = async (payload: SigninFormSchema) => {
   try {
-    const { data } = await publicAxios.post("/Account/auth_login", payload);
+    // BE auth_login defaults medium to "Web" when omitted; staff app must tag Mobile.
+    const { data } = await publicAxios.post(
+      "/Account/auth_login?medium=Mobile",
+      payload
+    );
 
     return data;
   } catch (error: unknown) {

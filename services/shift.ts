@@ -29,18 +29,19 @@ const fetchShiftDetails = async (shiftId: number) => {
   }
 };
 
+/** Wave-10: prefer POST; legacy GET remains on API for older clients. */
 const clockIn = async (
   userId: string,
   shiftId: number,
   latitude: number,
   longitude: number
 ) => {
-  return axiosInstance.get(
-    `/Attendances/clock_in?userId=${userId}&shiftId=${shiftId}&lat=${latitude}&lng=${longitude}`
+  return axiosInstance.post(
+    `/Attendances/clock_in?userId=${userId}&shiftId=${shiftId}&lat=${latitude}&lng=${longitude}&medium=Mobile`
   );
 };
 const clockOut = async (userId: string, shiftId: number) => {
-  return axiosInstance.get(
+  return axiosInstance.post(
     `/Attendances/clock_out?userId=${userId}&shiftId=${shiftId}`
   );
 };

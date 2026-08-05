@@ -4,7 +4,7 @@ import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
 import storageUtil from "@/utils/storage";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
-import useAuthStore from "@/store/use-auth-store";
+import useAuthStore, { isAuthSessionExpired } from "@/store/use-auth-store";
 
 const Index = () => {
   const { user, token, isAuthenticated } = useAuthStore();
@@ -26,7 +26,11 @@ const Index = () => {
     const checkOnboarding = async () => {
       const hasOnboarded = await storageUtil.getItem(STORAGE_KEYS.ONBOARDED);
       const hasValidSession =
-        isAuthenticated && !!user && !!token && user.role === "Staff";
+        isAuthenticated &&
+        !!user &&
+        !!token &&
+        user.role === "Staff" &&
+        !isAuthSessionExpired(user, token);
 
       if (hasValidSession) {
         router.replace("/(root)/(tabs)");

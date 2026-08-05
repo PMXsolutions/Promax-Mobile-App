@@ -1,7 +1,7 @@
 // components/auth/AuthWrapper.tsx
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
-import useAuthStore from "@/store/use-auth-store";
+import useAuthStore, { isAuthSessionExpired } from "@/store/use-auth-store";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -19,7 +19,8 @@ export default function AuthWrapper({ children, mode }: AuthWrapperProps) {
     isAuthenticated &&
     !!user &&
     !!token &&
-    user.role === "Staff";
+    user.role === "Staff" &&
+    !isAuthSessionExpired(user, token);
 
   useEffect(() => {
     const unsubscribe = useAuthStore.persist.onFinishHydration(() => {

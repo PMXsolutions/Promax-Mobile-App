@@ -4,6 +4,7 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axiosInstance from "@/libs/axiosInstance";
 
 // Setup notification handler
 Notifications.setNotificationHandler({
@@ -57,32 +58,17 @@ const usePushNotifications = (
   );
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
-  // Send token to backend
-  const sendTokenToBackend = async (fcmToken: string) => {
+  // Register device token on tenant-bound BE DeviceTokens (not external Render host).
+  const sendTokenToBackend = async (deviceToken: string) => {
     try {
-      const response = await fetch(
-        "https://push-notification-r5mb.onrender.com/api/save-token",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            device_Token: fcmToken,
-            userId,
-            companyId,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        console.log("Token successfully sent to the backend.");
-        await AsyncStorage.setItem("fcmToken", fcmToken);
-      } else {
-        console.error("Failed to send token to backend:", response.status);
-      }
+      await axiosInstance.post("/DeviceTokens/add_token", {
+        Device_Token: deviceToken,
+        UserId: userId,
+        CompanyId: companyId,
+      });
+      await AsyncStorage.setItem("fcmToken", deviceToken);
     } catch (error) {
-      console.error("Error sending token to backend:", error);
+      console.error("Failed to register device token with API");
     }
   };
 
@@ -97,13 +83,11 @@ const usePushNotifications = (
 
       const fcmDeviceToken = await getFCMDevicePushTokenAsync();
       if (fcmDeviceToken) {
-        console.log(fcmDeviceToken);
+        // Do not log device push tokens (secret/PII adjacent).
         setFcmToken(fcmDeviceToken);
         const storedToken = await AsyncStorage.getItem("fcmToken");
         if (storedToken !== fcmDeviceToken) {
           await sendTokenToBackend(fcmDeviceToken);
-        } else {
-          console.log("FCM Token is already sent to backend");
         }
       }
 
@@ -121,11 +105,9 @@ const usePushNotifications = (
         );
 
       responseListener.current =
-        Notifications.addNotificationResponseReceivedListener(
-          (response: Notifications.NotificationResponse) => {
-            console.log("Notification Response:", response);
-          }
-        );
+        Notifications.addNotificationResponseReceivedListener(() => {
+          // Intentionally no token/payload logging.
+        });
 
       setLoading(false);
     };
@@ -136,7 +118,7 @@ const usePushNotifications = (
       notificationListener.current?.remove();
       responseListener.current?.remove();
     };
-  }, [shouldSkip]);
+  }, [shouldSkip, userId, companyId]);
 
   const schedulePushNotification = async (
     notificationData: NotificationData
@@ -202,9 +184,8 @@ async function registerForPushNotificationsAsync(): Promise<
       }
 
       token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-      console.log("Expo Push Token:", token);
     } catch (e) {
-      console.error("Error getting expo push token", e);
+      console.error("Error getting expo push token");
     }
   } else {
     Alert.alert("Must use physical device for Push Notifications");
@@ -219,7 +200,7 @@ async function getFCMDevicePushTokenAsync(): Promise<string | null> {
     const fcmToken = (await Notifications.getDevicePushTokenAsync()).data;
     return fcmToken;
   } catch (error) {
-    console.error("Failed to get FCM token", error);
+    console.error("Failed to get FCM token");
     return null;
   }
 }
