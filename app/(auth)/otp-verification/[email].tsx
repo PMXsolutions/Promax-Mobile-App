@@ -116,7 +116,11 @@ const OtpVerfication: React.FC = () => {
         type: "success",
         message: data.message,
       });
-      router.push("/(auth)/sign-in");
+      if (data.requiresPasswordSetup) {
+        router.push(`/(auth)/change-password/${email}`);
+      } else {
+        router.push("/(auth)/sign-in");
+      }
       setLoading(false);
     } catch (error: any) {
       setLoading(false);
