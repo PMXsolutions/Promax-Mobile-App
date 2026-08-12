@@ -5,3 +5,7 @@ export interface AttendanceLocation {
   longitude: number;
   accuracy?: number;
 }
+
+export const canSubmitAttendanceOnline = (
+  isConnected: boolean | null
+): boolean => isConnected === true;

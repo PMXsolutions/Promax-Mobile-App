@@ -1,5 +1,6 @@
 import axiosInstance from "@/libs/axiosInstance";
 import { ShiftRosterService } from "@/services/shift";
+import { canSubmitAttendanceOnline } from "@/constants/attendance";
 
 jest.mock("@/libs/axiosInstance", () => ({
   __esModule: true,
@@ -57,5 +58,13 @@ describe("mobile attendance API contract", () => {
       accuracy: "11",
       exceptionReason: "Emergency department handover",
     });
+  });
+});
+
+describe("offline attendance policy", () => {
+  it("fails closed until connectivity is positively confirmed", () => {
+    expect(canSubmitAttendanceOnline(null)).toBe(false);
+    expect(canSubmitAttendanceOnline(false)).toBe(false);
+    expect(canSubmitAttendanceOnline(true)).toBe(true);
   });
 });

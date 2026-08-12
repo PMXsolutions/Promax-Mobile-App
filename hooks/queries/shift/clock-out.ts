@@ -8,7 +8,9 @@ import { showMessage } from "react-native-flash-message";
 import {
   ATTENDANCE_GEOFENCE_RADIUS_METERS,
   AttendanceLocation,
+  canSubmitAttendanceOnline,
 } from "@/constants/attendance";
+import { useNetwork } from "@/context/NetworkProvider";
 
 export const useClockOut = (
   user: string,
@@ -17,6 +19,7 @@ export const useClockOut = (
   clientLng: number
 ) => {
   const queryClient = useQueryClient();
+  const { isConnected } = useNetwork();
   const [locationLoading, setLocationLoading] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
   const [staffLocation, setStaffLocation] =
@@ -104,6 +107,16 @@ export const useClockOut = (
   });
 
   const handleClockOut = async () => {
+    if (!canSubmitAttendanceOnline(isConnected)) {
+      showMessage({
+        message: "Clock-out not sent",
+        description:
+          "You are offline or the connection is still being checked. Nothing was queued; reconnect and try again.",
+        type: "danger",
+      });
+      return;
+    }
+
     setLocationLoading(true);
     const location = await getCurrentLocation();
     setLocationLoading(false);
@@ -132,6 +145,16 @@ export const useClockOut = (
   };
 
   const submitException = (reason: string) => {
+    if (!canSubmitAttendanceOnline(isConnected)) {
+      showMessage({
+        message: "Clock-out not sent",
+        description:
+          "The connection was lost. Nothing was queued; reconnect and try again with a fresh location.",
+        type: "danger",
+      });
+      return;
+    }
+
     const trimmedReason = reason.trim();
     if (!staffLocation || !trimmedReason) {
       showMessage({

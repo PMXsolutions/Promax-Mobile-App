@@ -9,7 +9,9 @@ import { isAxiosError } from "axios";
 import {
   ATTENDANCE_GEOFENCE_RADIUS_METERS,
   AttendanceLocation,
+  canSubmitAttendanceOnline,
 } from "@/constants/attendance";
+import { useNetwork } from "@/context/NetworkProvider";
 
 type ClockInCheckResult =
   | { success: true; distance: number }
@@ -27,6 +29,7 @@ const useClockIn = (
   clientLng: number
 ) => {
   const queryClient = useQueryClient();
+  const { isConnected } = useNetwork();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [distanceCheckLoading, setDistanceCheckLoading] = useState(false);
@@ -131,6 +134,16 @@ const useClockIn = (
   });
 
   const handleClock = async () => {
+    if (!canSubmitAttendanceOnline(isConnected)) {
+      showMessage({
+        message: "Clock-in not sent",
+        description:
+          "You are offline or the connection is still being checked. Nothing was queued; reconnect and try again.",
+        type: "danger",
+      });
+      return;
+    }
+
     setDistanceCheckLoading(true);
 
     const location = await getCurrentLocation();
@@ -165,6 +178,16 @@ const useClockIn = (
   };
 
   const submitException = (reason: string) => {
+    if (!canSubmitAttendanceOnline(isConnected)) {
+      showMessage({
+        message: "Clock-in not sent",
+        description:
+          "The connection was lost. Nothing was queued; reconnect and try again with a fresh location.",
+        type: "danger",
+      });
+      return;
+    }
+
     const trimmedReason = reason.trim();
     if (!staffLocation || !trimmedReason) {
       showMessage({

@@ -20,7 +20,7 @@ const NoConnectionToast = () => {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (!isConnected && !dismissed) {
+    if (isConnected === false && !dismissed) {
       Animated.spring(slideY, {
         toValue: Platform.OS === "ios" ? 60 : 40,
         useNativeDriver: true,
@@ -28,7 +28,7 @@ const NoConnectionToast = () => {
     }
 
     // If connection is restored, slide out
-    if (isConnected) {
+    if (isConnected === true) {
       Animated.timing(slideY, {
         toValue: -100,
         duration: 300,
@@ -39,7 +39,7 @@ const NoConnectionToast = () => {
     }
   }, [isConnected, dismissed]);
 
-  if (isConnected || dismissed) return null;
+  if (isConnected !== false || dismissed) return null;
 
   const handleDismiss = () => {
     Animated.timing(slideY, {
