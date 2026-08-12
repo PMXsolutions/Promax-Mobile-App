@@ -53,10 +53,27 @@ const clockIn = async (
   }
   return axiosInstance.post(`/Attendances/clock_in?${params.toString()}`);
 };
-const clockOut = async (userId: string, shiftId: number) => {
-  return axiosInstance.post(
-    `/Attendances/clock_out?userId=${userId}&shiftId=${shiftId}`
-  );
+const clockOut = async (
+  userId: string,
+  shiftId: number,
+  latitude: number,
+  longitude: number,
+  options?: { accuracy?: number; exceptionReason?: string }
+) => {
+  const params = new URLSearchParams({
+    userId: String(userId),
+    shiftId: String(shiftId),
+    lat: String(latitude),
+    lng: String(longitude),
+    medium: "Mobile",
+  });
+  if (options?.accuracy != null && Number.isFinite(options.accuracy)) {
+    params.set("accuracy", String(options.accuracy));
+  }
+  if (options?.exceptionReason) {
+    params.set("exceptionReason", options.exceptionReason);
+  }
+  return axiosInstance.post(`/Attendances/clock_out?${params.toString()}`);
 };
 const submitCancellationReason = async (
   user: string,

@@ -4,8 +4,6 @@ import { getActivityDetailStatus } from "./shift-service";
 import { ShiftRosterType } from "@/types/shift";
 import { THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";
-import { UseMutateFunction } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
 import CustomButton from "@/components/shared/custom-button";
 import { router } from "expo-router";
 import { showMessage } from "react-native-flash-message";
@@ -21,7 +19,7 @@ interface ShiftProps {
   activity: ShiftRosterType;
   clockInPending: boolean;
   clockIn: () => Promise<void>;
-  clockOut: UseMutateFunction<AxiosResponse<any, any>, Error, void, unknown>;
+  clockOut: () => Promise<void>;
   clockOutPending: boolean;
   now: Date;
 }

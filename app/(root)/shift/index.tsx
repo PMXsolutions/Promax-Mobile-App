@@ -39,15 +39,27 @@ const ShiftDetail = () => {
     setShowMapModal,
     showMapModal,
     staffLocation,
+    submitException: submitClockInException,
   } = useClockIn(
     user?.userId as string,
     shift?.shiftRosterId!,
     shift?.profile?.latitude!,
     shift?.profile?.longitude!
   );
-  const { mutate: clockOut, isPending: clockOutPending } = useClockOut(
+  const {
+    handleClockOut,
+    clockOutPending,
+    locationLoading: clockOutLocationLoading,
+    showMapModal: showClockOutMapModal,
+    setShowMapModal: setShowClockOutMapModal,
+    staffLocation: clockOutLocation,
+    lastDistance: clockOutDistance,
+    submitException: submitClockOutException,
+  } = useClockOut(
     user?.userId as string,
-    shift?.shiftRosterId!
+    shift?.shiftRosterId!,
+    shift?.profile?.latitude!,
+    shift?.profile?.longitude!
   );
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -97,8 +109,8 @@ const ShiftDetail = () => {
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={clients} />
       <MiniLoader
-        visible={distanceCheckLoading}
-        title="Calculating your distance to client's location.."
+        visible={distanceCheckLoading || clockOutLocationLoading}
+        title="Checking your location against the client location.."
       />
       {shift && getActivityDetailStatus(shift, now) === "Shift In progress" && (
         <ProgressBanner shiftId={shift.shiftRosterId} />
@@ -111,7 +123,7 @@ const ShiftDetail = () => {
         <ShiftAction
           clockIn={handleClock}
           clockInPending={clockInPending}
-          clockOut={clockOut}
+          clockOut={handleClockOut}
           clockOutPending={clockOutPending}
           activity={shift!}
           now={now}
@@ -139,6 +151,25 @@ const ShiftDetail = () => {
           }}
           distance={lastDistance ?? 0}
           lightweight={false}
+          attendanceAction="clock in"
+          onSubmitException={submitClockInException}
+          exceptionPending={clockInPending}
+        />
+      )}
+      {clockOutLocation && (
+        <MapPreviewBottomSheet
+          visible={showClockOutMapModal}
+          onClose={() => setShowClockOutMapModal(false)}
+          staffLocation={clockOutLocation}
+          clientLocation={{
+            latitude: shift?.profile?.latitude!,
+            longitude: shift?.profile?.longitude!,
+          }}
+          distance={clockOutDistance ?? 0}
+          lightweight={false}
+          attendanceAction="clock out"
+          onSubmitException={submitClockOutException}
+          exceptionPending={clockOutPending}
         />
       )}
 

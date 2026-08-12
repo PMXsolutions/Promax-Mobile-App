@@ -6,6 +6,10 @@ import { Alert } from "react-native";
 import { ShiftRosterService } from "@/services/shift";
 import { showMessage } from "react-native-flash-message";
 import { isAxiosError } from "axios";
+import {
+  ATTENDANCE_GEOFENCE_RADIUS_METERS,
+  AttendanceLocation,
+} from "@/constants/attendance";
 
 type ClockInCheckResult =
   | { success: true; distance: number }
@@ -15,12 +19,6 @@ type ClockInCheckResult =
       distance?: number;
       message: string;
     };
-
-interface StaffLocationProps {
-  latitude: number;
-  longitude: number;
-  accuracy?: number;
-}
 
 const useClockIn = (
   userId: string,
@@ -33,12 +31,12 @@ const useClockIn = (
   const [modalVisible, setModalVisible] = useState(false);
   const [distanceCheckLoading, setDistanceCheckLoading] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
-  const [staffLocation, setStaffLocation] = useState<StaffLocationProps | null>(
+  const [staffLocation, setStaffLocation] = useState<AttendanceLocation | null>(
     null
   );
   const [lastDistance, setLastDistance] = useState<number | null>(null);
 
-  const getCurrentLocation = async (): Promise<StaffLocationProps | null> => {
+  const getCurrentLocation = async (): Promise<AttendanceLocation | null> => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -68,8 +66,8 @@ const useClockIn = (
   };
 
   const canClockIn = (
-    staffLocation: StaffLocationProps,
-    thresholdDistance = 1000
+    staffLocation: AttendanceLocation,
+    thresholdDistance = ATTENDANCE_GEOFENCE_RADIUS_METERS
   ): ClockInCheckResult => {
     if (!clientLat || !clientLng || clientLat === 0 || clientLng === 0) {
       return {
@@ -98,18 +96,26 @@ const useClockIn = (
   };
 
   const { mutate: clockIn, isPending: clockInPending } = useMutation({
-    mutationFn: async (staffLocation: StaffLocationProps) => {
+    mutationFn: async ({
+      location,
+      exceptionReason,
+    }: {
+      location: AttendanceLocation;
+      exceptionReason?: string;
+    }) => {
       return ShiftRosterService.clockIn(
         userId,
         shiftRosterId,
-        staffLocation.latitude,
-        staffLocation.longitude,
+        location.latitude,
+        location.longitude,
         {
-          accuracy: staffLocation.accuracy,
+          accuracy: location.accuracy,
+          exceptionReason,
         }
       );
     },
-    onSuccess: ({ data }) => {
+    onSuccess: () => {
+      setShowMapModal(false);
       setModalVisible(true);
       return queryClient.invalidateQueries({ queryKey: ["shifts"] });
     },
@@ -154,8 +160,23 @@ const useClockIn = (
     }
 
     // All checks passed
-    clockIn(location);
+    clockIn({ location });
     setDistanceCheckLoading(false);
+  };
+
+  const submitException = (reason: string) => {
+    const trimmedReason = reason.trim();
+    if (!staffLocation || !trimmedReason) {
+      showMessage({
+        message: "Reason required",
+        description:
+          "Explain why you need to clock in outside the client location.",
+        type: "danger",
+      });
+      return;
+    }
+
+    clockIn({ location: staffLocation, exceptionReason: trimmedReason });
   };
 
   return {
@@ -168,6 +189,7 @@ const useClockIn = (
     setShowMapModal,
     staffLocation,
     lastDistance,
+    submitException,
   };
 };
 

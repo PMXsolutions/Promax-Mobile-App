@@ -1,11 +1,17 @@
-import React, { useEffect, useRef, useMemo } from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import React, { useEffect, useRef, useMemo, useState } from "react";
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  TextInput,
+} from "react-native";
 import MapView, { Marker, Circle, LatLng } from "react-native-maps";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import CustomButton from "../shared/custom-button";
 import CustomBackdrop from "../ui/custom-backdrop";
 import { THEME } from "@/constants/theme";
 import Text from "../shared/text";
+import { ATTENDANCE_GEOFENCE_RADIUS_METERS } from "@/constants/attendance";
 
 interface Props {
   visible: boolean;
@@ -19,6 +25,9 @@ interface Props {
   distance: number;
   threshold?: number;
   lightweight?: boolean; // ⬅️ enables simplified UI
+  attendanceAction?: "clock in" | "clock out";
+  onSubmitException?: (reason: string) => void;
+  exceptionPending?: boolean;
 }
 
 const MapPreviewBottomSheet = ({
@@ -27,11 +36,15 @@ const MapPreviewBottomSheet = ({
   staffLocation,
   clientLocation,
   distance,
-  threshold = 100,
+  threshold = ATTENDANCE_GEOFENCE_RADIUS_METERS,
   lightweight = false,
+  attendanceAction = "clock in",
+  onSubmitException,
+  exceptionPending = false,
 }: Props) => {
   const mapRef = useRef<MapView>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const [exceptionReason, setExceptionReason] = useState("");
   const isInRange = distance <= threshold;
 
   const isValidCoords =
@@ -50,13 +63,14 @@ const MapPreviewBottomSheet = ({
       bottomSheetRef.current?.present();
     } else {
       bottomSheetRef.current?.dismiss();
+      setExceptionReason("");
     }
-  }, [visible]);
+  }, [visible, isValidCoords]);
 
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
-      snapPoints={["60%"]}
+      snapPoints={["85%"]}
       index={0}
       backgroundStyle={styles.sheetBackground}
       handleIndicatorStyle={styles.indicator}
@@ -119,8 +133,8 @@ const MapPreviewBottomSheet = ({
                 ]}
               >
                 {isInRange
-                  ? "✅ You're within the required range to clock in"
-                  : "⚠️ You're currently outside the clock-in zone"}
+                  ? `✅ You're within the required range to ${attendanceAction}`
+                  : `⚠️ You're currently outside the ${attendanceAction} zone`}
               </Text>
             </View>
 
@@ -132,13 +146,41 @@ const MapPreviewBottomSheet = ({
                   </Text>
                 )}
 
-                {/* <Text style={styles.statusText}>
-                  {isInRange
-                    ? "You're within the clock-in range"
-                    : "You're too far from the client location"}
-                </Text> */}
+                {!isInRange && onSubmitException && (
+                  <View style={styles.exceptionContainer}>
+                    <Text style={styles.exceptionHelp}>
+                      If care must continue, enter the reason. The exception and
+                      your location will be sent to the supervisor audit queue.
+                    </Text>
+                    <TextInput
+                      accessibilityLabel={`${attendanceAction} exception reason`}
+                      value={exceptionReason}
+                      onChangeText={setExceptionReason}
+                      placeholder="Required reason"
+                      multiline
+                      maxLength={500}
+                      editable={!exceptionPending}
+                      style={styles.reasonInput}
+                    />
+                    <CustomButton
+                      title={`${
+                        attendanceAction === "clock in" ? "Clock In" : "Clock Out"
+                      } with Exception`}
+                      onPress={() => onSubmitException(exceptionReason)}
+                      disabled={!exceptionReason.trim()}
+                      loading={exceptionPending}
+                      bgVariant="danger"
+                      style={styles.exceptionButton}
+                    />
+                  </View>
+                )}
 
-                <CustomButton title="Close" onPress={onClose} />
+                <CustomButton
+                  title="Close"
+                  onPress={onClose}
+                  bgVariant="outline"
+                  textVariant="primary"
+                />
               </>
             )}
           </>
@@ -215,5 +257,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 6,
     textAlign: "center",
+  },
+  exceptionContainer: {
+    marginBottom: 12,
+  },
+  exceptionHelp: {
+    color: "#4b5563",
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 8,
+  },
+  reasonInput: {
+    minHeight: 72,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: "#111827",
+    backgroundColor: "#fff",
+    textAlignVertical: "top",
+  },
+  exceptionButton: {
+    marginTop: 10,
+    marginBottom: 8,
   },
 });
