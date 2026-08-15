@@ -3,24 +3,22 @@ import Text from "@/components/shared/text";
 import { FormInput, FormPasswordInput } from "@/components/wrapper";
 import { THEME } from "@/constants/theme";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { router, Stack } from "expo-router";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { View } from "react-native";
 import { ScrollView, StyleSheet } from "react-native";
-import { useSharedValue, withTiming } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { showMessage } from "react-native-flash-message";
+import { isAxiosError } from "axios";
 
 import { ChangePasswordSchema } from "./types";
 import { changePasswordSchema } from "./validation";
+import { AuthService } from "@/services/auth";
 
 const ChangePasswordForm = ({ email }: { email: string }) => {
-  const insets = useSafeAreaInsets();
-  const bottomInset = insets.bottom;
   const [passwordStrength, setPasswordStrength] = useState(0);
-  const strengthBarWidth = useSharedValue(0);
-  const strengthBarColor = useSharedValue(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ChangePasswordSchema>({
     resolver: zodResolver(changePasswordSchema),
@@ -30,20 +28,28 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
   const newPassword = form.watch("new_password");
 
   const onSubmitPasswordChange = async (data: ChangePasswordSchema) => {
-    console.log({
-      old_password: data.old_password,
-      new_password: data.new_password,
-      confirm_new_password: data.confirm_new_password,
-    });
-
-    // updateUserPassword(
-
-    //   {
-    //     onSuccess: () => {
-    //       router.back();
-    //     },
-    //   }
-    // );
+    setIsSubmitting(true);
+    try {
+      const response = await AuthService.resetPassword(email, data);
+      showMessage({
+        message: response?.message || "Password updated securely",
+        description: "Sign in with your new password.",
+        type: "success",
+      });
+      form.reset();
+      router.replace("/(auth)/sign-in");
+    } catch (error: unknown) {
+      const message = isAxiosError(error)
+        ? error.response?.data?.message
+        : undefined;
+      showMessage({
+        message: message || "Unable to update password",
+        description: "Check the six-digit code and try again.",
+        type: "danger",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   const calculatePasswordStrength = (password: string) => {
     let strength = 0;
@@ -52,7 +58,7 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
     if (/[0-9]/.test(password)) strength++;
     if (/[a-z]/.test(password)) strength++;
     if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
-    return Math.min(strength, 3);
+    return Math.min(strength, 5);
   };
 
   useEffect(() => {
@@ -64,13 +70,6 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
     }
   }, [newPassword]);
 
-  useEffect(() => {
-    strengthBarWidth.value = withTiming((passwordStrength / 3) * 100, {
-      duration: 300,
-    });
-    strengthBarColor.value = withTiming(passwordStrength, { duration: 300 });
-  }, [passwordStrength]);
-
   const getRequirementColor = (requirement: boolean) => {
     if (newPassword === "") return THEME.colors.neutral["300"];
     return requirement ? THEME.colors.success : THEME.colors.error;
@@ -80,8 +79,8 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
     if (newPassword === "") return "";
     if (passwordStrength <= 1) return "Very weak password";
     if (passwordStrength <= 2) return "Weak password";
-    if (passwordStrength === 3) return "Good password";
-    if (passwordStrength > 4) return "Strong password";
+    if (passwordStrength <= 3) return "Good password";
+    if (passwordStrength >= 4) return "Strong password";
     return "";
   };
 
@@ -109,7 +108,7 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
       {newPassword && (
         <View style={styles.strengthContainer}>
           <View style={styles.strengthIndicator}>
-            {[1, 2, 3].map((index) => (
+            {[1, 2, 3, 4, 5].map((index) => (
               <View
                 key={index}
                 style={[
@@ -166,14 +165,12 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
         control={form.control}
         placeholder={"Confirm new password"}
       />
-      {/* <View style={[styles.actions, { marginBottom: bottomInset }]}> */}
       <CustomButton
         onPress={form.handleSubmit(onSubmitPasswordChange)}
-        //   loading={isPending}
-        //   disabled={isPending}
+        loading={isSubmitting}
+        disabled={isSubmitting}
         title="Update Password"
       />
-      {/* </View> */}
     </ScrollView>
   );
 };
@@ -206,7 +203,7 @@ const styles = StyleSheet.create({
   },
   strengthBar: {
     borderRadius: 2,
-    width: "32%",
+    width: "19%",
   },
   strengthDescription: {
     fontSize: THEME.fontSize.sm,

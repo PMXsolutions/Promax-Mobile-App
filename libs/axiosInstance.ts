@@ -2,6 +2,7 @@ import useAuthStore from "@/store/use-auth-store";
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { showMessage } from "react-native-flash-message";
 import { tryRefreshSession } from "@/services/session";
+import { readRuntimeConfiguration } from "@/utils/runtime-config";
 
 interface ApiResponse<T> {
   status: number;
@@ -16,21 +17,24 @@ interface DataStructure {
 
 // Fail closed: never fall back to a hardcoded hosted API URL (prevents
 // accidental production traffic when EXPO_PUBLIC_API_BASEURL is unset).
-const baseURL = process.env.EXPO_PUBLIC_API_BASEURL?.trim() || "";
+let baseURL = "";
+let configurationError: Error | null = null;
+try {
+  baseURL = readRuntimeConfiguration().apiBaseUrl;
+} catch (error) {
+  configurationError =
+    error instanceof Error ? error : new Error("Invalid mobile configuration.");
+}
 
-if (!baseURL) {
+if (configurationError) {
   console.warn(
-    "[PromaxCare] EXPO_PUBLIC_API_BASEURL is not set. API calls will fail until a non-production base URL is configured."
+    `[PromaxCare] ${configurationError.message} API calls are disabled.`
   );
 }
 
 const rejectIfUnconfigured = (config: { headers?: unknown }) => {
-  if (!baseURL) {
-    return Promise.reject(
-      new Error(
-        "API base URL is not configured. Set EXPO_PUBLIC_API_BASEURL before making requests."
-      )
-    );
+  if (configurationError || !baseURL) {
+    return Promise.reject(configurationError || new Error("Invalid mobile configuration."));
   }
   return config;
 };
@@ -52,12 +56,8 @@ publicAxios.interceptors.request.use(
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    if (!baseURL) {
-      return Promise.reject(
-        new Error(
-          "API base URL is not configured. Set EXPO_PUBLIC_API_BASEURL before making requests."
-        )
-      );
+    if (configurationError || !baseURL) {
+      return Promise.reject(configurationError || new Error("Invalid mobile configuration."));
     }
     const authToken = useAuthStore.getState().token;
     if (authToken) {

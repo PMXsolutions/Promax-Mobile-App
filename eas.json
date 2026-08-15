@@ -4,6 +4,9 @@
   },
   "build": {
     "development": {
+      "env": {
+        "EXPO_PUBLIC_DEPLOYMENT_ENV": "development"
+      },
       "ios": {
         "simulator": true
       },
@@ -12,12 +15,18 @@
       "channel": "development"
     },
     "preview": {
+      "env": {
+        "EXPO_PUBLIC_DEPLOYMENT_ENV": "uat"
+      },
       "android": {
         "buildType": "apk"
       },
       "channel": "preview"
     },
     "production": {
+      "env": {
+        "EXPO_PUBLIC_DEPLOYMENT_ENV": "production"
+      },
       "android": {
         "buildType": "app-bundle"
       },

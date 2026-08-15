@@ -1,8 +1,12 @@
-import React, { useRef } from "react";
-import { View, StyleSheet, Dimensions, StatusBar } from "react-native";
+import React from "react";
+import {
+  ActivityIndicator,
+  View,
+  StyleSheet,
+  StatusBar,
+} from "react-native";
 import { THEME } from "@/constants/theme";
 import Text from "./text";
-import LottieView from "lottie-react-native";
 
 interface LoaderProps {
   name: "2-curves";
@@ -10,32 +14,20 @@ interface LoaderProps {
   title?: string;
 }
 
-const loaderheight = 50;
-
 const Loader: React.FC<LoaderProps> = ({
   name,
   color,
   title = "Loading...",
 }) => {
-  const animation = useRef<LottieView>(null);
-  const { width, height } = Dimensions.get("screen");
-
   if (name === "2-curves") {
     return (
-      <View style={[styles.container, { height, width }]}>
+      <View
+        style={styles.container}
+        accessibilityRole="progressbar"
+        accessibilityLabel={title}
+      >
         <StatusBar hidden />
-
-        <LottieView
-          ref={animation}
-          source={require("../../assets/json/lotiie2.json")}
-          autoPlay={true}
-          loop={true}
-          style={{
-            width: 200,
-            height: 200,
-            backgroundColor: THEME.colors.brand,
-          }}
-        />
+        <ActivityIndicator size="large" color={color || THEME.colors.white} />
         <Text size="lg" weight="bold" style={{ color: "white", marginTop: 10 }}>
           {title}
         </Text>
@@ -50,27 +42,9 @@ export default Loader;
 
 const styles = StyleSheet.create({
   container: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: THEME.colors.brand,
     justifyContent: "center",
-    position: "absolute",
     alignItems: "center",
-  },
-  loaderContainer: {
-    height: 80,
-    width: 80,
-    borderRadius: loaderheight,
-    backgroundColor: "transparent",
-  },
-  loader: {
-    position: "absolute",
-    height: "100%",
-    width: "100%",
-    borderRadius: loaderheight,
-    borderWidth: 5,
-    backgroundColor: "transparent",
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
-    elevation: 5, // For Android
-    zIndex: 50,
   },
 });

@@ -1,41 +1,38 @@
-# Mobile React App for Shift Management and Invoicing
+# PromaxCare staff mobile app
 
 # Overview
 
-Welcome to our Mobile App designed to streamline shift management, roster creation, and invoicing processes. This application is built to cater to the needs of businesses that require efficient task assignment, scheduling, and financial management for their workforce.
+This Expo application is the native iOS/Android staff companion to PromaxCare.
+It supports staff authentication, assigned-shift access, governed attendance,
+shift reports, documents, notifications and profile maintenance. Organisation
+administration, rostering and finance remain in the responsive Care OS web app.
 
 # Features
 
-## Shift Assignment
+## Assigned shifts
 
-- Assign shifts to employees based on their availability and skill sets.
-- Easily view and manage assigned shifts through an intuitive user interface.
+- View assigned shifts and shift details.
 - Receive notifications for any shift changes or updates.
 
-## Roster Creation
+## Attendance and evidence
 
-- Create customizable rosters tailored to your business requirements.
-- Effortlessly manage employee schedules, ensuring optimal coverage for all shifts.
-- Access comprehensive views of past and upcoming rosters for better planning and organization.
-
-## Invoicing
-
-- Generate invoices for completed shifts and services rendered.
-- Customize invoice templates to include relevant details and branding.
-- Track payment statuses and manage billing efficiently.
+- Clock in and out with foreground location, server-side geofence validation and
+  governed exception reasons.
+- Fail closed while offline; the app never displays a false attendance success.
+- Complete shift reports and maintain supporting documents.
 
 # Technologies Used
 
 - Frontend: Expo App, Zustand for state management.
-- Backend: .NET Core for API development, MySQL for database management.
+- Backend: PromaxCare .NET API.
 - Authentication: JSON Web Tokens (JWT) for secure authentication.
-- Deployment: Docker for containerization, AWS for cloud hosting.
+- Deployment: Expo Application Services release profiles.
 
 # Installation
 
 1. Clone the repository:
 
-### `git clone https://github.com/your-repo-name.git`
+### `git clone <authorised-repository-url>`
 
 2. Navigate to the project directory:
 
@@ -50,6 +47,10 @@ Welcome to our Mobile App designed to streamline shift management, roster creati
 ### `npm start`
 
 # Usage
+
+Copy `.env.example` to `.env` for local work and supply only an authorised API
+base. The app refuses UAT/production environment mismatches. See
+`docs/MOBILE_RELEASE_GATE.md` for candidate qualification.
 
 # Contributing
 

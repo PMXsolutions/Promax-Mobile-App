@@ -3,7 +3,8 @@ import React from "react";
 import { ShiftRosterType } from "@/types/shift";
 import Text from "../shared/text";
 import CustomButton from "../shared/custom-button";
-import LottieView from "lottie-react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { THEME } from "@/constants/theme";
 
 const ShiftMessage = ({
   shift,
@@ -44,15 +45,11 @@ const ShiftMessage = ({
           alignSelf: "center",
         }}
       >
-        <LottieView
-          source={require("@/assets/json/success.json")}
-          autoPlay
-          loop={true}
-          style={{
-            alignSelf: "center",
-            width: 130,
-            height: 130,
-          }}
+        <MaterialCommunityIcons
+          name="check-circle"
+          size={84}
+          color={THEME.colors.success}
+          accessibilityLabel="Clock-in successful"
         />
       </View>
       <Text weight="semiBold" size="lg">

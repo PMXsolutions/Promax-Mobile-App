@@ -1,17 +1,23 @@
 import axios from "axios";
+import { readRuntimeConfiguration } from "@/utils/runtime-config";
 
-const sessionApiBase = process.env.EXPO_PUBLIC_API_BASEURL?.trim() || "";
+let sessionApiBase = "";
+let sessionConfigurationError: Error | null = null;
+try {
+  sessionApiBase = readRuntimeConfiguration().apiBaseUrl;
+} catch (error) {
+  sessionConfigurationError =
+    error instanceof Error ? error : new Error("Invalid mobile configuration.");
+}
 const sessionAxios = axios.create({
   baseURL: sessionApiBase || undefined,
   timeout: 30000,
 });
 
 sessionAxios.interceptors.request.use((config) => {
-  if (!sessionApiBase) {
+  if (sessionConfigurationError || !sessionApiBase) {
     return Promise.reject(
-      new Error(
-        "API base URL is not configured. Set EXPO_PUBLIC_API_BASEURL before session requests."
-      )
+      sessionConfigurationError || new Error("Invalid mobile configuration.")
     );
   }
   return config;

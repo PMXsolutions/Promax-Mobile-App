@@ -69,9 +69,9 @@ const OtpVerfication: React.FC = () => {
     if (expired) {
       setError("");
       try {
-        const { data } = await publicAxios.get(
-          `/Account/resend_otp?email=${email}`
-        );
+        const { data } = await publicAxios.get("/Account/resend_otp", {
+          params: { email },
+        });
         if (data.status === "Success") {
           showMessage({
             type: "success",

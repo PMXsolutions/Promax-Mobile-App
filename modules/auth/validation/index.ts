@@ -10,7 +10,7 @@ export const signInFormSchema = z.object({
     .string({
       required_error: "Password is required",
     })
-    .min(2, "Password must be at least 4 characters"),
+    .min(8, "Password must be at least 8 characters"),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -21,12 +21,16 @@ export const forgotPasswordSchema = z.object({
 
 export const changePasswordSchema = z
   .object({
-    old_password: z.string({
-      required_error: "Code is required",
-    }),
-    new_password: z.string({
-      required_error: "New password is required",
-    }),
+    old_password: z
+      .string({ required_error: "Code is required" })
+      .regex(/^\d{6}$/, "Enter the six-digit code from your email"),
+    new_password: z
+      .string({ required_error: "New password is required" })
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        /[^A-Za-z0-9]/,
+        "Password must include at least one symbol"
+      ),
     confirm_new_password: z.string({
       required_error: "Please confirm your new password",
     }),

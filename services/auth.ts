@@ -1,30 +1,28 @@
 import { publicAxios } from "@/libs/axiosInstance";
-import { ForgotpasswordSchema, SigninFormSchema } from "@/modules/auth/types";
+import {
+  ChangePasswordSchema,
+  ForgotpasswordSchema,
+  SigninFormSchema,
+} from "@/modules/auth/types";
 import { isAxiosError } from "axios";
 import useAuthStore from "@/store/use-auth-store";
 
 const loginUser = async (payload: SigninFormSchema) => {
-  try {
-    // BE auth_login defaults medium to "Web" when omitted; staff app must tag Mobile.
-    const deviceId = useAuthStore.getState().getOrCreateDeviceId();
-    const { data } = await publicAxios.post(
-      "/Account/auth_login?medium=Mobile",
-      { ...payload, deviceId }
-    );
+  // BE auth_login defaults medium to "Web" when omitted; staff app must tag Mobile.
+  const deviceId = useAuthStore.getState().getOrCreateDeviceId();
+  const { data } = await publicAxios.post(
+    "/Account/auth_login?medium=Mobile",
+    { ...payload, deviceId }
+  );
 
-    return data;
-  } catch (error: unknown) {
-    if (isAxiosError(error)) {
-      throw error;
-    }
-  }
+  return data;
 };
 
 const forgotPassword = async ({ email }: ForgotpasswordSchema) => {
   try {
-    const { data } = await publicAxios.get(
-      `/Account/forgot_password?email=${email}`
-    );
+    const { data } = await publicAxios.get("/Account/forgot_password", {
+      params: { email },
+    });
 
     return data;
   } catch (error: unknown) {
@@ -33,6 +31,20 @@ const forgotPassword = async ({ email }: ForgotpasswordSchema) => {
     }
     return error;
   }
+};
+
+const resetPassword = async (
+  email: string,
+  payload: ChangePasswordSchema
+) => {
+  const { data } = await publicAxios.post("/Account/reset_password", {
+    Email: email,
+    OTP: payload.old_password,
+    Password: payload.new_password,
+    ConfirmPassword: payload.confirm_new_password,
+  });
+
+  return data;
 };
 
 // const { data } = await publicAxios.post("/Account/post_otp", postData);
@@ -62,4 +74,4 @@ const forgotPassword = async ({ email }: ForgotpasswordSchema) => {
 //     }
 //   };
 
-export const AuthService = { loginUser, forgotPassword };
+export const AuthService = { loginUser, forgotPassword, resetPassword };

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import React, { useState } from "react";
 import CustomButton from "@/components/shared/custom-button";
 import { Link, router } from "expo-router";
@@ -12,12 +12,10 @@ import { signInFormSchema } from "./validation";
 import useAuthStore from "@/store/use-auth-store";
 import { AuthService } from "@/services/auth";
 import { FormInput, FormPasswordInput } from "@/components/wrapper";
-import Checkbox from "@/components/shared/checkbox";
 import { Alert } from "react-native";
 
 const SignInForm = () => {
   const [loading, setLoading] = useState(false);
-  const [checked, setChecked] = useState(true);
   const form = useForm<SigninFormSchema>({
     resolver: zodResolver(signInFormSchema),
   });
@@ -48,18 +46,14 @@ const SignInForm = () => {
           //   message: `Welcome back ${userProfile?.firstName}`,
           //   type: "success",
           // });
-          setLoading(false);
         } else {
           Alert.alert(
             "Info",
             "Thank you for your interest in our mobile app. At this time, the app is exclusively available for staff members. In the meantime, you can continue to access our web platform for all your needs."
           );
-          setLoading(false);
         }
       }
     } catch (error: any) {
-      setLoading(false);
-
       if (error.response?.data?.message === "User Not Found") {
         showMessage({
           message: "User not found",
@@ -91,6 +85,8 @@ const SignInForm = () => {
           type: "danger",
         });
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,8 +114,6 @@ const SignInForm = () => {
       />
 
       <View style={styles.row}>
-        <Checkbox checked={checked} onChange={setChecked} label="Remember me" />
-
         <Link
           href="/(auth)/forgot-password"
           style={{
@@ -174,7 +168,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
   },
 });
