@@ -104,9 +104,9 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
     >
       <FormInput
         name="old_password"
-        label={"Code"}
+        label={"OTP code"}
         control={form.control}
-        placeholder={"Enter 6 digit code"}
+        placeholder={"Enter 6 digit OTP from email"}
         keyboardType="number-pad"
       />
       <FormPasswordInput

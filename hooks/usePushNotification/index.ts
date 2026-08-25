@@ -71,13 +71,10 @@ const usePushNotifications = (
 
       const fcmDeviceToken = await getFCMDevicePushTokenAsync();
       if (fcmDeviceToken) {
-        console.log(fcmDeviceToken);
         setFcmToken(fcmDeviceToken);
         const storedToken = await AsyncStorage.getItem("fcmToken");
         if (storedToken !== fcmDeviceToken) {
           await sendTokenToBackend(fcmDeviceToken);
-        } else {
-          console.log("FCM Token is already sent to backend");
         }
       }
 
@@ -97,7 +94,7 @@ const usePushNotifications = (
       responseListener.current =
         Notifications.addNotificationResponseReceivedListener(
           (response: Notifications.NotificationResponse) => {
-            console.log("Notification Response:", response);
+            void response;
           }
         );
 
@@ -176,7 +173,6 @@ async function registerForPushNotificationsAsync(): Promise<
       }
 
       token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-      console.log("Expo Push Token:", token);
     } catch (e) {
       console.error("Error getting expo push token", e);
     }
