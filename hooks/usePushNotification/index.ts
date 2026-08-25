@@ -3,86 +3,60 @@ import { Platform, Alert } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
+import axiosInstance from "@/libs/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Setup notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
-
-// Types
-interface NotificationData {
+export interface NotificationData {
   title?: string;
   body?: string;
   data?: Record<string, unknown>;
 }
 
-interface UsePushNotificationsResult {
-  expoPushToken: string;
-  fcmToken: string;
-  channels: Notifications.NotificationChannel[];
-  notification: Notifications.Notification | undefined;
-  setNotification: (
-    notification: Notifications.Notification | undefined
-  ) => void;
-  schedulePushNotification: (
-    notificationData: NotificationData
-  ) => Promise<void>;
-  loading: boolean;
-}
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 const usePushNotifications = (
-  userId: string,
-  companyId: number
-): UsePushNotificationsResult => {
-  const shouldSkip = Platform.OS === "web" || !userId || !companyId;
-  const [expoPushToken, setExpoPushToken] = useState<string>("");
-  const [fcmToken, setFcmToken] = useState<string>("");
+  userId?: number | string | null,
+  companyId?: number | string | null
+) => {
+  const shouldSkip =
+    userId == null ||
+    userId === "" ||
+    companyId == null ||
+    Number(companyId) === 0;
+  const [expoPushToken, setExpoPushToken] = useState<string | undefined>();
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [channels, setChannels] = useState<Notifications.NotificationChannel[]>(
     []
   );
   const [notification, setNotification] = useState<
     Notifications.Notification | undefined
-  >(undefined);
-  const [loading, setLoading] = useState<boolean>(false);
+  >();
+  const [loading, setLoading] = useState(false);
 
-  const notificationListener = useRef<Notifications.EventSubscription | null>(
-    null
-  );
-  const responseListener = useRef<Notifications.EventSubscription | null>(null);
+  const notificationListener = useRef<Notifications.EventSubscription>();
+  const responseListener = useRef<Notifications.EventSubscription>();
 
-  // Send token to backend
-  const sendTokenToBackend = async (fcmToken: string) => {
+  // Send token to PromaxCare API (not third-party Render)
+  const sendTokenToBackend = async (deviceToken: string) => {
+    if (userId == null || companyId == null) {
+      console.warn("Skipping DeviceTokens/add_token — missing userId/companyId");
+      return;
+    }
     try {
-      const response = await fetch(
-        "https://push-notification-r5mb.onrender.com/api/save-token",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            device_Token: fcmToken,
-            userId,
-            companyId,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        console.log("Token successfully sent to the backend.");
-        await AsyncStorage.setItem("fcmToken", fcmToken);
-      } else {
-        console.error("Failed to send token to backend:", response.status);
-      }
+      await axiosInstance.post("/DeviceTokens/add_token", {
+        Device_Token: deviceToken,
+        UserId: String(userId),
+        CompanyId: Number(companyId),
+      });
+      await AsyncStorage.setItem("fcmToken", deviceToken);
     } catch (error) {
-      console.error("Error sending token to backend:", error);
+      console.error("Error sending token to PromaxCare API:", error);
     }
   };
 
@@ -136,7 +110,7 @@ const usePushNotifications = (
       notificationListener.current?.remove();
       responseListener.current?.remove();
     };
-  }, [shouldSkip]);
+  }, [shouldSkip, userId, companyId]);
 
   const schedulePushNotification = async (
     notificationData: NotificationData

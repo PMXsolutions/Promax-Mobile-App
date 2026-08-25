@@ -4,7 +4,10 @@ import { isAxiosError } from "axios";
 
 const loginUser = async (payload: SigninFormSchema) => {
   try {
-    const { data } = await publicAxios.post("/Account/auth_login", payload);
+    const { data } = await publicAxios.post(
+      "/Account/auth_login?medium=Mobile",
+      payload
+    );
 
     return data;
   } catch (error: unknown) {
@@ -17,7 +20,7 @@ const loginUser = async (payload: SigninFormSchema) => {
 const forgotPassword = async ({ email }: ForgotpasswordSchema) => {
   try {
     const { data } = await publicAxios.get(
-      `/Account/forgot_password?email=${email}`
+      `/Account/forgot_password?email=${encodeURIComponent(email)}`
     );
 
     return data;
@@ -27,6 +30,21 @@ const forgotPassword = async ({ email }: ForgotpasswordSchema) => {
     }
     return error;
   }
+};
+
+const resetPassword = async (payload: {
+  email: string;
+  otp: string;
+  password: string;
+  confirmPassword: string;
+}) => {
+  const { data } = await publicAxios.post("/Account/reset_password", {
+    email: payload.email,
+    otp: payload.otp,
+    password: payload.password,
+    confirmPassword: payload.confirmPassword,
+  });
+  return data;
 };
 
 // const { data } = await publicAxios.post("/Account/post_otp", postData);
@@ -56,4 +74,4 @@ const forgotPassword = async ({ email }: ForgotpasswordSchema) => {
 //     }
 //   };
 
-export const AuthService = { loginUser, forgotPassword };
+export const AuthService = { loginUser, forgotPassword, resetPassword };
