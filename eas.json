@@ -9,13 +9,19 @@
       },
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_API_BASEURL": "https://api.promaxcare.com.au/api"
+      }
     },
     "preview": {
       "android": {
         "buildType": "apk"
       },
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_BASEURL": "https://api.promaxcare.com.au/api"
+      }
     },
     "production": {
       "android": {
@@ -25,7 +31,10 @@
         "autoIncrement": true
       },
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_API_BASEURL": "https://api.promaxcare.com.au/api"
+      }
     }
   },
   "submit": {

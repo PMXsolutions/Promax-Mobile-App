@@ -52,10 +52,16 @@ const fetchStaffKm = async (
   }
 };
 
-const fetchReportInfo = async (reportId: number, shiftId: number) => {
+const fetchReportInfo = async (
+  reportId: number,
+  shiftId: number,
+  clientId?: number
+) => {
   try {
+    const clientQuery =
+      clientId && clientId > 0 ? `&clientId=${clientId}` : "";
     const response = await axiosInstance.get(
-      `/ShiftReports/get_shiftreport_details/${reportId}?shiftId=${shiftId}`,
+      `/ShiftReports/get_shiftreport_details?id=${reportId}&shiftId=${shiftId}${clientQuery}`,
       {
         headers: {
           "Cache-Control": "no-cache",

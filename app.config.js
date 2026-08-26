@@ -3,8 +3,16 @@ const appJson = require("./app.json");
 const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 module.exports = () => {
+  const apiBaseUrl =
+    process.env.EXPO_PUBLIC_API_BASEURL ||
+    "https://api.promaxcare.com.au/api";
+
   const expo = {
     ...appJson.expo,
+    extra: {
+      ...(appJson.expo.extra || {}),
+      apiBaseUrl,
+    },
     ios: {
       ...appJson.expo.ios,
       ...(googleMapsApiKey

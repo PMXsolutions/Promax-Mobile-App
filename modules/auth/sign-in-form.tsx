@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View, Alert } from "react-native";
 import React, { useState } from "react";
 import CustomButton from "@/components/shared/custom-button";
 import { Link, router } from "expo-router";
@@ -13,7 +13,17 @@ import useAuthStore from "@/store/use-auth-store";
 import { AuthService } from "@/services/auth";
 import { FormInput, FormPasswordInput } from "@/components/wrapper";
 import Checkbox from "@/components/shared/checkbox";
-import { Alert } from "react-native";
+import { isAxiosError } from "axios";
+
+const readApiMessage = (error: unknown): string | undefined => {
+  if (!isAxiosError(error)) {
+    return error instanceof Error ? error.message : undefined;
+  }
+  const data = error.response?.data as
+    | { message?: string; Message?: string }
+    | undefined;
+  return data?.message || data?.Message;
+};
 
 const SignInForm = () => {
   const [loading, setLoading] = useState(false);
@@ -22,80 +32,82 @@ const SignInForm = () => {
     resolver: zodResolver(signInFormSchema),
   });
   const authstore = useAuthStore();
-  // const clearAll = async () => {
-  //   try {
-  //     await AsyncStorage.clear();
-  //   } catch (e) {
-  //     // clear error
-  //   }
-
-  //   console.log("Done.");
-  // };
 
   const onSignIn = async (data: SigninFormSchema) => {
     setLoading(true);
     try {
       const response = await AuthService.loginUser(data);
+      const status =
+        response?.response?.status ||
+        response?.Response?.Status ||
+        response?.status;
+      const userProfile = response?.userProfile || response?.UserProfile;
+      const staffProfile = response?.staffProfile || response?.StaffProfile;
+      const accessToken = userProfile?.token || userProfile?.Token;
 
-      if (response?.response?.status === "Success") {
-        const userProfile = response?.userProfile;
-        const staffProfile = response?.staffProfile;
-        const accessToken = response?.userProfile.token;
-        if (userProfile?.role === "Staff") {
+      if (String(status).toLowerCase() === "success" && userProfile) {
+        const role = userProfile?.role || userProfile?.Role;
+        if (role === "Staff") {
+          if (!accessToken) {
+            showMessage({
+              message: "Login succeeded but no access token was returned.",
+              type: "danger",
+            });
+            return;
+          }
           authstore.login(userProfile, staffProfile, accessToken);
-          router.push("/(root)/(tabs)");
-          // showMessage({
-          //   message: `Welcome back ${userProfile?.firstName}`,
-          //   type: "success",
-          // });
-          setLoading(false);
-        } else {
-          Alert.alert(
-            "Info",
-            "Thank you for your interest in our mobile app. At this time, the app is exclusively available for staff members. In the meantime, you can continue to access our web platform for all your needs."
-          );
-          setLoading(false);
+          router.replace("/(root)/(tabs)");
+          return;
         }
+        Alert.alert(
+          "Info",
+          "Thank you for your interest in our mobile app. At this time, the app is exclusively available for staff members. In the meantime, you can continue to access our web platform for all your needs."
+        );
+        return;
       }
-    } catch (error: any) {
-      setLoading(false);
 
-      if (error.response?.data?.message === "User Not Found") {
-        showMessage({
-          message: "User not found",
-          type: "danger",
-        });
-      } else if (error.response?.data?.message === "Email Not Confirmed") {
-        showMessage({
-          message: error.response?.data?.message,
-          type: "danger",
-        });
-        router.navigate(`/(auth)/otp-verification/${data.email}`);
+      showMessage({
+        message:
+          response?.response?.message ||
+          response?.Response?.Message ||
+          "Unable to login!",
+        type: "danger",
+      });
+    } catch (error: unknown) {
+      const message = readApiMessage(error);
+
+      if (message === "User Not Found") {
+        showMessage({ message: "User not found", type: "danger" });
       } else if (
-        error.response?.data?.message ===
-        "Email Not Confirmed. An OTP has been sent to your mail to confirm your email"
+        message === "Email Not Confirmed" ||
+        message ===
+          "Email Not Confirmed. An OTP has been sent to your mail to confirm your email"
       ) {
         showMessage({
-          message: error.response?.data?.message,
+          message: message || "Email not confirmed",
           type: "danger",
         });
-        router.navigate(`/(auth)/otp-verification/${data.email}`);
-      } else if (error.response?.data?.message === "Invalid Login Attempt") {
+        router.navigate(
+          `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
+        );
+      } else if (message === "Invalid Login Attempt") {
         showMessage({
           message: "Incorrect Email or Password",
           type: "danger",
         });
       } else {
         showMessage({
-          message: error.response?.data?.message || "Unable to login!",
+          message: message || "Unable to login!",
           type: "danger",
         });
       }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleFormSubmit: SubmitHandler<SigninFormSchema> = (data) => {
-    onSignIn(data);
+  const handleFormSubmit: SubmitHandler<SigninFormSchema> = (formData) => {
+    onSignIn(formData);
   };
 
   return (
@@ -107,6 +119,7 @@ const SignInForm = () => {
         label="Email"
         placeholder="Enter your email"
         autoCapitalize="none"
+        autoCorrect={false}
         icon={<Feather name={"mail"} size={20} color={THEME.colors.grayBg} />}
       />
       <FormPasswordInput
@@ -140,7 +153,6 @@ const SignInForm = () => {
           disabled={loading}
         />
       </View>
-      {/* <Button onPress={clearAll}>Clear All</Button> */}
     </View>
   );
 };
@@ -148,7 +160,6 @@ const SignInForm = () => {
 export default SignInForm;
 
 const styles = StyleSheet.create({
-  /** Form */
   form: {
     marginBottom: 24,
     paddingHorizontal: THEME.spacing.gutter,
@@ -159,18 +170,6 @@ const styles = StyleSheet.create({
   },
   formAction: {
     marginBottom: 16,
-  },
-
-  formFooter: {
-    paddingVertical: 24,
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#222",
-    textAlign: "center",
-    letterSpacing: 0.15,
-  },
-  actions: {
-    rowGap: THEME.spacing.sm,
   },
   row: {
     flexDirection: "row",

@@ -14,11 +14,15 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { ChangePasswordSchema } from "./types";
 import { changePasswordSchema } from "./validation";
+import { AuthService } from "@/services/auth";
+import { isAxiosError } from "axios";
+import { showMessage } from "react-native-flash-message";
 
 const ChangePasswordForm = ({ email }: { email: string }) => {
   const insets = useSafeAreaInsets();
   const bottomInset = insets.bottom;
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
   const strengthBarWidth = useSharedValue(0);
   const strengthBarColor = useSharedValue(0);
 
@@ -30,20 +34,28 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
   const newPassword = form.watch("new_password");
 
   const onSubmitPasswordChange = async (data: ChangePasswordSchema) => {
-    console.log({
-      old_password: data.old_password,
-      new_password: data.new_password,
-      confirm_new_password: data.confirm_new_password,
-    });
-
-    // updateUserPassword(
-
-    //   {
-    //     onSuccess: () => {
-    //       router.back();
-    //     },
-    //   }
-    // );
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const result = await AuthService.resetPassword({
+        email,
+        otp: data.old_password,
+        password: data.new_password,
+        confirmPassword: data.confirm_new_password,
+      });
+      showMessage({
+        message: result?.message || "Password updated",
+        type: "success",
+      });
+      router.replace("/(auth)/sign-in");
+    } catch (error: unknown) {
+      const message = isAxiosError(error)
+        ? error.response?.data?.message || "Could not reset password"
+        : "Could not reset password";
+      showMessage({ message: String(message), type: "danger" });
+    } finally {
+      setSubmitting(false);
+    }
   };
   const calculatePasswordStrength = (password: string) => {
     let strength = 0;
@@ -92,9 +104,9 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
     >
       <FormInput
         name="old_password"
-        label={"Code"}
+        label={"OTP code"}
         control={form.control}
-        placeholder={"Enter 6 digit code"}
+        placeholder={"Enter 6 digit OTP from email"}
         keyboardType="number-pad"
       />
       <FormPasswordInput
@@ -169,8 +181,8 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
       {/* <View style={[styles.actions, { marginBottom: bottomInset }]}> */}
       <CustomButton
         onPress={form.handleSubmit(onSubmitPasswordChange)}
-        //   loading={isPending}
-        //   disabled={isPending}
+        loading={submitting}
+        disabled={submitting}
         title="Update Password"
       />
       {/* </View> */}

@@ -36,7 +36,8 @@ interface UseClearByFocusCellParams {
 
 const OtpVerfication: React.FC = () => {
   const query = useLocalSearchParams();
-  const email = query.email as unknown as string;
+  const emailParam = query.email as unknown as string;
+  const email = decodeURIComponent(emailParam || "");
   const [code, setCode] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [expired, setExpired] = useState(false);
@@ -70,7 +71,7 @@ const OtpVerfication: React.FC = () => {
       setError("");
       try {
         const { data } = await publicAxios.get(
-          `/Account/resend_otp?email=${email}`
+          `/Account/resend_otp?email=${encodeURIComponent(email)}`
         );
         if (data.status === "Success") {
           showMessage({
