@@ -42,7 +42,7 @@ export default Loader;
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: THEME.colors.brand,
     justifyContent: "center",
     alignItems: "center",

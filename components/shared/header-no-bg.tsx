@@ -1,7 +1,5 @@
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import React from "react";
-import { MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { THEME } from "@/constants/theme";
 import Text from "./text";
 import GoBack from "../go-back";

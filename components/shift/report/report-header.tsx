@@ -1,7 +1,6 @@
 import React from "react";
 import FormTableDisp from "@/components/shared/form-table-display";
 import { formattedTime } from "@/helpers/shift-service";
-import { ShiftReport } from "@/types/report";
 import { ShiftRosterType } from "@/types/shift";
 
 const ReportFormHeader = ({ item }: { item: ShiftRosterType }) => {

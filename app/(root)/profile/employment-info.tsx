@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import React from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";

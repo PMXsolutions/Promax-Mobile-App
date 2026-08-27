@@ -12,6 +12,9 @@ npm run lint
 npx tsc --noEmit
 EXPO_PUBLIC_DEPLOYMENT_ENV=uat \
 EXPO_PUBLIC_API_BASEURL=https://apitest.promaxcare.com.au/api \
+npx expo export --platform web
+EXPO_PUBLIC_DEPLOYMENT_ENV=uat \
+EXPO_PUBLIC_API_BASEURL=https://apitest.promaxcare.com.au/api \
 npx expo export --platform ios
 EXPO_PUBLIC_DEPLOYMENT_ENV=uat \
 EXPO_PUBLIC_API_BASEURL=https://apitest.promaxcare.com.au/api \
@@ -21,6 +24,18 @@ npx expo export --platform android
 The runtime configuration gate refuses missing environments, non-TLS hosted
 APIs, production builds pointed at UAT-like hosts, and UAT builds pointed at
 production-looking hosts.
+
+The current candidate is on Expo SDK 57.0.17, React Native 0.86.3 and React 19.2.3.
+Expo Doctor passes 21/21 checks; lint, TypeScript, all 21 Jest tests and real
+web/iOS/Android exports pass. The web export contains 70 static routes.
+
+`npm audit --omit=dev` still reports 0 critical, 4 high and 13 moderate
+advisories in upstream Expo CLI/config, Metro/image-size and React Native
+dependency chains. The registry currently offers no non-breaking fully patched
+set for this SDK; the automatic force fix would incorrectly downgrade Expo and
+React Native. Do not force-downgrade the supported stack. The release owner must
+record an explicit upstream-risk disposition, and the native store candidate
+remains blocked until the physical-device regression below is complete.
 
 ## Physical-device gates (must be evidenced before production)
 

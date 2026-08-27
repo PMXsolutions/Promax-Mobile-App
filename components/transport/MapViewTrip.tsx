@@ -1,12 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import MapView, {
-  AnimatedRegion,
-  LatLng,
-  Marker,
-  Polyline,
-} from "react-native-maps";
-import { View, StyleSheet } from "react-native";
-import { Image } from "react-native";
+import MapView, { AnimatedRegion, Marker, Polyline } from "react-native-maps";
+import { View, StyleSheet , Image } from "react-native";
 import { Coord } from "@/types/map";
 
 export default function MapViewTrip({
@@ -110,7 +104,7 @@ export default function MapViewTrip({
     <View style={{ flex: 1 }}>
       <MapView
         ref={mapRef}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
         showsUserLocation
         initialRegion={
           initialPosition

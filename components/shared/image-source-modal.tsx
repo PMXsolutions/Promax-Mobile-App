@@ -72,7 +72,7 @@ export const ImageSourceModal: React.FC<Props> = ({
             <View style={styles.header}>
               <Text style={styles.title}>{title}</Text>
               <Text style={styles.subtitle}>
-                Choose how you'd like to add an image
+                Choose how you’d like to add an image
               </Text>
             </View>
 

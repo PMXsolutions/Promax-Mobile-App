@@ -5,7 +5,6 @@ import { StyleSheet, Text, View } from "react-native";
 
 import Select, { SelectProps } from "../shared/select";
 import { THEME } from "@/constants/theme";
-import { useTheme } from "@react-navigation/native";
 
 interface FormSelectProps<TFieldValues extends FieldValues>
   extends Omit<SelectProps, "onValueChange" | "value"> {
@@ -78,7 +77,6 @@ function FormSelect<TFieldValues extends FieldValues>({
   required = false,
   ...selectProps
 }: FormSelectProps<TFieldValues>): React.ReactElement {
-  const { colors } = useTheme();
   return (
     <Controller
       name={name}
@@ -92,7 +90,7 @@ function FormSelect<TFieldValues extends FieldValues>({
             {/* {label && <Text style={styles.inputLabel}>{label}</Text>} */}
             {label && (
               <View style={{ flexDirection: "row" }}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>
+                <Text style={[styles.inputLabel, { color: THEME.colors.dark }]}>
                   {label}
                 </Text>
                 {required && <Text style={{ color: "#f60000" }}> *</Text>}

@@ -83,7 +83,7 @@ export default function TripSummary({
         <View style={styles.header}>
           <MaterialIcons name="flag" size={28} color="#4CAF50" />
           <Text style={styles.title}>Trip Complete!</Text>
-          <Text style={styles.subtitle}>Here's your journey summary</Text>
+          <Text style={styles.subtitle}>Here’s your journey summary</Text>
         </View>
 
         {/* Map Preview */}

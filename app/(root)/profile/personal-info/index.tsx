@@ -1,11 +1,10 @@
-import { ImageBackground, ScrollView, StyleSheet, View } from "react-native";
+import { ImageBackground, ScrollView, StyleSheet, View , Image } from "react-native";
 import React from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
 import useAuthStore from "@/store/use-auth-store";
 import { profileQuery } from "@/hooks/queries/profile";
 import { THEME } from "@/constants/theme";
-import { Image } from "react-native";
 import ProfileTag from "@/components/profile/profile-tag";
 import { formattedTime } from "@/helpers/shift-service";
 import CustomButton from "@/components/shared/custom-button";

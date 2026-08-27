@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import React from "react";
 import { useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";

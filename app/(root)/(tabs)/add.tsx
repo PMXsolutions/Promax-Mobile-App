@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, View , Animated } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import { THEME } from "@/constants/theme";
@@ -13,7 +13,6 @@ import {
   FormSubmitType,
 } from "@/hooks/mutation/availability";
 import { showMessage } from "react-native-flash-message";
-import { Animated } from "react-native";
 import Header from "@/components/shared/header";
 
 export interface TimeSlot {
@@ -41,8 +40,6 @@ const AddAvailability = () => {
   const { user, staff } = useAuthStore();
   const {
     data: availabilityData,
-    isError,
-    isRefetching,
     isPending: isLoading,
   } = profileQuery.useFetchAvailability(staff?.staffId as number);
 

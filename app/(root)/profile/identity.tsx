@@ -1,10 +1,8 @@
-import { ImageBackground, StyleSheet, View } from "react-native";
+import { ImageBackground, StyleSheet, View , Image } from "react-native";
 import React from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
-import { router } from "expo-router";
 import { THEME } from "@/constants/theme";
-import { Image } from "react-native";
 import useAuthStore from "@/store/use-auth-store";
 import { profileQuery } from "@/hooks/queries/profile";
 import Text from "@/components/shared/text";

@@ -37,7 +37,7 @@ const NoConnectionToast = () => {
         setDismissed(false); // reset for future disconnections
       });
     }
-  }, [isConnected, dismissed]);
+  }, [dismissed, isConnected, slideY]);
 
   if (isConnected !== false || dismissed) return null;
 

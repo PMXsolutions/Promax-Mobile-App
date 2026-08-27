@@ -4,7 +4,7 @@ import Signature from "react-native-signature-canvas";
 import * as ImagePicker from "expo-image-picker";
 import Modal from "react-native-modal";
 import Text from "../shared/text";
-import ViewShot, { captureRef } from "react-native-view-shot";
+import ViewShot, { captureRef, ViewShotRef } from "react-native-view-shot";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { THEME } from "@/constants/theme";
 import TextInput from "../shared/input";
@@ -19,7 +19,7 @@ const SignatureComponent = ({ visible, onClose, onSave }: Props) => {
   const [mode, setMode] = useState<"draw" | "type" | "upload">("draw");
   const [typedSignature, setTypedSignature] = useState("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const typedSigRef = useRef<View>(null);
+  const typedSigRef = useRef<ViewShotRef>(null);
   const signatureRef = useRef<any>(null);
   const switchMode = (mode: "draw" | "type" | "upload") => {
     setMode(mode);

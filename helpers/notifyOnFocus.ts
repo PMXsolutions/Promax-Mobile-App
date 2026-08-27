@@ -1,6 +1,6 @@
 import React from "react";
 import { NotifyOnChangeProps } from "@tanstack/query-core";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 
 export function useFocusNotifyOnChangeProps(
   notifyOnChangeProps?: NotifyOnChangeProps

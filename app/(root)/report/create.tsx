@@ -1,7 +1,6 @@
 import React from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
-import { KeyboardAvoidingView, Platform } from "react-native";
 import AddReportForm from "@/modules/report/add-report-form";
 import { useLocalSearchParams } from "expo-router";
 

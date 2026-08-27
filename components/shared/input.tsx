@@ -7,10 +7,8 @@ import {
   View,
   ViewStyle,
   StyleProp,
-  KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
-  Platform,
 } from "react-native";
 import Animated, {
   interpolateColor,
@@ -21,7 +19,6 @@ import Animated, {
 
 import { THEME } from "@/constants/theme";
 import normalize from "@/libs/normalize";
-import { useTheme } from "@react-navigation/native";
 import Text from "./text";
 
 /**
@@ -82,8 +79,6 @@ const TextInput: React.FC<TextInputProps> = ({
     focusProgress.value = withTiming(0, { duration: 300 });
     onBlur?.();
   };
-
-  const { colors } = useTheme();
 
   return (
     // <KeyboardAvoidingView

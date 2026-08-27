@@ -1,4 +1,3 @@
-import { Button } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
@@ -72,7 +71,7 @@ const ShiftDetail = () => {
   const closeModal = useCallback(() => {
     bottomSheetModalRef.current?.dismiss();
     setModalVisible(false); // also reset original modal flag
-  }, []);
+  }, [setModalVisible]);
   useEffect(() => {
     const timer = setTimeout(() => {
       if (modalVisible) {
@@ -80,7 +79,7 @@ const ShiftDetail = () => {
       }
     }, 800);
     return () => clearTimeout(timer);
-  }, [modalVisible]);
+  }, [modalVisible, openModal]);
 
   const shiftActivities = shift?.activities.split(", ");
   // Live time tracking state

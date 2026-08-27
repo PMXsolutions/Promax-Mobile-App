@@ -33,19 +33,18 @@ const Report = () => {
     await refetch();
   };
 
-  const reportSorted =
-    [...(report ?? [])].sort(
-      (a, b) =>
-        new Date(b.shiftRoster?.dateCreated).getTime() -
-        new Date(a.shiftRoster?.dateCreated).getTime()
-    ) || [];
-
   const reportData = React.useMemo(() => {
-    return reportSorted.filter((item) =>
-      item?.shiftRoster?.clients
-        .toLowerCase()
-        .includes(searchTerm.trim().toLowerCase())
-    );
+    return [...(report ?? [])]
+      .sort(
+        (a, b) =>
+          new Date(b.shiftRoster?.dateCreated).getTime() -
+          new Date(a.shiftRoster?.dateCreated).getTime()
+      )
+      .filter((item) =>
+        item?.shiftRoster?.clients
+          .toLowerCase()
+          .includes(searchTerm.trim().toLowerCase())
+      );
   }, [searchTerm, report]);
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -106,7 +105,6 @@ const Report = () => {
                 renderItem={({ item }) => <ShiftReportCard item={item} />}
                 contentContainerStyle={styles.content}
                 showsVerticalScrollIndicator={false}
-                estimatedItemSize={88}
                 refreshControl={
                   <RefreshControl
                     refreshing={isRefetching}
@@ -136,7 +134,7 @@ const Report = () => {
                     color: THEME.colors.grayBg,
                   }}
                 >
-                  No Report found for "{searchTerm}"
+                  No report found for “{searchTerm}”
                 </Text>
               </View>
             )}

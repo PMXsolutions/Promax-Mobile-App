@@ -4,27 +4,21 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   View,
-} from "react-native";
+ Animated } from "react-native";
 import useAuthStore from "@/store/use-auth-store";
 import { profileQuery } from "@/hooks/queries/profile";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import { THEME } from "@/constants/theme";
 import Header from "@/components/shared/header";
-import { Animated } from "react-native";
 import Text from "@/components/shared/text";
 import ProfileHeader from "@/components/profile/profile-header";
 import { labelArr } from "@/constants/profile-data";
 import ProfileLabel from "@/components/profile/profile-label";
-import {
-  FontAwesome6,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import MiniLoader from "@/components/shared/mini-loader";
 import ModalPop from "@/components/shared/modal";
 import Button from "@/components/shared/button";
 import Constants from "expo-constants";
-import ErrorState from "@/components/shared/error-state";
 
 const Profile = () => {
   const scrollY = useRef(new Animated.Value(0)).current;

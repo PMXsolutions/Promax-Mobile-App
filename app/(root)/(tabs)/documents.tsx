@@ -1,6 +1,5 @@
 import {
   Animated,
-  FlatList,
   Modal,
   Pressable,
   RefreshControl,
@@ -165,7 +164,6 @@ const Document = () => {
             {docData?.length > 0 && (
               <FlashList
                 data={docData}
-                estimatedItemSize={80}
                 keyExtractor={(_, index) => index.toString()}
                 renderItem={({ item }) => <DocumentLabel item={item} />}
                 contentContainerStyle={{ ...styles.content, paddingBottom: 30 }}
@@ -200,7 +198,7 @@ const Document = () => {
                     color: THEME.colors.grayBg,
                   }}
                 >
-                  No Document found for "{searchTerm}"
+                  No document found for “{searchTerm}”
                 </Text>
               </View>
             )}

@@ -1,11 +1,9 @@
-import Text from "@/components/shared/text";
 import { THEME } from "@/constants/theme";
 import React from "react";
-import { View } from "react-native";
-import { StyleSheet, Switch as RNSwitch, SwitchProps } from "react-native";
+import { View , StyleSheet, Switch as RNSwitch, SwitchProps } from "react-native";
 
 interface CustomSwitchProps extends SwitchProps {
-  label?: JSX.Element; // Optional label for the switch
+  label?: React.ReactElement; // Optional label for the switch
   containerStyle?: any; // Style for the container
   labelStyle?: any; // Style for the label
 }

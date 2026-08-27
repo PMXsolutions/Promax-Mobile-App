@@ -54,12 +54,50 @@ const OtpVerfication: React.FC = () => {
     setValue: setCode,
   } as UseClearByFocusCellParams);
 
+  const verifyCode = useCallback(async () => {
+    if (code.length !== 6) {
+      alert("Incomplete code");
+      return;
+    }
+    const postData = {
+      email,
+      otp: code,
+    };
+    setError("");
+    setLoading(true);
+    try {
+      const { data } = await publicAxios.post("/Account/post_otp", postData);
+      showMessage({
+        type: "success",
+        message: data.message,
+      });
+      if (data.requiresPasswordSetup) {
+        router.push(`/(auth)/change-password/${email}`);
+      } else {
+        router.push("/(auth)/sign-in");
+      }
+      setLoading(false);
+    } catch (error: any) {
+      setLoading(false);
+      if (error instanceof Error) {
+        showMessage({
+          message: error.name,
+          type: "danger",
+        });
+      }
+      showMessage({
+        message: error.response?.data?.message,
+        type: "danger",
+      });
+    }
+  }, [code, email]);
+
   useEffect(() => {
     if (code.length === 6 && !expired) {
       // API call to verify OTP
       verifyCode();
     }
-  }, [code]);
+  }, [code, expired, verifyCode]);
 
   const resetTimer = () => {
     setMinutes(2);
@@ -99,43 +137,6 @@ const OtpVerfication: React.FC = () => {
     }
   };
 
-  const verifyCode = async () => {
-    if (code.length !== 6) {
-      alert("Incomplete code");
-      return;
-    }
-    const postData = {
-      email,
-      otp: code,
-    };
-    setError("");
-    setLoading(true);
-    try {
-      const { data } = await publicAxios.post("/Account/post_otp", postData);
-      showMessage({
-        type: "success",
-        message: data.message,
-      });
-      if (data.requiresPasswordSetup) {
-        router.push(`/(auth)/change-password/${email}`);
-      } else {
-        router.push("/(auth)/sign-in");
-      }
-      setLoading(false);
-    } catch (error: any) {
-      setLoading(false);
-      if (error instanceof Error) {
-        showMessage({
-          message: error.name,
-          type: "danger",
-        });
-      }
-      showMessage({
-        message: error.response?.data?.message,
-        type: "danger",
-      });
-    }
-  };
   return (
     <SafeAreaView edges={["top"]} style={styles.container}>
       <GoBack />
@@ -206,7 +207,7 @@ const OtpVerfication: React.FC = () => {
 
             {expired && (
               <View style={styles.footer}>
-                <Text>Didn't receive any code?</Text>
+                <Text>Didn’t receive any code?</Text>
                 <Pressable onPress={resendCode}>
                   <Text
                     size="md"

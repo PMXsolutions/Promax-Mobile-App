@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 import React from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
@@ -6,7 +6,6 @@ import { THEME } from "@/constants/theme";
 import { shiftQuery } from "@/hooks/queries/shift";
 import useAuthStore from "@/store/use-auth-store";
 import { getActivityDetailStatus } from "@/helpers/shift-service";
-import { FlatList } from "react-native";
 import PendingCard from "@/components/shift/pending-card";
 
 const ShiftPending = () => {

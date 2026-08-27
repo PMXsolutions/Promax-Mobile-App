@@ -1,4 +1,3 @@
-const appJson = require("./app.json");
 const fs = require("fs");
 
 const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -15,30 +14,29 @@ const nonProductionSuffix =
     : deploymentEnvironment === "uat"
       ? ".uat"
       : ".dev";
-const displayName =
-  deploymentEnvironment === "production"
-    ? appJson.expo.name
-    : deploymentEnvironment === "uat"
-      ? "PromaxCare UAT"
-      : "PromaxCare Dev";
-
-module.exports = () => {
+module.exports = ({ config }) => {
+  const displayName =
+    deploymentEnvironment === "production"
+      ? config.name
+      : deploymentEnvironment === "uat"
+        ? "PromaxCare UAT"
+        : "PromaxCare Dev";
   const { googleServicesFile: _ignoredCommittedPath, ...androidBase } =
-    appJson.expo.android;
+    config.android;
   const expo = {
-    ...appJson.expo,
+    ...config,
     name: displayName,
     scheme:
       deploymentEnvironment === "production"
-        ? appJson.expo.scheme
+        ? config.scheme
         : `promaxcare-${deploymentEnvironment}`,
     ios: {
-      ...appJson.expo.ios,
-      bundleIdentifier: `${appJson.expo.ios.bundleIdentifier}${nonProductionSuffix}`,
+      ...config.ios,
+      bundleIdentifier: `${config.ios.bundleIdentifier}${nonProductionSuffix}`,
       ...(googleMapsApiKey
         ? {
             config: {
-              ...appJson.expo.ios?.config,
+              ...config.ios?.config,
               googleMapsApiKey,
             },
           }
@@ -46,14 +44,14 @@ module.exports = () => {
     },
     android: {
       ...androidBase,
-      package: `${appJson.expo.android.package}${nonProductionSuffix}`,
+      package: `${config.android.package}${nonProductionSuffix}`,
       ...(googleServicesFile ? { googleServicesFile } : {}),
       ...(googleMapsApiKey
         ? {
             config: {
-              ...appJson.expo.android?.config,
+              ...config.android?.config,
               googleMaps: {
-                ...appJson.expo.android?.config?.googleMaps,
+                ...config.android?.config?.googleMaps,
                 apiKey: googleMapsApiKey,
               },
             },
@@ -62,5 +60,5 @@ module.exports = () => {
     },
   };
 
-  return { expo };
+  return expo;
 };

@@ -472,7 +472,6 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
           data={selectedDateShifts}
           renderItem={renderShiftItem}
           keyExtractor={(shift: AgendaProps) => shift.shiftRosterId.toString()}
-          estimatedItemSize={80}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyShifts}
           refreshControl={

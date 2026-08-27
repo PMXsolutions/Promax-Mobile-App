@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import React from "react";
 import { THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";

@@ -13,7 +13,7 @@ const ReportDetail = () => {
 
   const reportId = query.reportId as unknown as string;
   const rosterId = query.rosterId as unknown as string;
-  const { data, isLoading } = reportQuery.useFetchReportInfo(
+  const { isLoading } = reportQuery.useFetchReportInfo(
     Number(reportId),
     Number(rosterId)
   );

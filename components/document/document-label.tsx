@@ -27,7 +27,7 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
     setExpanded(!expanded);
   };
   const [loading, setLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("");
+  const [, setStatusMessage] = useState("");
 
   const handleDownload = async () => {
     if (!item.documentUrl) {

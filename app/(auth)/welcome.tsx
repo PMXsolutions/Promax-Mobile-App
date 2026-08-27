@@ -6,7 +6,6 @@ import onboarding from "@/constants/data";
 import Text from "@/components/shared/text";
 import CustomButton from "@/components/shared/custom-button";
 import { THEME } from "@/constants/theme";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import storageUtil from "@/utils/storage";
 import { STORAGE_KEYS } from "@/constants/storageKeys";

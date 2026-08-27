@@ -3,7 +3,6 @@ import { useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
 import KeyboardWrapper from "@/components/shared/keyboard-wrapper";
-import { View } from "react-native";
 import EditInfoForm from "@/modules/profile/edit-otherinfo-form";
 
 const EditPersonalInfo = () => {

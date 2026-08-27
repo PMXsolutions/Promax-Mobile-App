@@ -12,12 +12,11 @@ const UserHeader = ({
   name: string;
   role: string;
 }) => {
-  const defaultImage = "../../assets/images/user-avatar.png";
   return (
     <View style={styles.userSection}>
       <View>
         <ImageBackground
-          source={require(defaultImage)}
+          source={require("../../assets/images/user-avatar.png")}
           style={styles.avatar}
           imageStyle={styles.avatar}
         >

@@ -123,7 +123,7 @@ export default function TripScreen() {
     setIsLoading(true);
     try {
       await startTracking();
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to start trip tracking. Please try again.", [
         { text: "OK" },
       ]);

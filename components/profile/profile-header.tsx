@@ -11,14 +11,12 @@ import Text from "../shared/text";
 import { THEME } from "@/constants/theme";
 
 const ProfileHeaderContent = ({ data }: { data: StaffProfile }) => {
-  const defaultImage = "../../assets/images/user-avatar.png";
-
   return (
     <TouchableWithoutFeedback>
       <View style={styles.container}>
         <View>
           <ImageBackground
-            source={require(defaultImage)}
+            source={require("../../assets/images/user-avatar.png")}
             style={styles.userImg}
             imageStyle={styles.userImg}
           >

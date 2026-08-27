@@ -1,6 +1,6 @@
 import React from "react";
 import { Control, Controller, FieldPath, FieldValues } from "react-hook-form";
-import { StyleSheet, Text, View, ViewStyle } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import PasswordInput, { PasswordInputProps } from "../shared/password-input";
 

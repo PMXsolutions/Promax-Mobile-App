@@ -22,7 +22,7 @@ const Activity = () => {
     isRefetching,
   } = shiftQuery.useShiftRoster(staff?.staffId!);
   const [now, setNow] = useState(new Date());
-  const shiftData = Array.isArray(data) ? data : [];
+  const shiftData = useMemo(() => (Array.isArray(data) ? data : []), [data]);
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(new Date());

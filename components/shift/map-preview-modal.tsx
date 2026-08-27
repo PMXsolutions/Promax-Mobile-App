@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useMemo, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
   ActivityIndicator,
   TextInput,
 } from "react-native";
-import MapView, { Marker, Circle, LatLng } from "react-native-maps";
+import MapView, { Marker, Circle } from "react-native-maps";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import CustomButton from "../shared/custom-button";
 import CustomBackdrop from "../ui/custom-backdrop";
@@ -52,11 +52,6 @@ const MapPreviewBottomSheet = ({
     staffLocation?.longitude &&
     clientLocation?.latitude &&
     clientLocation?.longitude;
-
-  const coordinates: LatLng[] = useMemo(
-    () => [clientLocation, staffLocation],
-    [clientLocation, staffLocation]
-  );
 
   useEffect(() => {
     if (visible && isValidCoords) {

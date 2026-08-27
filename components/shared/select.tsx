@@ -13,7 +13,6 @@ import Animated, { FadeIn, FadeOutDown } from "react-native-reanimated";
 import normalize from "@/libs/normalize";
 import { THEME } from "@/constants/theme";
 import Text from "./text";
-import { useTheme } from "@react-navigation/native";
 
 /**
  * Represents an option in the select component.
@@ -100,8 +99,6 @@ const Select: React.FC<SelectProps> = ({
   // Find the label for the current value
   const selectedLabel =
     options.find((option) => option.value === value)?.label || placeholder;
-  const { colors } = useTheme();
-
   return (
     <View style={[styles.container, containerStyle]}>
       <SelectPrimitive.Root
@@ -113,14 +110,14 @@ const Select: React.FC<SelectProps> = ({
             placeholder={selectedLabel}
             style={{
               fontFamily: THEME.fontFamily.regular,
-              color: colors.text,
+              color: THEME.colors.dark,
             }}
           />
 
           <Icon
             name="chevron-down"
             style={{ marginLeft: "auto" }}
-            color={colors.text}
+            color={THEME.colors.dark}
             size={18}
           />
         </SelectPrimitive.Trigger>
@@ -222,7 +219,7 @@ const styles = StyleSheet.create({
     color: "blue",
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "transparent",
   },
 });

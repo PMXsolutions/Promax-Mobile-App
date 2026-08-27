@@ -1,8 +1,7 @@
 import { THEME } from "@/constants/theme";
 import normalize from "@/libs/normalize";
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
-import { Pressable, View } from "react-native";
+import { StyleSheet , Pressable, View } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Text from "./text";
 import { MaterialCommunityIcons } from "@expo/vector-icons";

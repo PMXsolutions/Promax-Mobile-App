@@ -1,19 +1,33 @@
-import React, { ComponentProps } from "react";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import React, { ReactNode } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 
-type Props = ComponentProps<typeof KeyboardAwareScrollView>;
+interface Props {
+  children: ReactNode;
+}
 
-const KeyboardAwareWrapper = ({ children, ...props }: Props) => (
-  <KeyboardAwareScrollView
-    enableOnAndroid
-    enableResetScrollToCoords={false}
-    keyboardShouldPersistTaps="handled"
-    showsVerticalScrollIndicator={false}
-    style={{ flex: 1 }}
-    {...props}
+const KeyboardAwareWrapper = ({ children }: Props) => (
+  <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={styles.container}
   >
-    {children}
-  </KeyboardAwareScrollView>
+    <ScrollView
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      {children}
+    </ScrollView>
+  </KeyboardAvoidingView>
 );
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  content: { flexGrow: 1 },
+});
 
 export default KeyboardAwareWrapper;

@@ -20,7 +20,7 @@ const startRotationAnimation = (
   ).start();
 };
 
-const LoadingSpinner = ({ color, durationMs = 1000 }: Props): JSX.Element => {
+const LoadingSpinner = ({ color, durationMs = 1000 }: Props): React.ReactElement => {
   const rotationDegree = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

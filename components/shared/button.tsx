@@ -50,7 +50,7 @@ function Button({
   variant = "primary",
   icon,
   ...others
-}: ButtonProps): JSX.Element {
+}: ButtonProps): React.ReactElement {
   const dynamicStyles = useMemo(() => {
     const container = [
       styles.container,

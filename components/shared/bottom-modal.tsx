@@ -1,8 +1,7 @@
 import React from "react";
 import { View, StyleSheet, Animated, Pressable } from "react-native";
 import Text from "../shared/text";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useTheme } from "@react-navigation/native";
+import { THEME } from "@/constants/theme";
 
 const BottomModal = ({
   setStatus,
@@ -13,7 +12,6 @@ const BottomModal = ({
   setStatus: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
 }) => {
-  const { colors } = useTheme();
   const slide = React.useRef(new Animated.Value(300)).current;
 
   const slideUp = () => {
@@ -54,7 +52,7 @@ const BottomModal = ({
             styles.bottomSheet,
             {
               transform: [{ translateY: slide }],
-              backgroundColor: colors.background,
+              backgroundColor: THEME.colors.white,
             },
           ]}
         >

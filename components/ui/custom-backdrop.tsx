@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import Animated, {
   Extrapolation,
@@ -20,11 +20,7 @@ const CustomBackdrop = ({ animatedIndex, style }: BottomSheetBackdropProps) => {
     )})`,
   }));
 
-  // styles
-  const containerStyle = useMemo(
-    () => [style, containerAnimatedStyle],
-    [style]
-  );
+  const containerStyle = [style, containerAnimatedStyle];
 
   const blurViewProps = useAnimatedProps(() => {
     return {

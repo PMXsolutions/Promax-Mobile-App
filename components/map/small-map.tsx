@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import React from "react";
 import MapView, { Marker } from "react-native-maps";
 import { ShiftRosterType } from "@/types/shift";

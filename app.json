@@ -5,17 +5,10 @@
     "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#030637"
-    },
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "runtimeVersion": "1.0.0",
     "ios": {
-      "deviceFamilies": [1],
       "infoPlist": {
         "UIViewControllerBasedStatusBarAppearance": true,
         "NSCameraUsageDescription": "This app needs access to your camera to take and upload pictures.",
@@ -51,6 +44,9 @@
       "expo-router",
       "expo-font",
       "expo-document-picker",
+      "@react-native-community/datetimepicker",
+      "expo-sharing",
+      "expo-status-bar",
       [
         "expo-splash-screen",
         {

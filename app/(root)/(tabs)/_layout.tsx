@@ -2,53 +2,13 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { THEME } from "@/constants/theme";
-import {
-  Pressable,
-  PressableProps,
-  AccessibilityState,
-  View,
-  Platform,
-} from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HapticTab } from "@/components/haptic";
 import { BlurView } from "expo-blur";
-import { StyleSheet } from "react-native";
-
-type CustomTabButtonProps = PressableProps & {
-  accessibilityState?: AccessibilityState;
-  children: React.ReactNode;
-};
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-
-  const CustomTabButton: React.FC<CustomTabButtonProps> = ({
-    children,
-    onPress,
-    accessibilityState,
-  }) => {
-    const focused = accessibilityState?.selected ?? false;
-
-    return (
-      <Pressable
-        onPress={onPress}
-        style={({ pressed }) => [
-          {
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: pressed ? "#f0f0f0" : "transparent",
-          },
-          focused && {
-            borderTopWidth: 2,
-            borderTopColor: THEME.colors.brand,
-          },
-        ]}
-      >
-        {children}
-      </Pressable>
-    );
-  };
 
   return (
     <Tabs

@@ -31,7 +31,6 @@ const Notification = () => {
   const {
     data: notificationData,
     isLoading,
-    error,
     isFetching: isRefetching,
     refetch,
   } = notificationQuery.useNotification(user?.userId as string);
