@@ -7,7 +7,7 @@ the participant/admin web client.
 ## Automated gates (must pass on every candidate)
 
 ```text
-npm test -- --runInBand --watch=false
+npm test
 npm run lint
 npx tsc --noEmit
 EXPO_PUBLIC_DEPLOYMENT_ENV=uat \
@@ -29,13 +29,14 @@ The current candidate is on Expo SDK 57.0.17, React Native 0.86.3 and React 19.2
 Expo Doctor passes 21/21 checks; lint, TypeScript, all 21 Jest tests and real
 web/iOS/Android exports pass. The web export contains 70 static routes.
 
-`npm audit --omit=dev` still reports 0 critical, 4 high and 13 moderate
-advisories in upstream Expo CLI/config, Metro/image-size and React Native
-dependency chains. The registry currently offers no non-breaking fully patched
-set for this SDK; the automatic force fix would incorrectly downgrade Expo and
-React Native. Do not force-downgrade the supported stack. The release owner must
-record an explicit upstream-risk disposition, and the native store candidate
-remains blocked until the physical-device regression below is complete.
+The React Native-side Metro packages are aligned with Expo's compatible patched
+0.84.5 toolchain, and the legacy UUID dependency is overridden to its supported
+patched line. `npm audit --omit=dev` now reports **zero known vulnerabilities**.
+After that change, Expo Doctor still passes 21/21 checks; lint, TypeScript and all
+21 Jest tests pass; fresh web, iOS and Android exports pass with 137, 72 and 76
+files respectively. This dependency result does not replace native security or
+device testing: the store candidate remains blocked until the physical-device
+and MASVS gates below are complete.
 
 ## Physical-device gates (must be evidenced before production)
 
