@@ -1,10 +1,10 @@
 import { Image, ScrollView, StyleSheet, Switch, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { reportQuery } from "@/hooks/queries/report";
 import { THEME } from "@/constants/theme";
 import ReportFormHeader from "@/components/shift/report/report-header";
 import TextInput from "@/components/shared/input";
-import { ShiftReport } from "@/types/report";
+import { ReportFormState, ShiftReport } from "@/types/report";
 import Text from "@/components/shared/text";
 import CustomSwitch from "@/components/shift/report/report-setting";
 import CustomButton from "@/components/shared/custom-button";
@@ -16,6 +16,7 @@ import { router } from "expo-router";
 import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import { getReportFormValidationError } from "./report-validation";
 
 const EditReportForm = ({
   reportId,
@@ -25,11 +26,14 @@ const EditReportForm = ({
   rosterId: string;
 }) => {
   const { user, staff } = useAuthStore();
+  const parsedReportId = Number(reportId);
+  const parsedRosterId = Number(rosterId);
   const { data, isLoading } = reportQuery.useFetchReportInfo(
-    Number(reportId),
-    Number(rosterId)
+    parsedReportId,
+    parsedRosterId
   );
-  const { data: shift } = shiftQuery.useShiftDetail(Number(rosterId));
+  const { data: shift } = shiftQuery.useShiftDetail(parsedRosterId);
+  const hasHydratedForm = useRef(false);
 
   // Update the `useState` to match the type
   const [form, setForm] = useState({
@@ -52,7 +56,8 @@ const EditReportForm = ({
     details_ifIsBehaviourConcerned: "",
   });
   useEffect(() => {
-    if (data) {
+    // Recently updated: hydrate once so background refetches do not overwrite staff edits.
+    if (data && !hasHydratedForm.current) {
       setForm({
         urgentMatters: data.urgentMatters || "",
         medicationGiven: data.medicationGiven || "",
@@ -74,6 +79,7 @@ const EditReportForm = ({
         details_ifIsBehaviourConcerned:
           data.details_ifIsBehaviourConcerned || "",
       });
+      hasHydratedForm.current = true;
     }
   }, [data]);
 
@@ -89,6 +95,10 @@ const EditReportForm = ({
 
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
+      if (!data?.shiftReportId) {
+        throw new Error("Report details are not available");
+      }
+
       const reqBody = {
         ...data,
         ...form,
@@ -111,6 +121,12 @@ const EditReportForm = ({
           queryKey: ["staffReports", staff?.staffId],
         }),
         queryClient.invalidateQueries({ queryKey: ["shifts"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["shifts", "detail", { id: parsedRosterId }],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["staffReport", parsedReportId, parsedRosterId],
+        }),
       ]);
     },
 
@@ -123,20 +139,18 @@ const EditReportForm = ({
   });
 
   const handleFormSubmit = () => {
-    const cleanedGoalProgress = form.goal_Progress.replace(/\s/g, "");
-
-    if (!form.goal_Progress || cleanedGoalProgress.length < 100) {
+    if (!data?.shiftReportId) {
       showMessage({
-        message:
-          "Please provide at least 100 characters for 'Support plan progress and activities'",
+        message: "Unable to update this report. Please reload and try again.",
         type: "danger",
       });
       return;
     }
 
-    if (form.isIncident && !form.details_IfIsIncipient.trim()) {
+    const validationError = getReportFormValidationError(form as ReportFormState);
+    if (validationError) {
       showMessage({
-        message: "Please provide incident details before submitting.",
+        message: validationError,
         type: "danger",
       });
       return;
@@ -441,6 +455,7 @@ const EditReportForm = ({
             title={"Submit"}
             onPress={() => handleFormSubmit()}
             loading={isPending}
+            disabled={isPending || isLoading || !data?.shiftReportId}
           />
         </View>
       </ScrollView>

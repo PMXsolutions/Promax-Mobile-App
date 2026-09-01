@@ -110,7 +110,8 @@ const ShiftDetail = () => {
       {shift && (
         <ShiftAction
           clockIn={handleClock}
-          clockInPending={clockInPending}
+          // Recently updated: disable Clock In while GPS validation is still running.
+          clockInPending={clockInPending || distanceCheckLoading}
           clockOut={clockOut}
           clockOutPending={clockOutPending}
           activity={shift!}

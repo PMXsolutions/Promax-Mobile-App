@@ -7,13 +7,14 @@ import EditReportForm from "@/modules/report/edit-report-form";
 import { reportQuery } from "@/hooks/queries/report";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
+import ErrorState from "@/components/shared/error-state";
 
 const ReportDetail = () => {
   const query = useLocalSearchParams();
 
   const reportId = query.reportId as unknown as string;
   const rosterId = query.rosterId as unknown as string;
-  const { data, isLoading } = reportQuery.useFetchReportInfo(
+  const { data, isLoading, isError, refetch } = reportQuery.useFetchReportInfo(
     Number(reportId),
     Number(rosterId)
   );
@@ -25,6 +26,19 @@ const ReportDetail = () => {
         color={THEME.colors.secondary}
         title="Loading Report.."
       />
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Edit Shift Report"} />
+        {/* Recently updated: prevent blank report forms after failed report loads. */}
+        <ErrorState
+          message="Unable to load this shift report. Please check your connection and try again."
+          onRetry={refetch}
+        />
+      </ScreenWrapper>
     );
   }
 

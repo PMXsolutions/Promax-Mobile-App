@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -36,6 +36,8 @@ const useClockIn = (
     null
   );
   const [lastDistance, setLastDistance] = useState<number | null>(null);
+  // Recently updated: keep GPS validation and the attendance mutation as one locked submission.
+  const clockInSubmissionRef = useRef(false);
 
   const getCurrentLocation = async (): Promise<StaffLocationProps | null> => {
     try {
@@ -106,7 +108,12 @@ const useClockIn = (
     },
     onSuccess: ({ data }) => {
       setModalVisible(true);
-      return queryClient.invalidateQueries({ queryKey: ["shifts"] });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["shifts"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["shifts", "detail", { id: shiftRosterId }],
+        }),
+      ]);
     },
     onError: (error) => {
       if (isAxiosError(error)) {
@@ -117,13 +124,23 @@ const useClockIn = (
         });
       }
     },
+    onSettled: () => {
+      clockInSubmissionRef.current = false;
+      setDistanceCheckLoading(false);
+    },
   });
 
   const handleClock = async () => {
+    if (clockInSubmissionRef.current || clockInPending) {
+      return;
+    }
+
+    clockInSubmissionRef.current = true;
     setDistanceCheckLoading(true);
 
     const location = await getCurrentLocation();
     if (!location) {
+      clockInSubmissionRef.current = false;
       setDistanceCheckLoading(false);
       return;
     }
@@ -134,6 +151,7 @@ const useClockIn = (
     setLastDistance(checkResult.distance ?? null);
 
     if (!checkResult.success) {
+      clockInSubmissionRef.current = false;
       setDistanceCheckLoading(false);
 
       if (checkResult.errorType === "NO_CLIENT_LOCATION") {
@@ -150,7 +168,6 @@ const useClockIn = (
 
     // All checks passed
     clockIn(location);
-    setDistanceCheckLoading(false);
   };
 
   return {

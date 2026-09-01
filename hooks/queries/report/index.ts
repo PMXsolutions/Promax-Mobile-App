@@ -14,6 +14,8 @@ const useFetchReportInfo = (reportId: number, shiftId: number) => {
   return useQuery<ShiftReport>({
     queryKey: ["staffReport", reportId, shiftId],
     queryFn: () => reportService.fetchReportInfo(reportId, shiftId),
+    // Recently updated: report edit forms must not overwrite in-progress notes on focus.
+    refetchOnWindowFocus: false,
     enabled: !!reportId && !!shiftId, // Only run the query if id and uid are defined
   });
 };
