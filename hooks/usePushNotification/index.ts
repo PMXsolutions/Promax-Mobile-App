@@ -15,6 +15,8 @@ export interface NotificationData {
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
@@ -39,8 +41,8 @@ const usePushNotifications = (
   >();
   const [loading, setLoading] = useState(false);
 
-  const notificationListener = useRef<Notifications.EventSubscription>();
-  const responseListener = useRef<Notifications.EventSubscription>();
+  const notificationListener = useRef<Notifications.EventSubscription | undefined>(undefined);
+  const responseListener = useRef<Notifications.EventSubscription | undefined>(undefined);
 
   // Send token to PromaxCare API (not third-party Render)
   const sendTokenToBackend = async (deviceToken: string) => {

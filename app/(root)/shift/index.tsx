@@ -1,6 +1,8 @@
-import { Button } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Text from "@/components/shared/text";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
 import { shiftQuery } from "@/hooks/queries/shift";
@@ -106,6 +108,8 @@ const ShiftDetail = () => {
 
       {/* <Button title="Try me " onPress={openModal} /> */}
       <ShiftDetailContent shift={shift!} />
+
+      {shift && <View style={{ paddingHorizontal: 16, paddingTop: 8 }}><TouchableOpacity accessibilityRole="button" onPress={() => router.push(`/(root)/care-plan/${shift.shiftRosterId}`)} style={{ flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 14, borderWidth: 1, borderColor: "#bfdbfe", backgroundColor: "#eff6ff", padding: 15 }}><MaterialCommunityIcons name="book-open-page-variant-outline" size={24} color="#102a56" /><View style={{ flex: 1 }}><Text weight="bold" color="#102a56">Care plan & handover</Text><Text size="xs" color="#475569">Read approved instructions and acknowledge</Text></View><MaterialCommunityIcons name="chevron-right" size={24} color="#102a56" /></TouchableOpacity></View>}
 
       {shift && (
         <ShiftAction

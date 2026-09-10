@@ -145,6 +145,11 @@ const Document = () => {
         />
       </View>
       <View style={styles.container}>
+        <TouchableOpacity style={styles.policyBanner} onPress={() => router.push("/(root)/policy")} accessibilityRole="button">
+          <MaterialIcons name="policy" size={24} color="#102a56" />
+          <View style={{ flex: 1 }}><Text weight="bold" color="#102a56">Policies for me</Text><Text size="xs" color="#475569">Read organisation policies and record acknowledgement</Text></View>
+          <MaterialIcons name="chevron-right" size={24} color="#102a56" />
+        </TouchableOpacity>
         <View
           style={{ marginVertical: 10, paddingHorizontal: THEME.spacing.md }}
         >
@@ -245,6 +250,18 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.colors.white,
     paddingHorizontal: THEME.spacing.md,
     // marginTop: 10,
+  },
+  policyBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginHorizontal: THEME.spacing.md,
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    backgroundColor: "#eff6ff",
   },
   floatingButton: {
     position: "absolute",
