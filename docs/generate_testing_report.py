@@ -49,6 +49,41 @@ FIGURES = {
         ),
         "width_in": 2.35,
     },
+    "fig-04": {
+        "file": "fig-04-add-document-no-images.jpg",
+        "id": "Figure 4",
+        "title": "Add a document — file types limited to PDF and Word",
+        "caption": (
+            "Staff “Add a document” screen. The Upload File control reads "
+            "“Tap to select file (.pdf, .doc, .docx)”. Image formats (JPEG, PNG, HEIC) "
+            "are not listed or offered."
+        ),
+        "width_in": 2.35,
+    },
+    "fig-05": {
+        "file": "fig-05-edit-report-two-clients.jpg",
+        "id": "Figure 5",
+        "title": "Edit Shift Report — two clients on one report, no selector",
+        "caption": (
+            "Edit Shift Report for staff Serah. Client’s Name is shown as a combined string "
+            "“Ajeh Wumi Tao, Olatunji John”. There is no control to choose which client the "
+            "report is for. One form (urgent matters, medications, etc.) applies to both clients."
+        ),
+        "width_in": 2.35,
+    },
+    "fig-06": {
+        "file": "fig-06-completed-shift-multi-client-trip.jpg",
+        "id": "Figure 6",
+        "title": "Completed multi-client shift — trip control still available",
+        "caption": (
+            "Shift detail for clients “David David David, Fateru Israel Oluwapelumi” "
+            "(staff Serah Adeniyi). Status is “Shift Completed” with message "
+            "“Great job! Your shift has been completed successfully.” Activities include "
+            "Transport. The steering-wheel trip button remains visible. There is no client "
+            "selector for which participant a trip would cover."
+        ),
+        "width_in": 2.35,
+    },
 }
 
 
@@ -186,7 +221,7 @@ def build_document():
         "This short testing report documents four defects observed during staff shift operations "
         "on the Promax Care mobile application. Issues were reproduced against a live shift for "
         "staff Serah Adeniyi and client Ajeh Wumi Tao (3 October 2026, 4:15 PM – 5:18 PM Australian time). "
-        "Evidence is attached as embedded screenshots (Figure 1–3) captured from the staff mobile app "
+        "Evidence is attached as embedded screenshots (Figures 1–6) captured from the staff mobile app "
         "and the admin Schedule Board."
     )
 
@@ -199,7 +234,7 @@ def build_document():
                 "Trip can start before/after shift window",
                 "High",
                 "Open",
-                "Figure 1",
+                "Figures 1, 6",
             ],
             [
                 "BUG-02",
@@ -213,14 +248,14 @@ def build_document():
                 "Document upload rejects images",
                 "High",
                 "Open",
-                "None provided",
+                "Figure 4",
             ],
             [
                 "BUG-04",
                 "No client selection for multi-client report/trip",
                 "High",
                 "Open",
-                "None provided",
+                "Figures 5, 6",
             ],
         ],
     )
@@ -264,6 +299,21 @@ def build_document():
                 "Staff mobile — Shift Roster",
                 "Same shift listed on Sunday 4 Oct at 1:15–3:18 AM, ACTIVE",
             ],
+            [
+                "Figure 4",
+                "Staff mobile — Add a document",
+                "Upload File accepts only .pdf, .doc, .docx — no images",
+            ],
+            [
+                "Figure 5",
+                "Staff mobile — Edit Shift Report",
+                "Client’s Name: Ajeh Wumi Tao, Olatunji John — one report, no picker",
+            ],
+            [
+                "Figure 6",
+                "Staff mobile — shift detail (completed)",
+                "Two clients combined; Shift Completed; transport button still shown",
+            ],
         ],
     )
     doc.add_paragraph(
@@ -276,7 +326,7 @@ def build_document():
     p = doc.add_paragraph()
     run = p.add_run("Screenshot reference: ")
     run.bold = True
-    p.add_run("Figure 1")
+    p.add_run("Figure 1 (before start); Figure 6 (after shift completed)")
 
     add_heading(doc, "3.1 Description", 2)
     doc.add_paragraph(
@@ -291,7 +341,13 @@ def build_document():
         " Shift detail shows status “Not Started” and “Your shift hasn't started yet. "
         "You can request to cancel if needed.” The transport (steering wheel) control remains "
         "visible and usable (Figure 1).",
-        "Observed: ",
+        "Before start: ",
+    )
+    add_bullet(
+        doc,
+        " A later completed shift for two clients still shows “Shift Completed” while the "
+        "transport button remains on screen (Figure 6).",
+        "After end: ",
     )
     add_bullet(
         doc,
@@ -301,12 +357,13 @@ def build_document():
         "Code note: ",
     )
     add_figure(doc, "fig-01")
+    add_figure(doc, "fig-06")
 
     add_heading(doc, "3.3 Steps to Reproduce", 2)
     for step in [
-        "Open a shift that includes the Transport activity (see Figure 1).",
-        "Confirm shift status is Not Started / Upcoming (before start), or ended/Absent/Present (after end).",
-        "Tap the transport / trip control on the shift detail screen (steering-wheel button in Figure 1).",
+        "Open a shift that includes the Transport activity (see Figure 1 before start, Figure 6 after complete).",
+        "Confirm shift status is Not Started / Upcoming (before start), or Shift Completed / Absent / Present (after end).",
+        "Tap the transport / trip control (steering-wheel button in Figures 1 and 6).",
         "Observe that trip tracking can still be started or processed.",
     ]:
         doc.add_paragraph(step, style="List Number")
@@ -318,7 +375,7 @@ def build_document():
         [
             [
                 "Trip start/process only when shift is In Progress (staff clocked in).",
-                "Trip control available before start (Figure 1) and after shift has passed.",
+                "Trip control available before start (Figure 1) and after the shift is completed (Figure 6).",
             ]
         ],
     )
@@ -418,7 +475,7 @@ def build_document():
     p = doc.add_paragraph()
     run = p.add_run("Screenshot reference: ")
     run.bold = True
-    p.add_run("None provided for this defect. Reproduce and attach picker/error screen on retest.")
+    p.add_run("Figure 4")
 
     add_heading(doc, "5.1 Description", 2)
     doc.add_paragraph(
@@ -426,39 +483,41 @@ def build_document():
         "In practice, image selection/upload is not accepted as expected for compliance documents."
     )
 
-    add_heading(doc, "5.2 Evidence / Technical Note", 2)
+    add_heading(doc, "5.2 Evidence", 2)
+    add_bullet(
+        doc,
+        " The “Add a document” screen labels Upload File as “Tap to select file (.pdf, .doc, .docx)”. "
+        "No image types are listed (Figure 4).",
+        "Observed: ",
+    )
     add_bullet(
         doc,
         " Upload uses DocumentPicker with a limited MIME list: image/jpeg, application/pdf, "
-        "and Word types only. image/png (and broader image/*) are not included.",
-        "Picker types: ",
+        "and Word types only. The on-screen hint omits images entirely. image/png and camera/gallery "
+        "paths are not offered (unlike profile photo).",
+        "Code / UX note: ",
     )
-    add_bullet(
-        doc,
-        " There is no ImagePicker / camera path on the document forms (unlike profile photo), "
-        "so many phone photos (often PNG/HEIC) cannot be selected reliably.",
-        "UX gap: ",
-    )
+    add_figure(doc, "fig-04")
 
     add_heading(doc, "5.3 Steps to Reproduce", 2)
     for step in [
-        "Open Documents tab → Add / upload a compliance document.",
-        "Attempt to select a PNG, HEIC, or gallery photo of a certificate.",
-        "Observe that the image is rejected, unavailable in the picker, or fails upload.",
-        "Capture the picker/error screen and attach as Figure 4 on retest.",
-        "Retry with PDF (if available) to confirm non-image types still work.",
+        "Open Documents tab → Add a document (Figure 4).",
+        "Confirm the upload hint lists only .pdf, .doc, .docx.",
+        "Tap “Tap to select file” and attempt to choose a JPEG, PNG, HEIC, or camera photo.",
+        "Observe that images are not offered or cannot be submitted as a compliance document.",
     ]:
         doc.add_paragraph(step, style="List Number")
 
     add_heading(doc, "5.4 Expected vs Actual", 2)
     add_table(
         doc,
-        ["Expected", "Actual"],
+        ["Expected", "Actual", "Evidence"],
         [
             [
                 "Staff can upload common image formats (JPEG, PNG; ideally HEIC via conversion) "
-                "and PDF for compliance documents.",
-                "Images are not accepted reliably; picker/MIME allow-list is too narrow.",
+                "and PDF/Word for compliance documents.",
+                "Upload File hint allows only .pdf, .doc, .docx. Images are not accepted.",
+                "Figure 4",
             ]
         ],
     )
@@ -467,12 +526,9 @@ def build_document():
     add_heading(doc, "6. BUG-04 — No Client Selection for Multi-Client Report / Trip", 1)
     severity_para(doc, "High", "C0392B")
     p = doc.add_paragraph()
-    run = p.add_run("Screenshot reference: ")
+    run = p.add_run("Screenshot references: ")
     run.bold = True
-    p.add_run(
-        "None provided for this defect. Figure 1 shows a single-client header (Ajeh Wumi Tao). "
-        "Reproduce with two+ clients and attach report/trip screens on retest."
-    )
+    p.add_run("Figure 5 (report); Figure 6 (trip on completed multi-client shift)")
 
     add_heading(doc, "6.1 Description", 2)
     doc.add_paragraph(
@@ -481,43 +537,57 @@ def build_document():
         "which client the report applies to, or which client a trip covers."
     )
 
-    add_heading(doc, "6.2 Evidence / Technical Note", 2)
+    add_heading(doc, "6.2 Evidence", 2)
+    add_bullet(
+        doc,
+        " Edit Shift Report shows Client’s Name as “Ajeh Wumi Tao, Olatunji John” with no "
+        "dropdown or picker. One report form is shared by both clients (Figure 5).",
+        "Report: ",
+    )
+    add_bullet(
+        doc,
+        " Shift detail header concatenates two clients (“David David David, Fateru Israel "
+        "Oluwapelumi”). Transport remains a single shift-level button even after completion "
+        "(Figure 6). There is no client selector for the trip.",
+        "Trip: ",
+    )
     add_bullet(
         doc,
         " Shift model exposes a combined clients string and a single profile object; "
         "report submit payload sends shiftRosterId + form fields with no clientId selector.",
         "Data model: ",
     )
-    add_bullet(
-        doc,
-        " Report header displays the full clients string; trip flow is keyed by shiftId only. "
-        "Figure 1 shows client as a single combined header with no selector.",
-        "UI: ",
-    )
+
+    add_heading(doc, "6.2.1 One report tied to two clients", 3)
+    add_figure(doc, "fig-05")
+
+    add_heading(doc, "6.2.2 One trip control for two clients (after shift completed)", 3)
+    add_figure(doc, "fig-06")
 
     add_heading(doc, "6.3 Steps to Reproduce", 2)
     for step in [
-        "Assign a shift (or scenario) with more than one client for the same staff member.",
-        "Open shift report creation from the mobile app.",
-        "Observe that there is no client picker; one report covers all listed clients.",
-        "Start/save a transport trip for the same shift (transport control in Figure 1).",
-        "Observe that the trip is not attributed to a specific client.",
-        "Capture report and trip screens and attach as additional figures on retest.",
+        "Assign a shift with more than one client for the same staff member.",
+        "Open Edit/Create Shift Report and confirm Client’s Name lists both clients with no selector (Figure 5).",
+        "Submit or save the report and observe it is stored against the shift, not a chosen client.",
+        "Open shift detail for a multi-client shift that includes Transport (Figure 6).",
+        "Start/save a trip via the steering-wheel control. Observe the trip is not attributed to a specific client.",
     ]:
         doc.add_paragraph(step, style="List Number")
 
     add_heading(doc, "6.4 Expected vs Actual", 2)
     add_table(
         doc,
-        ["Expected", "Actual"],
+        ["Expected", "Actual", "Evidence"],
         [
             [
                 "Staff selects which client a shift report is for when multiple clients apply.",
-                "One report is tied to all clients on the shift.",
+                "One report is tied to all clients on the shift (combined name string).",
+                "Figure 5",
             ],
             [
                 "Staff selects which client a travelled trip covers.",
-                "Trip is recorded against the shift only, not a chosen client.",
+                "Trip is recorded against the shift only; transport button is shift-level.",
+                "Figure 6",
             ],
         ],
     )
@@ -546,13 +616,13 @@ def build_document():
                 "BUG-03",
                 "Accept image/jpeg, image/png, and preferably ImagePicker/camera with "
                 "conversion; keep PDF/Word support.",
-                "Upload JPEG, PNG, and camera photo for a required document type. Attach new screenshot.",
+                "Upload JPEG, PNG, and camera photo for a required document type. Compare to Figure 4.",
             ],
             [
                 "BUG-04",
                 "Add mandatory client selector on report create and trip start when "
                 "clients.length > 1; persist clientId on report and trip payloads.",
-                "Multi-client shift: submit two reports and two trips for different clients. Attach screenshots.",
+                "Multi-client shift: submit two reports and two trips for different clients. Compare to Figures 5 and 6.",
             ],
         ],
     )
@@ -561,11 +631,14 @@ def build_document():
     add_heading(doc, "8. Appendix A — Embedded Screenshots", 1)
     doc.add_paragraph(
         "The following figures are the original test captures. They are also placed inline "
-        "under BUG-01 and BUG-02. BUG-03 and BUG-04 had no screenshot attached at the time of this report."
+        "under BUG-01 through BUG-04."
     )
     add_figure(doc, "fig-01")
     add_figure(doc, "fig-02")
     add_figure(doc, "fig-03")
+    add_figure(doc, "fig-04")
+    add_figure(doc, "fig-05")
+    add_figure(doc, "fig-06")
 
     # Sign-off
     add_heading(doc, "9. Sign-Off", 1)
@@ -583,7 +656,9 @@ def build_document():
     run = footer.add_run(
         "Document format: Microsoft Word (.docx). Embedded files: "
         "fig-01-shift-detail-not-started.jpg, fig-02-admin-schedule-board.jpg, "
-        "fig-03-staff-roster-4-oct.jpg (docs/screenshots/)."
+        "fig-03-staff-roster-4-oct.jpg, fig-04-add-document-no-images.jpg, "
+        "fig-05-edit-report-two-clients.jpg, fig-06-completed-shift-multi-client-trip.jpg "
+        "(docs/screenshots/)."
     )
     run.italic = True
     run.font.size = Pt(9)
