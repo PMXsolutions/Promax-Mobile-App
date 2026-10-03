@@ -2,12 +2,54 @@
 """Generate Promax Care Mobile App Testing / Bug Report Word document."""
 
 from datetime import date
+from pathlib import Path
+
 from docx import Document
-from docx.shared import Pt, RGBColor, Inches
+from docx.shared import Pt, RGBColor, Inches, Emu
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+
+DOCS_DIR = Path(__file__).resolve().parent
+SCREENSHOTS_DIR = DOCS_DIR / "screenshots"
+
+FIGURES = {
+    "fig-01": {
+        "file": "fig-01-shift-detail-not-started.jpg",
+        "id": "Figure 1",
+        "title": "Staff shift detail — Not Started, transport control visible",
+        "caption": (
+            "Staff mobile shift detail for client Ajeh Wumi Tao (staff Serah Adeniyi). "
+            "Date shows 3 October 2026, start 4:15 PM / end 5:18 PM. Status is “Not Started” "
+            "with message “Your shift hasn't started yet.” Transport (steering wheel) button "
+            "is still visible. CTA is “Request to Cancel Shift”; clock-in is not offered."
+        ),
+        "width_in": 2.35,
+    },
+    "fig-02": {
+        "file": "fig-02-admin-schedule-board.jpg",
+        "id": "Figure 2",
+        "title": "Admin Schedule Board — same shift In Progress (Sydney)",
+        "caption": (
+            "ProMax Care web Schedule Board at app.promaxcare.com.au (header 4:17:31 pm – Sydney, AU). "
+            "Saturday 3 October 2026, 4:15 PM – 5:18 PM for staff Serah Adeniyi / client Ajeh Wumi Tao "
+            "is shown as “In Progress” with activities Transport, Install phone, Personal Support."
+        ),
+        "width_in": 3.6,
+    },
+    "fig-03": {
+        "file": "fig-03-staff-roster-4-oct.jpg",
+        "id": "Figure 3",
+        "title": "Staff roster dashboard — shift listed on 4 October",
+        "caption": (
+            "Staff mobile Shift Roster for Serah. Calendar selects Sunday 4 October 2026. "
+            "The same client/activities card shows 1:15 AM – 3:18 AM with status ACTIVE, "
+            "instead of Saturday 3 October 4:15 PM – 5:18 PM Australian time."
+        ),
+        "width_in": 2.35,
+    },
+}
 
 
 def set_cell_shading(cell, color_hex: str):
@@ -74,6 +116,40 @@ def severity_para(doc, label, color_hex):
     return p
 
 
+def add_figure(doc, figure_key: str):
+    """Embed a screenshot and caption. Returns True if the image was inserted."""
+    fig = FIGURES[figure_key]
+    path = SCREENSHOTS_DIR / fig["file"]
+
+    cap = doc.add_paragraph()
+    cap.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    run = cap.add_run(f"{fig['id']} — {fig['title']}")
+    run.bold = True
+    run.font.size = Pt(11)
+    run.font.color.rgb = RGBColor(0x03, 0x06, 0x37)
+
+    if not path.exists():
+        missing = doc.add_paragraph()
+        missing.add_run(
+            f"[Screenshot missing: {fig['file']}. Place the file in docs/screenshots/ and regenerate.]"
+        ).italic = True
+        return False
+
+    img_para = doc.add_paragraph()
+    img_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = img_para.add_run()
+    run.add_picture(str(path), width=Inches(fig["width_in"]))
+
+    caption = doc.add_paragraph()
+    caption.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    run = caption.add_run(fig["caption"])
+    run.italic = True
+    run.font.size = Pt(9)
+    run.font.color.rgb = RGBColor(0x44, 0x44, 0x44)
+    caption.paragraph_format.space_after = Pt(12)
+    return True
+
+
 def build_document():
     doc = Document()
 
@@ -99,7 +175,7 @@ def build_document():
     meta = doc.add_paragraph()
     meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = meta.add_run(
-        f"Report Date: {date.today().strftime('%d %B %Y')}  |  App Version: 1.1.0  |  Status: Open"
+        f"Report Date: {date.today().strftime('%d %B %Y')}  |  App Version: 1.1.0  |  Status: Open  |  Format: Microsoft Word (.docx)"
     )
     run.font.size = Pt(10)
     run.italic = True
@@ -110,17 +186,42 @@ def build_document():
         "This short testing report documents four defects observed during staff shift operations "
         "on the Promax Care mobile application. Issues were reproduced against a live shift for "
         "staff Serah Adeniyi and client Ajeh Wumi Tao (3 October 2026, 4:15 PM – 5:18 PM Australian time). "
-        "Evidence includes staff dashboard, shift detail, and admin Schedule Board screenshots."
+        "Evidence is attached as embedded screenshots (Figure 1–3) captured from the staff mobile app "
+        "and the admin Schedule Board."
     )
 
     add_table(
         doc,
-        ["ID", "Issue", "Severity", "Status"],
+        ["ID", "Issue", "Severity", "Status", "Screenshot refs"],
         [
-            ["BUG-01", "Trip can start before/after shift window", "High", "Open"],
-            ["BUG-02", "Shift date/time shown on wrong day; clock-in blocked", "Critical", "Open"],
-            ["BUG-03", "Document upload rejects images", "High", "Open"],
-            ["BUG-04", "No client selection for multi-client report/trip", "High", "Open"],
+            [
+                "BUG-01",
+                "Trip can start before/after shift window",
+                "High",
+                "Open",
+                "Figure 1",
+            ],
+            [
+                "BUG-02",
+                "Shift date/time shown on wrong day; clock-in blocked",
+                "Critical",
+                "Open",
+                "Figures 1, 2, 3",
+            ],
+            [
+                "BUG-03",
+                "Document upload rejects images",
+                "High",
+                "Open",
+                "None provided",
+            ],
+            [
+                "BUG-04",
+                "No client selection for multi-client report/trip",
+                "High",
+                "Open",
+                "None provided",
+            ],
         ],
     )
 
@@ -137,15 +238,45 @@ def build_document():
             ["Test Client", "Ajeh Wumi Tao"],
             ["Test Shift", "Sat 3 Oct 2026, 4:15 PM – 5:18 PM (Australian time)"],
             ["Activities", "Transport, Install phone, Personal Support"],
-            ["Admin Board Status (at ~4:17 PM Sydney)", "In Progress"],
-            ["Staff Detail Status (device ~7:20)", "Not Started"],
-            ["Staff Roster Display", "Sunday 4 Oct, 1:15 AM – 3:18 AM, ACTIVE"],
+            ["Admin Board Status (at ~4:17 PM Sydney)", "In Progress — see Figure 2"],
+            ["Staff Detail Status (device ~7:20)", "Not Started — see Figure 1"],
+            ["Staff Roster Display", "Sunday 4 Oct, 1:15 AM – 3:18 AM, ACTIVE — see Figure 3"],
         ],
+    )
+
+    add_heading(doc, "2.1 Screenshot Catalogue", 2)
+    add_table(
+        doc,
+        ["Ref", "Source", "What it shows"],
+        [
+            [
+                "Figure 1",
+                "Staff mobile — shift detail",
+                "Date 3 Oct; times 4:15–5:18 PM; Not Started; transport button visible; no clock-in",
+            ],
+            [
+                "Figure 2",
+                "Admin web — Schedule Board",
+                "Same shift Sat 3 Oct 4:15–5:18 PM Sydney shown In Progress",
+            ],
+            [
+                "Figure 3",
+                "Staff mobile — Shift Roster",
+                "Same shift listed on Sunday 4 Oct at 1:15–3:18 AM, ACTIVE",
+            ],
+        ],
+    )
+    doc.add_paragraph(
+        "Screenshots are embedded in the relevant defect sections below and repeated in Appendix A."
     )
 
     # BUG-01
     add_heading(doc, "3. BUG-01 — Travel Trip Available Outside Shift Window", 1)
     severity_para(doc, "High", "C0392B")
+    p = doc.add_paragraph()
+    run = p.add_run("Screenshot reference: ")
+    run.bold = True
+    p.add_run("Figure 1")
 
     add_heading(doc, "3.1 Description", 2)
     doc.add_paragraph(
@@ -157,24 +288,25 @@ def build_document():
     add_heading(doc, "3.2 Evidence", 2)
     add_bullet(
         doc,
-        " On shift detail while status shows “Not Started” and message reads "
-        "“Your shift hasn't started yet…”, the transport (steering wheel) control remains visible "
-        "and usable.",
-        "Screenshot:",
+        " Shift detail shows status “Not Started” and “Your shift hasn't started yet. "
+        "You can request to cancel if needed.” The transport (steering wheel) control remains "
+        "visible and usable (Figure 1).",
+        "Observed: ",
     )
     add_bullet(
         doc,
         " Transport button is shown whenever the shift activities include “Transport”, with no "
         "check that the shift is in progress. Status-based guards are commented out in code "
         "(shift detail screen).",
-        "Code note:",
+        "Code note: ",
     )
+    add_figure(doc, "fig-01")
 
     add_heading(doc, "3.3 Steps to Reproduce", 2)
     for step in [
-        "Open a shift that includes the Transport activity.",
+        "Open a shift that includes the Transport activity (see Figure 1).",
         "Confirm shift status is Not Started / Upcoming (before start), or ended/Absent/Present (after end).",
-        "Tap the transport / trip control on the shift detail screen.",
+        "Tap the transport / trip control on the shift detail screen (steering-wheel button in Figure 1).",
         "Observe that trip tracking can still be started or processed.",
     ]:
         doc.add_paragraph(step, style="List Number")
@@ -186,7 +318,7 @@ def build_document():
         [
             [
                 "Trip start/process only when shift is In Progress (staff clocked in).",
-                "Trip control available before start and after shift has passed.",
+                "Trip control available before start (Figure 1) and after shift has passed.",
             ]
         ],
     )
@@ -194,6 +326,10 @@ def build_document():
     # BUG-02
     add_heading(doc, "4. BUG-02 — Incorrect Shift Date/Time and Blocked Clock-In", 1)
     severity_para(doc, "Critical", "8B0000")
+    p = doc.add_paragraph()
+    run = p.add_run("Screenshot references: ")
+    run.bold = True
+    p.add_run("Figure 2 (admin), Figure 3 (staff roster), Figure 1 (staff detail)")
 
     add_heading(doc, "4.1 Description", 2)
     doc.add_paragraph(
@@ -211,35 +347,44 @@ def build_document():
     add_bullet(
         doc,
         " Admin Schedule Board at 4:17:31 pm – Sydney, AU shows shift Sat Oct 3, "
-        "4:15 PM – 5:18 PM as “In Progress”.",
-        "Admin:",
+        "4:15 PM – 5:18 PM as “In Progress” (Figure 2).",
+        "Admin: ",
     )
     add_bullet(
         doc,
         " Staff Shift Roster selects Sunday Oct 4 and shows the same client/activities at "
-        "1:15 AM – 3:18 AM with status ACTIVE.",
-        "Staff roster:",
+        "1:15 AM – 3:18 AM with status ACTIVE (Figure 3).",
+        "Staff roster: ",
     )
     add_bullet(
         doc,
-        " Shift detail title/client Ajeh Wumi Tao; Date field “3 October, 2026”; "
-        "status “Not Started”; CTA “Request to Cancel Shift” (no clock-in).",
-        "Staff detail:",
+        " Shift detail Date field is “3 October, 2026”; start/end 4:15 PM / 5:18 PM; "
+        "status “Not Started”; CTA “Request to Cancel Shift” with no clock-in (Figure 1).",
+        "Staff detail: ",
     )
     add_bullet(
         doc,
         " Detail “Date” uses dateCreated (not dateFrom). Roster calendar day chips use "
         "device-local dates while shift grouping/times use Australia/Sydney helpers — "
         "mixed sources can place a shift on the wrong day and block clock-in.",
-        "Code note:",
+        "Code note: ",
     )
+
+    add_heading(doc, "4.2.1 Admin (expected source of truth)", 3)
+    add_figure(doc, "fig-02")
+
+    add_heading(doc, "4.2.2 Staff roster (wrong calendar day / converted times)", 3)
+    add_figure(doc, "fig-03")
+
+    add_heading(doc, "4.2.3 Staff detail (date 3 Oct, clock-in blocked)", 3)
+    add_figure(doc, "fig-01")
 
     add_heading(doc, "4.3 Steps to Reproduce", 2)
     for step in [
-        "In admin, create/confirm a shift for 3 Oct 2026, 4:15 PM – 5:18 PM Australian time.",
-        "On staff mobile, open Shift Roster and locate the shift.",
+        "In admin, create/confirm a shift for 3 Oct 2026, 4:15 PM – 5:18 PM Australian time (Figure 2).",
+        "On staff mobile, open Shift Roster and locate the shift (Figure 3).",
         "Observe which calendar day and start/end times are shown.",
-        "Open shift detail and compare Date, Start Time, End Time, and status.",
+        "Open shift detail and compare Date, Start Time, End Time, and status (Figure 1).",
         "Attempt to clock in while admin board shows the shift In Progress in Sydney time.",
     ]:
         doc.add_paragraph(step, style="List Number")
@@ -247,19 +392,22 @@ def build_document():
     add_heading(doc, "4.4 Expected vs Actual", 2)
     add_table(
         doc,
-        ["Expected", "Actual"],
+        ["Expected", "Actual", "Evidence"],
         [
             [
                 "Roster and detail show 3 Oct 2026, 4:15 PM – 5:18 PM (Sydney).",
                 "Roster shows 4 Oct, 1:15 AM – 3:18 AM; detail Date shows 3 Oct.",
+                "Figures 3 and 1 vs Figure 2",
             ],
             [
                 "Staff can clock in once Sydney window is open / shift has started.",
                 "Status stays Not Started; clock-in unavailable; only cancel offered.",
+                "Figure 1",
             ],
             [
                 "Staff status matches admin Schedule Board for the same shift.",
                 "Admin: In Progress; Staff detail: Not Started.",
+                "Figures 2 and 1",
             ],
         ],
     )
@@ -267,6 +415,10 @@ def build_document():
     # BUG-03
     add_heading(doc, "5. BUG-03 — Document Upload Does Not Accept Images", 1)
     severity_para(doc, "High", "C0392B")
+    p = doc.add_paragraph()
+    run = p.add_run("Screenshot reference: ")
+    run.bold = True
+    p.add_run("None provided for this defect. Reproduce and attach picker/error screen on retest.")
 
     add_heading(doc, "5.1 Description", 2)
     doc.add_paragraph(
@@ -279,13 +431,13 @@ def build_document():
         doc,
         " Upload uses DocumentPicker with a limited MIME list: image/jpeg, application/pdf, "
         "and Word types only. image/png (and broader image/*) are not included.",
-        "Picker types:",
+        "Picker types: ",
     )
     add_bullet(
         doc,
         " There is no ImagePicker / camera path on the document forms (unlike profile photo), "
         "so many phone photos (often PNG/HEIC) cannot be selected reliably.",
-        "UX gap:",
+        "UX gap: ",
     )
 
     add_heading(doc, "5.3 Steps to Reproduce", 2)
@@ -293,6 +445,7 @@ def build_document():
         "Open Documents tab → Add / upload a compliance document.",
         "Attempt to select a PNG, HEIC, or gallery photo of a certificate.",
         "Observe that the image is rejected, unavailable in the picker, or fails upload.",
+        "Capture the picker/error screen and attach as Figure 4 on retest.",
         "Retry with PDF (if available) to confirm non-image types still work.",
     ]:
         doc.add_paragraph(step, style="List Number")
@@ -313,6 +466,13 @@ def build_document():
     # BUG-04
     add_heading(doc, "6. BUG-04 — No Client Selection for Multi-Client Report / Trip", 1)
     severity_para(doc, "High", "C0392B")
+    p = doc.add_paragraph()
+    run = p.add_run("Screenshot reference: ")
+    run.bold = True
+    p.add_run(
+        "None provided for this defect. Figure 1 shows a single-client header (Ajeh Wumi Tao). "
+        "Reproduce with two+ clients and attach report/trip screens on retest."
+    )
 
     add_heading(doc, "6.1 Description", 2)
     doc.add_paragraph(
@@ -326,12 +486,13 @@ def build_document():
         doc,
         " Shift model exposes a combined clients string and a single profile object; "
         "report submit payload sends shiftRosterId + form fields with no clientId selector.",
-        "Data model:",
+        "Data model: ",
     )
     add_bullet(
         doc,
-        " Report header displays the full clients string; trip flow is keyed by shiftId only.",
-        "UI:",
+        " Report header displays the full clients string; trip flow is keyed by shiftId only. "
+        "Figure 1 shows client as a single combined header with no selector.",
+        "UI: ",
     )
 
     add_heading(doc, "6.3 Steps to Reproduce", 2)
@@ -339,8 +500,9 @@ def build_document():
         "Assign a shift (or scenario) with more than one client for the same staff member.",
         "Open shift report creation from the mobile app.",
         "Observe that there is no client picker; one report covers all listed clients.",
-        "Start/save a transport trip for the same shift.",
+        "Start/save a transport trip for the same shift (transport control in Figure 1).",
         "Observe that the trip is not attributed to a specific client.",
+        "Capture report and trip screens and attach as additional figures on retest.",
     ]:
         doc.add_paragraph(step, style="List Number")
 
@@ -370,7 +532,7 @@ def build_document():
                 "BUG-01",
                 "Gate TransportButton / trip start to Clock-In or Shift In Progress only; "
                 "block after Present/Absent/Cancelled/Upcoming.",
-                "Before start, during active, after end — only mid-shift allows trip.",
+                "Before start, during active, after end — only mid-shift allows trip. Compare to Figure 1.",
             ],
             [
                 "BUG-02",
@@ -378,25 +540,35 @@ def build_document():
                 "clock-in windows on Australia/Sydney; show dateFrom (not dateCreated) as "
                 "shift date; align staff status with admin Sydney clock.",
                 "Create Sydney-afternoon shift; verify day, times, In Progress, and clock-in "
-                "on a device set to a non-AU timezone.",
+                "on a device set to a non-AU timezone. Compare Figures 1–3.",
             ],
             [
                 "BUG-03",
                 "Accept image/jpeg, image/png, and preferably ImagePicker/camera with "
                 "conversion; keep PDF/Word support.",
-                "Upload JPEG, PNG, and camera photo for a required document type.",
+                "Upload JPEG, PNG, and camera photo for a required document type. Attach new screenshot.",
             ],
             [
                 "BUG-04",
                 "Add mandatory client selector on report create and trip start when "
                 "clients.length > 1; persist clientId on report and trip payloads.",
-                "Multi-client shift: submit two reports and two trips for different clients.",
+                "Multi-client shift: submit two reports and two trips for different clients. Attach screenshots.",
             ],
         ],
     )
 
+    # Appendix
+    add_heading(doc, "8. Appendix A — Embedded Screenshots", 1)
+    doc.add_paragraph(
+        "The following figures are the original test captures. They are also placed inline "
+        "under BUG-01 and BUG-02. BUG-03 and BUG-04 had no screenshot attached at the time of this report."
+    )
+    add_figure(doc, "fig-01")
+    add_figure(doc, "fig-02")
+    add_figure(doc, "fig-03")
+
     # Sign-off
-    add_heading(doc, "8. Sign-Off", 1)
+    add_heading(doc, "9. Sign-Off", 1)
     add_table(
         doc,
         ["Role", "Name", "Date", "Signature"],
@@ -408,17 +580,18 @@ def build_document():
     )
 
     footer = doc.add_paragraph()
-    footer.add_run(
-        "Attachments: Staff roster (Oct 4 display), shift detail (Not Started + transport), "
-        "admin Schedule Board (In Progress, Sydney). Screenshots retained with this report."
-    ).italic = True
+    run = footer.add_run(
+        "Document format: Microsoft Word (.docx). Embedded files: "
+        "fig-01-shift-detail-not-started.jpg, fig-02-admin-schedule-board.jpg, "
+        "fig-03-staff-roster-4-oct.jpg (docs/screenshots/)."
+    )
+    run.italic = True
+    run.font.size = Pt(9)
 
     return doc
 
 
 if __name__ == "__main__":
-    import os
-
-    output_path = os.path.join(os.path.dirname(__file__), "Promax_Care_Testing_Report.docx")
+    output_path = DOCS_DIR / "Promax_Care_Testing_Report.docx"
     build_document().save(output_path)
     print(f"Document saved to: {output_path}")
