@@ -1,5 +1,6 @@
 import useAuthStore from "@/store/use-auth-store";
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { assertCareOsTestTarget } from "@/libs/careOsTestTarget";
 
 // Define the structure of your API response data
 interface ApiResponse<T> {
@@ -21,6 +22,8 @@ interface DataStructure {
 const baseURL =
   process.env.EXPO_PUBLIC_API_BASEURL ||
   "https://api.promaxcare.com.au/api";
+
+assertCareOsTestTarget(baseURL, process.env.EXPO_PUBLIC_CARE_OS_TEST);
 
 export const publicAxios = axios.create({
   baseURL,

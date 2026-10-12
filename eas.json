@@ -23,6 +23,17 @@
         "EXPO_PUBLIC_API_BASEURL": "https://api.promaxcare.com.au/api"
       }
     },
+    "care-os-lab": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal",
+      "channel": "care-os-lab",
+      "env": {
+        "EXPO_PUBLIC_CARE_OS_TEST": "1",
+        "EXPO_PUBLIC_API_BASEURL": "http://127.0.0.1:5080/api"
+      }
+    },
     "production": {
       "android": {
         "buildType": "app-bundle"
