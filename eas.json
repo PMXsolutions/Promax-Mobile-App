@@ -34,6 +34,17 @@
         "EXPO_PUBLIC_API_BASEURL": "http://127.0.0.1:5080/api"
       }
     },
+    "uat": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal",
+      "channel": "uat",
+      "env": {
+        "EXPO_PUBLIC_CARE_OS_UAT": "1",
+        "EXPO_PUBLIC_API_BASEURL": "https://apitest.promaxcare.com.au/api"
+      }
+    },
     "production": {
       "android": {
         "buildType": "app-bundle"

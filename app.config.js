@@ -1,4 +1,5 @@
 const appJson = require("./app.json");
+const { applyCareOsUatIdentity } = require("./libs/careOsUatIdentity");
 
 const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -40,5 +41,5 @@ module.exports = () => {
     },
   };
 
-  return { expo };
+  return { expo: applyCareOsUatIdentity(expo, process.env.EXPO_PUBLIC_CARE_OS_UAT) };
 };
