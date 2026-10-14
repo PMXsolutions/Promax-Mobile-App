@@ -7,15 +7,10 @@ import MapViewTrip from "@/components/transport/MapViewTrip";
 import TripControls from "@/components/transport/TripControls";
 import TripSummary from "@/components/transport/TripSummary";
 import { Coord } from "@/types/map";
-import { isAxiosError } from "axios";
-import { reportService } from "@/services/report";
-import { showMessage } from "react-native-flash-message";
-import { useLocalSearchParams } from "expo-router";
+import { tripOdometerRefusal } from "@/libs/tripOdometer";
 import ActionSheetModal from "@/components/shared/action-sheet-modal";
 
 export default function TripScreen() {
-  const query = useLocalSearchParams();
-
   const {
     tripState,
     route,
@@ -33,8 +28,6 @@ export default function TripScreen() {
     // tripStart,
     // tripEnd,
   } = useTripTracker();
-
-  const id = query.id as unknown as string;
 
   const [showSummary, setShowSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -160,47 +153,10 @@ export default function TripScreen() {
   const handleSummarySubmit = async () => {
     setIsLoading(true);
     try {
-      // Prepare trip data for API
-      const tripData = {
-        route,
-        distance: calculateDistance(),
-        duration: getTripDuration(),
-        stops,
-        destination,
-        startTime: new Date(), // You might want to store this in the hook
-        endTime: new Date(),
-      };
-
-      // console.log("Submit payload to backend:", tripData);
-      const data = await reportService.fetchStaffKm(
-        Number(id),
-        0,
-        tripData.distance
-      );
-      showMessage({
-        message: data.message,
-        type: "success",
-      });
-      // TODO: Replace with actual API call
-      // await submitTripToAPI(tripData);
-      // Reset trip state after successful submission
-      resetTrip();
-      setShowSummary(false);
-
-      Alert.alert("Trip Saved", "Your trip has been saved successfully!", [
+      const refusal = tripOdometerRefusal(null, null);
+      Alert.alert("Trip not stored", refusal ?? "This trip was not stored.", [
         { text: "OK" },
       ]);
-    } catch (error: unknown) {
-      if (isAxiosError(error)) {
-        showMessage({
-          message: error.response?.data?.message,
-          type: "danger",
-        });
-      } else {
-        Alert.alert("Error", "Failed to save trip. Please try again.", [
-          { text: "OK" },
-        ]);
-      }
     } finally {
       setIsLoading(false);
     }
