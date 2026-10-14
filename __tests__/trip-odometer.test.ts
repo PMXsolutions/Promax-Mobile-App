@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { tripOdometerRefusal } from '../libs/tripOdometer';
 
 describe('trip odometer refusal', () => {
@@ -9,5 +11,11 @@ describe('trip odometer refusal', () => {
 
   it('accepts only a positive start and a greater end', () => {
     expect(tripOdometerRefusal(10, 14)).toBeNull();
+  });
+
+  it('does not send the trip screen through fill_mileage', () => {
+    const source = readFileSync(join(process.cwd(), 'app/(root)/transport/trip-screen.tsx'), 'utf8');
+    expect(source.includes('fill_mileage')).toBe(false);
+    expect(source.includes('tripOdometerRefusal(null, null)')).toBe(true);
   });
 });
