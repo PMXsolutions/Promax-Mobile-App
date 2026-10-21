@@ -136,6 +136,7 @@ const AddForm = () => {
     <KeyboardAwareWrapper>
       <ScrollView
         style={styles.container}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 10 }}
       >
         <View style={{ rowGap: THEME.spacing.md }}>

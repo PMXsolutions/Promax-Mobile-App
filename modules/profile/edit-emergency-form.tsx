@@ -115,6 +115,7 @@ const EditEmergencyForm = ({ id }: { id: string }) => {
       <KeyboardAwareWrapper>
         <ScrollView
           style={styles.container}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 10 }}
         >
           {/* Render fields here */}
