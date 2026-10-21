@@ -156,6 +156,35 @@ Status is Passed, Failed, Blocked, or NA. Passed means the named unit contract p
 | Health declaration | Staff | NA | Unresolved product decision. No screen was added. |
 | Admin or other-role tools | Other roles | NA | Non-staff sign-in does not start a session. No admin UI was added. |
 
+## Remaining work
+
+Passed unit rows stay in the acceptance table above. This list is the work still open after `0d73f38`. No finished worker was resumed for it. None of these rows is Ready to Update.
+
+| Workflow | Case | Class | Prerequisite | Next action |
+| --- | --- | --- | --- | --- |
+| Roster, clock, location | Home roster, clock-in, and report reload on a staff device | Native and isolated API | An emulator or a staff device, plus an authorised disposable user. No production clock-in. | Run the existing home, clock, and report screens on that device and read the result back from the disposable API. |
+| Roster, clock, location | A second clock-in while the first request is in flight | Isolated API for the server half | A disposable attendance API. The client rule `canStartClockAttempt` is already a unit pass. | Ask that API to reject a duplicate clock-in. Do not send one to production. |
+| Roster, clock, location | Being inside 1000 metres, and a denied or unread location | Native | A device that can allow and deny location. The 1000 metre rule and the denied-location block are already in source. | Confirm on that device that a missing fix does not clock in. |
+| Documents, profile | Personal and employment profile loaders and errors | Native | A staff device. The screens already have loader and error states. | Open those states on the device. |
+| Documents, profile | A document id from another company | Isolated API for the server half | A disposable documents API. The client hides a listed document whose detail company does not match, after the detail returns. | Ask that API to reject the other company. The list check on this client is already a unit pass. |
+| Documents, profile | Remember me keeps a session | User policy | A decision on whether the checkbox should change the persisted session. | Leave the checkbox unchanged until that decision. |
+| Trips, mileage | Odometer is missing, zero, or not greater at the end | Isolated API for the hosted save | A disposable mileage API. The client returns before `fill_mileage`, and GPS distance stays an estimate. | Run that rule against the disposable API. Do not post a trip to production. |
+| Trips, mileage | Map tiles and a live location fix | Native | A device, and `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` if a map is to load. The key was not added. | Do not add a maps key or a trip screen in this pass. |
+| Offline, background, session | Sign-in intent and report-draft restart | Source-tested | A device pass is separate. The unit rows for `ff08813` and `0d73f38` already cover restart. | Do not re-open those rows. A device cold start is the native prerequisite above. |
+| Offline, background, session | Offline banner | Native | A device that can drop the network. The app shows a banner from NetInfo. | Confirm the banner on that device. An offline write queue would be a new feature and was not added. |
+| Offline, background, session | Background refresh | Out of scope | A product decision to add background refresh. | No background sync was added. |
+| Deep links | Notification tap opens a shift for a positive id on this staff member | Native | `google-services.json`, which is absent, and a push sender. The route helper is a unit pass. | Do not send a push. Add the push file only when a device test is authorised. |
+| Deep links | Universal links | Company tree and native | Associated domains are absent. `app.json` scheme is `myapp`. The company bundle is `au.com.promaxsolutions.promaxcare`. | Do not rename the scheme. Prove links on the company binary after its tree and IPA are supplied. |
+| Downstream web | Roster, shift report, availability, and documents | Native and isolated API | The same device and disposable API as the roster and document rows. These screens exist in source. | Exercise the existing screens. Do not add a web-only screen. |
+| Downstream web | Attendance history, progress note, daily report, incident, timesheet, PBS, training, tickets, SIMA | Out of scope | An explicit decision to add each existing web staff screen. | Leave them unbuilt. |
+| Downstream web | Care plan, handover, and policies | Out of scope | `origin/codex/care-plan-intelligence-r1` at `b773e1d` was not merged. Acknowledge and clarification are writes. | Leave that branch unmerged. |
+| Downstream web | Surveys, policy-compliance admin, invoices | Out of scope | Those menus are company-admin or administrator. | Do not add admin access. |
+| Release | Company iPhone binary | Company tree | The Expo 54 / React 19.1 / React Native 0.81.5 tree, the build manifest for track `6810018262` version `1.1.0`, and that IPA. | Hand over those three artifacts. Do not recreate the tree. |
+| Release | Server tenant and assignment | Isolated API | A disposable API that can reject another tenant and another assignment. `pmx_api_v2` was not readable. | Run those tests on that API. Client gates are not that proof. |
+| Release | Mail limit enforced by the API | Isolated API | The same disposable API, able to check the password before mail and return a distinct limit code. | Keep the client hour as the unit pass it already is. |
+| Release | Draft confidentiality | User policy | A decision on whether the device mask key and plaintext SecureStore chunks stay so a draft can be restored. | Leave logout and unsent drafts unchanged. The mask and plaintext fallback stay unaccepted as protected storage. |
+| Release | Play, store, EAS, OTA | Publication | A chosen production destination and a binary that matches the company listing. | Do not submit, build, or publish. |
+
 ## Parked decisions
 
 - Joshua authorised the Bun `1.4.3` frozen-lockfile install on team environment `d81efd47-cd22-11f1-bec7-b2318963e0b6`. The saved config is unchanged until he saves a tested draft. No `start` script. No Android SDK. No secrets. No new environment. The unlocked npm install is not the reproducible command.

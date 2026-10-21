@@ -103,6 +103,19 @@ This is this repository, not the platform module.
 - If the SecureStore mask key cannot be created, a new draft is plaintext JSON. An existing masked draft is not replaced.
 - Plaintext fallback and the mask remain unaccepted as protected-draft storage.
 
+## Checkpoint
+
+After `0d73f38`, no further source change on this remote is authorised. Finished workers were left idle. Passed unit rows stay in `docs/staff-journey-matrix.md` and are not re-opened here. The app is not Ready to Update.
+
+| Still required | Class | Next action |
+| --- | --- | --- |
+| Company tree, build manifest for track `6810018262` version `1.1.0`, and that IPA | Company tree | Supply the existing artifacts. Do not recreate them. |
+| Emulator or staff device, location permission, and `google-services.json` for a push test | Native | Run the existing roster, clock, document, profile, and trip screens. Do not send a push or a production clock-in. |
+| Disposable API for tenant rejection, duplicate clock-in, document company, mileage, and the mail limit | Isolated API | Run those checks off production. Client gates are not that proof. |
+| Remember me, health declaration, and whether draft copies stay for recovery | User policy | Leave the current screens unchanged until a decision is recorded. |
+| Web screens that this source does not have, care-plan branch `b773e1d`, and admin menus | Out of scope | Do not add them. |
+| Play, App Store, EAS, and OTA | Publication | Do not submit or publish. |
+
 ## Still blocked
 
 | Item | Why it stays blocked |
