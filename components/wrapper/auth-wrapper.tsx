@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import useAuthStore from "@/store/use-auth-store";
+import { bindAuthHydration } from "@/libs/auth-hydration";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -22,11 +23,9 @@ export default function AuthWrapper({ children, mode }: AuthWrapperProps) {
     user.role === "Staff";
 
   useEffect(() => {
-    const unsubscribe = useAuthStore.persist.onFinishHydration(() => {
+    return bindAuthHydration(useAuthStore.persist, () => {
       setHasHydrated(true);
     });
-
-    return unsubscribe;
   }, []);
 
   useEffect(() => {

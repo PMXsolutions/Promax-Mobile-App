@@ -18,7 +18,11 @@ export default function Signin() {
   return (
     <ScreenWrapper barStyle="dark-content">
       <KeyboardAwareWrapper>
-        <ScrollView>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={styles.container}
+        >
           <View style={styles.header}>
             <TouchableOpacity
               style={{

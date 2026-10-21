@@ -1,4 +1,5 @@
 import { THEME } from "@/constants/theme";
+import { fontFamilyForStartup } from "@/libs/startup-fonts";
 import {
   Text as RNText,
   TextProps as RNTextProps,
@@ -45,7 +46,7 @@ const Text = ({
         {
           color,
           fontSize: THEME.fontSize[size],
-          fontFamily: THEME.fontFamily[weight],
+          fontFamily: fontFamilyForStartup(THEME.fontFamily[weight]),
         },
         style,
       ]}

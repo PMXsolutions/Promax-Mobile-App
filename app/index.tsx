@@ -5,6 +5,7 @@ import { THEME } from "@/constants/theme";
 import storageUtil from "@/utils/storage";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import useAuthStore from "@/store/use-auth-store";
+import { bindAuthHydration } from "@/libs/auth-hydration";
 
 const Index = () => {
   const { user, token, isAuthenticated } = useAuthStore();
@@ -13,11 +14,9 @@ const Index = () => {
   );
 
   useEffect(() => {
-    const unsubscribe = useAuthStore.persist.onFinishHydration(() => {
+    return bindAuthHydration(useAuthStore.persist, () => {
       setHasHydrated(true);
     });
-
-    return unsubscribe;
   }, []);
 
   useEffect(() => {

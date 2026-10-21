@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { DancingScript_400Regular } from "@expo-google-fonts/dancing-script";
@@ -30,6 +30,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import useAuthStore from "@/store/use-auth-store";
 import usePushNotifications from "@/hooks/usePushNotification";
+import {
+  FONT_LOAD_TIMEOUT_MS,
+  setStartupFontsReady,
+  shouldBlockStartupForFonts,
+} from "@/libs/startup-fonts";
 // import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 SplashScreen.preventAutoHideAsync();
 
@@ -44,7 +49,7 @@ export default function RootLayout() {
     storage: AsyncStorage,
   });
 
-  const [fontLoaded] = useFonts({
+  const [fontLoaded, fontError] = useFonts({
     Inter_100Thin,
     Inter_200ExtraLight,
     Inter_300Light,
@@ -56,14 +61,27 @@ export default function RootLayout() {
     Inter_900Black,
     DancingScript_400Regular,
   });
+  const [fontTimedOut, setFontTimedOut] = useState(false);
 
   useEffect(() => {
-    if (fontLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontLoaded]);
+    const timer = setTimeout(() => setFontTimedOut(true), FONT_LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
-  if (!fontLoaded) {
+  const blockForFonts = shouldBlockStartupForFonts({
+    fontsLoaded: !!fontLoaded,
+    fontError,
+    timedOut: fontTimedOut,
+  });
+  setStartupFontsReady(!!fontLoaded);
+
+  useEffect(() => {
+    if (!blockForFonts) {
+      SplashScreen.hideAsync().catch(() => undefined);
+    }
+  }, [blockForFonts]);
+
+  if (blockForFonts) {
     return (
       <Loader
         name="2-curves"

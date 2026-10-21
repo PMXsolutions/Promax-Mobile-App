@@ -100,7 +100,6 @@ const styles = StyleSheet.create({
     color: THEME.colors.error,
     fontSize: THEME.fontSize.sm,
     marginTop: THEME.spacing.xs,
-    fontFamily: THEME.fontFamily.regular,
   },
 });
 

@@ -1,13 +1,10 @@
 import React, { ReactNode, useState } from "react";
 import {
-  Keyboard,
-  KeyboardAvoidingView,
   TextInput as NativeTextInput,
-  Platform,
+  TextInputProps as NativeTextInputProps,
   StyleSheet,
   TextStyle,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
   ViewStyle,
   StyleProp,
@@ -24,6 +21,7 @@ import Text from "./text";
 
 import { THEME } from "@/constants/theme";
 import normalize from "@/libs/normalize";
+import { fontFamilyForStartup } from "@/libs/startup-fonts";
 
 export interface PasswordInputProps {
   /**
@@ -72,6 +70,12 @@ export interface PasswordInputProps {
   onFocus?: () => void;
   /** Callback function called when the input loses focus */
   onBlur?: () => void;
+  accessibilityLabel?: string;
+  textContentType?: NativeTextInputProps["textContentType"];
+  autoComplete?: NativeTextInputProps["autoComplete"];
+  returnKeyType?: NativeTextInputProps["returnKeyType"];
+  onSubmitEditing?: NativeTextInputProps["onSubmitEditing"];
+  testID?: string;
 }
 
 /**
@@ -101,6 +105,14 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
   focusColor = THEME.colors.primary,
   unfocusedColor = THEME.colors.border,
   label,
+  onFocus,
+  onBlur,
+  accessibilityLabel,
+  textContentType,
+  autoComplete,
+  returnKeyType,
+  onSubmitEditing,
+  testID,
 }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const focusProgress = useSharedValue(0);
@@ -115,10 +127,12 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
 
   const handleFocus = () => {
     focusProgress.value = withTiming(1, { duration: 200 });
+    onFocus?.();
   };
 
   const handleBlur = () => {
     focusProgress.value = withTiming(0, { duration: 200 });
+    onBlur?.();
   };
 
   const togglePasswordVisibility = () => {
@@ -126,18 +140,23 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={[styles.outerContainer, style]}>
-          {label && <Text style={styles.inputLabel}>{label}</Text>}
+          {label && (
+            <Text style={styles.inputLabel} weight="semiBold">
+              {label}
+            </Text>
+          )}
           <Animated.View
             style={[styles.container, containerStyle, animatedContainerStyle]}
           >
             {icon && <View style={styles.iconContainer}>{icon}</View>}
             <NativeTextInput
-              style={[styles.input, inputStyle]}
+              testID={testID}
+              style={[
+                styles.input,
+                { fontFamily: fontFamilyForStartup(THEME.fontFamily.medium) },
+                inputStyle,
+              ]}
               placeholder={placeholder}
               value={value}
               onChangeText={onChangeText}
@@ -145,8 +164,20 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
               onBlur={handleBlur}
               placeholderTextColor={THEME.colors.grayBg}
               secureTextEntry={!isPasswordVisible}
+              accessibilityLabel={accessibilityLabel ?? label}
+              textContentType={textContentType}
+              autoComplete={autoComplete}
+              returnKeyType={returnKeyType}
+              onSubmitEditing={onSubmitEditing}
             />
-            <TouchableOpacity onPress={togglePasswordVisibility}>
+            <TouchableOpacity
+              onPress={togglePasswordVisibility}
+              accessibilityRole="button"
+              accessibilityLabel={
+                isPasswordVisible ? "Hide password" : "Show password"
+              }
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               {isPasswordVisible ? (
                 <Icon name="eye" size={20} color={THEME.colors.dark} />
               ) : (
@@ -155,8 +186,6 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
             </TouchableOpacity>
           </Animated.View>
         </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
   );
 };
 
@@ -178,13 +207,12 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontFamily: THEME.fontFamily.medium,
     fontSize: THEME.fontSize.md,
     color: "#000",
+    minHeight: 44,
   },
   inputLabel: {
     fontSize: THEME.fontSize.md,
-    fontFamily: THEME.fontFamily.semiBold,
     marginBottom: 5,
     color: THEME.colors.grayBg,
   },
