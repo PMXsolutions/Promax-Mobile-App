@@ -115,6 +115,9 @@ describe("report drafts", () => {
       "promaxcare.report-draft.c9.s4.create.12"
     );
     expect(reportDraftStorageKey("create", "12", { staffId: 0 })).toBeNull();
+    expect(
+      reportDraftStorageKey("create", "12", { staffId: 4, companyId: 0 })
+    ).toBeNull();
   });
 });
 

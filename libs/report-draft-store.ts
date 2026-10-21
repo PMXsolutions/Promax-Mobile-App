@@ -15,11 +15,12 @@ export async function readReportDraft<T>(
 export async function writeReportDraft<T>(
   key: string,
   draft: ReportDraft<T>
-): Promise<void> {
+): Promise<boolean> {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(draft));
+    return true;
   } catch {
-    // The form still holds the text for this visit.
+    return false;
   }
 }
 

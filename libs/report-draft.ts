@@ -20,15 +20,12 @@ export function reportDraftStorageKey(
   owner: { staffId?: number | null; companyId?: number | null }
 ): string | null {
   const staffId = Number(owner.staffId);
-  if (!Number.isFinite(staffId) || staffId <= 0) return null;
-
   const companyId = Number(owner.companyId);
-  const companyPart =
-    Number.isFinite(companyId) && companyId > 0
-      ? String(Math.trunc(companyId))
-      : "0";
+  if (!Number.isFinite(staffId) || staffId <= 0) return null;
+  if (!Number.isFinite(companyId) || companyId <= 0) return null;
+
   const safeRosterId = rosterId.replace(/[^a-zA-Z0-9_-]/g, "");
-  return `promaxcare.report-draft.c${companyPart}.s${Math.trunc(staffId)}.${kind}.${safeRosterId}`;
+  return `promaxcare.report-draft.c${Math.trunc(companyId)}.s${Math.trunc(staffId)}.${kind}.${safeRosterId}`;
 }
 
 export function parseReportDraft<T>(raw: string | null): ReportDraft<T> | null {

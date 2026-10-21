@@ -153,6 +153,13 @@ export function useReportDraft<T extends object>(options: {
   };
 
   const prepareSubmit = async (): Promise<boolean> => {
+    if (!key) {
+      setNotice(
+        "This report was not sent. Your sign-in has no company id for a draft on this device."
+      );
+      return false;
+    }
+
     const current =
       draftRef.current ??
       createDraft(rosterId, form, new Date(), attemptRef.current);
@@ -170,7 +177,12 @@ export function useReportDraft<T extends object>(options: {
     }
 
     draftRef.current = begun.draft;
-    if (key) await writeReportDraft(key, begun.draft);
+    const stored = await writeReportDraft(key, begun.draft);
+    if (!stored) {
+      setNeedsAcknowledge(true);
+      setNotice(restoredDraftNotice(begun.draft));
+      return false;
+    }
     return true;
   };
 
