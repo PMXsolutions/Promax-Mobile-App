@@ -22,7 +22,7 @@ Care OS was not edited. `origin/cursor/care-os-mobile-test-target-466d` is `981b
 | Push file | `google-services.json` is gitignored and absent. Not requested. |
 | Sign-in PR | [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) `0e6c9d4065d36796d49254ad2c4d4868eb030aeb`, follow-up `de8516cdb879f37e30f3061e0545defc00ad56ad` |
 | Roster and drafts PR | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) `9b9bbb8d5e87ceb3b664cd236b101a0838ed032e`, `09eaddc73eff4f1d11ecbad5e8411c0349950982`, follow-up `3af36b3814675a14c0c0c644e271234f58a0cbd5` |
-| Profile, documents, trip, notifications PR | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) `cb70d3baff018be936b62d06bb907e7397738e88`, follow-up `c9dc6a11dbb94e357eef2c47bee2629162571e15` |
+| Profile, documents, trip, notifications PR | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) `cb70d3baff018be936b62d06bb907e7397738e88`, `c9dc6a11dbb94e357eef2c47bee2629162571e15`, `66852ce2893eefaa7adc86f4c48760dcb1c759c2` |
 | Web display | Public `app.promaxcare.com.au` meta `app-release=quality-surveys-2026-09-09`. Literal `2.14.19` was not in that shell. `Promax-Web-FRONTEND` and `pmx_api_v2` were not readable with this credential. |
 
 ## Author unit runs on the follow-up commits
@@ -34,12 +34,20 @@ These are the author's runs on 21 October 2026. They are not a second-person pas
 | `de8516cdb879f37e30f3061e0545defc00ad56ad` | `CI=1 npx jest --watchAll=false --watchman=false --forceExit --testPathPattern='login-failure\|startup-session' --no-coverage` | 2 suites, 23 tests, passed |
 | `3af36b3814675a14c0c0c644e271234f58a0cbd5` | `CI=1 npx jest --watchAll=false --watchman=false --forceExit --testPathPattern='roster-report-reliability\|shift-service' --no-coverage` | 2 suites, 14 tests, passed |
 | `c9dc6a11dbb94e357eef2c47bee2629162571e15` | `CI=1 npx jest --watchAll=false --watchman=false --forceExit --testPathPattern='profile-trip-follow-up\|shift-service' --no-coverage` | 2 suites, 10 tests, passed |
+| `66852ce2893eefaa7adc86f4c48760dcb1c759c2` | same command | 2 suites, 11 tests, passed |
 
 `npx tsc --noEmit` was not re-run on these follow-ups. A previous run of `main` still had existing type errors in `hooks/usePushNotification/index.ts`. `npm run test` is `jest --watchAll` and will not exit.
 
 ## Independent retest
 
-Three reviewers were started in isolated git worktrees on this VM, against the parent commits `0e6c9d4`, `09eaddc`, and `cb70d3b`, not against the follow-ups above. Their reports were not back when this file was written. Until those reports are folded in, no row below is a second-person pass.
+Reviews below read the parent commits in isolated worktrees. They did not re-run the follow-up commits.
+
+| Review | Parent | Jest on that parent | Result |
+| --- | --- | --- | --- |
+| [Retest roster draft PR10](https://cursor.com/agents/bc-5139650b-176b-5fad-9e38-d1c70cdb3d8e) | `09eaddc73eff4f1d11ecbad5e8411c0349950982` | 2 suites, 14 tests, passed, 0 failed | Draft key was `promaxcare.report-draft.{create\|edit}.{rosterId}` with no staff or company id. Logout does not remove those keys. A second staff member on the same device could restore the form. `in_flight` blocks another send until the local acknowledge control. Storage is plaintext AsyncStorage. Follow-up `3af36b3` adds company and staff to the key. That follow-up was not in this review. |
+| [Retest profile trip PR11](https://cursor.com/agents/bc-adf07140-f9ab-5759-8460-9cca76fdcb0c) | `cb70d3baff018be936b62d06bb907e7397738e88` | 2 suites, 9 tests, passed, 0 failed | Emergency and other-info edits fetched the route id with no staff check. A document id opened with no `companyId` or `userId` compare. Mileage is refused before `fill_mileage` when the odometer is blank, not finite, zero, or not greater at the end. GPS distance is not sent as the end reading. A notification opens a shift only for a positive shift id, and that shift screen did not check staff or company. Follow-up `c9dc6a1` covers emergency, other-info, and documents. The shift-screen check is `66852ce2893eefaa7adc86f4c48760dcb1c759c2`. This review did not include those commits. |
+
+Sign-in review of `0e6c9d4` had not reported when this file was updated. Rows for pull request 9 stay author-unit results.
 
 The six earlier explorers are idle, have no branch, and are not review capacity for these pull requests: [Roster clock-in gaps](https://cursor.com/agents/bc-a942d1fd-2454-5746-83c1-9f65ffdf86cc), [Report draft save gaps](https://cursor.com/agents/bc-bac639ad-128f-5a20-9bf8-abd8dc78c9aa), [Notification deep link gaps](https://cursor.com/agents/bc-5f87a3cf-791b-543e-acc9-9f7095c630e3), [Trip maps mileage gaps](https://cursor.com/agents/bc-cb08bea5-1f9f-5154-877a-ff2f40381344), [Documents profile gaps](https://cursor.com/agents/bc-bcc55231-93af-5142-b9e7-3dff489bda35), [Release provenance inspector](https://cursor.com/agents/bc-57d2ac8c-b8ed-584e-9f0e-c6132cb6826e).
 
@@ -71,16 +79,17 @@ Status is Passed, Failed, Blocked, or NA. Passed means the named unit contract p
 | Home roster, clock-in, and report reload on a staff device | Staff | Blocked | No emulator, no authorised disposable user, no hosted read-back. |
 | Second clock-in tap while the first check runs | Staff | Passed | `canStartClockAttempt` on `3af36b3`. Server duplicate acceptance is not proven. |
 | Clock-in radius stays 1000 m | Staff | Passed | `CLOCK_IN_RADIUS_METERS` is 1000. Location denial does not skip the check. No device GPS run. |
-| Report draft is isolated by company and staff | Staff | Passed | Key `promaxcare.report-draft.c{company}.s{staff}.{kind}.{roster}`. Staff id `0` returns null and the hook does not read storage. |
+| Report draft is isolated by company and staff | Staff | Passed | Independent review of `09eaddc` found the key had no staff or company id. Follow-up `3af36b3` uses `promaxcare.report-draft.c{company}.s{staff}.{kind}.{roster}`. Staff id `0` returns null. The reviewer did not re-run `3af36b3`. |
 | Drafts encrypted, or removed on logout | Staff | Blocked | AsyncStorage plaintext. Logout does not delete them, so the same staff member can restore them. Another account does not use that key. SecureStore's 2048-byte limit was not used for draft text. |
-| Uncertain in-flight submit cannot be sent again until acknowledged | Staff | Passed | `beginDraftSubmit` returns `in_flight` and `acknowledgeUncertainSubmit` moves it to `failed`. No hosted duplicate-report check. |
+| Uncertain in-flight submit cannot be sent again until acknowledged | Staff | Passed | Independent review of `09eaddc` confirmed a second send waits for the local acknowledge control. Jest on that commit: 14 passed, 0 failed. No hosted duplicate-report check. |
 | Edited report refreshes the open report query | Staff | Passed | Invalidates `["staffReport", reportId, shiftId]` in the PR 10 source. No web read-back. |
 | Personal and employment profile load errors | Staff | Blocked | Source has loader and error states. Not opened on a device. |
-| Emergency and other-info edit of another staff id | Staff | Passed | `c9dc6a1` uses `isOwnStaffRecord` and does not fetch when the route id differs. Not hosted. |
-| Document id from another company or user | Staff | Passed | `documentOwnedBySession` denies a different company id, or a user id that matches neither staff id nor session user id. A payload with no owner id is only company-checked. The detail API was not called. |
+| Emergency and other-info edit of another staff id | Staff | Passed | Independent review of `cb70d3b` found both screens fetched the route id with no staff check. Follow-up `c9dc6a1` uses `isOwnStaffRecord` and skips the fetch. The reviewer did not re-run `c9dc6a1`. Not hosted. |
+| Document id from another company or user | Staff | Passed | Independent review of `cb70d3b` found `GET /Documents/get_document/{id}` and the edit form did not compare `companyId` or `userId`. Follow-up `c9dc6a1` denies a different company, or a user id that matches neither staff id nor session user id. A payload with no owner id is only company-checked. The reviewer did not re-run `c9dc6a1`. The detail API was not called. |
 | Bank, identity, and availability screens | Staff | NA | They already read the session staff id. No route-id edit was added. |
-| Trip mileage refuses a missing, zero, or non-increasing odometer | Staff | Passed | `mileageSubmitDecision` on `c9dc6a1`. GPS distance is not the saved end reading. `GET /ShiftRosters/fill_mileage` was not called. |
-| Notification tap opens a shift only with a positive shift id | Staff | Passed | `pathForNotificationData`. No push was sent. Universal links and `google-services.json` are absent. |
+| Trip mileage refuses a missing, zero, or non-increasing odometer | Staff | Passed | Independent review of `cb70d3b` confirmed `mileageSubmitDecision` returns before `fill_mileage`, and the map distance stays an estimate. Jest on that commit: 9 passed, 0 failed. The API was not called. |
+| Notification tap opens a shift only with a positive shift id | Staff | Passed | Independent review of `cb70d3b` confirmed `pathForNotificationData`. No push was sent. Universal links and `google-services.json` are absent. |
+| Shift opened from a notification belongs to the signed-in staff member | Staff | Passed | The same review found the shift screen loaded the id with no staff or company check. `66852ce` hides the shift when `staffId` or `companyID` belongs to someone else. A payload with no staff id is still shown. Author jest on that commit: 11 passed. The reviewer has not re-run it. The shift API was not called. |
 | Android `1.1.0` build 4 and the historical APK hash | Staff | Blocked | Historical hash is not this source. No `adb` or emulator. Joshua has no Android device. |
 | iOS company-release build | Staff | Blocked | No Apple toolchain on this Linux host. Company-release commits are not on the remote. |
 | Play production rollout and the ten unsubmitted changes | Release | Blocked | Not submitted. Managed publishing was not changed. |
