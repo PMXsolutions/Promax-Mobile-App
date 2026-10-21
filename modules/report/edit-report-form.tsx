@@ -163,6 +163,7 @@ const EditReportForm = ({
     <KeyboardAwareWrapper>
       <ScrollView
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {/* <KeyboardAvoiderView> */}

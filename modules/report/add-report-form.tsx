@@ -128,6 +128,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
     <KeyboardAwareWrapper>
       <ScrollView
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <MiniLoader visible={isLoading} title="Loading Report.." />
