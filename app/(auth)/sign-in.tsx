@@ -1,12 +1,6 @@
 import Text from "@/components/shared/text";
 import React from "react";
-import {
-  StyleSheet,
-  View,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
 import SignInForm from "@/modules/auth/sign-in-form";
 import { THEME } from "@/constants/theme";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
@@ -17,12 +11,7 @@ import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
 export default function Signin() {
   return (
     <ScreenWrapper barStyle="dark-content">
-      <KeyboardAwareWrapper>
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          contentContainerStyle={styles.container}
-        >
+      <KeyboardAwareWrapper contentContainerStyle={styles.container}>
           <View style={styles.header}>
             <TouchableOpacity
               style={{
@@ -49,7 +38,6 @@ export default function Signin() {
             </Text>
           </View>
           <SignInForm />
-        </ScrollView>
       </KeyboardAwareWrapper>
 
       <View

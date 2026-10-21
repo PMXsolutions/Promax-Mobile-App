@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import React, { useRef, useState } from "react";
 import CustomButton from "@/components/shared/custom-button";
 import Text from "@/components/shared/text";
@@ -21,9 +21,11 @@ import {
   mailCooldownUntil,
   messageFromLoginPayload,
   missingTokenFailure,
+  normalizeLoginEmail,
   readLoginErrorInput,
   roleDeniedFailure,
   sendIntentSurvivesOutcome,
+  signInControlState,
   unreadableMailLimitFailure,
 } from "@/libs/login-failure";
 import {
@@ -43,6 +45,7 @@ import {
 const SignInForm = () => {
   const [loading, setLoading] = useState(false);
   const [failure, setFailure] = useState<LoginFailure | null>(null);
+  const [heldEmail, setHeldEmail] = useState<string | null>(null);
   const [checked, setChecked] = useState(true);
   const flight = useRef<SingleFlightLock>({ held: false });
   const form = useForm<SigninFormSchema>({
@@ -55,6 +58,15 @@ const SignInForm = () => {
       email,
       untilIso: mailCooldownUntil(new Date()),
     });
+  };
+
+  const applyFailure = (email: string, rejected: LoginFailure) => {
+    if (rejected.kind === "mail_rate_limited") {
+      setHeldEmail(normalizeLoginEmail(email));
+    } else {
+      setHeldEmail(null);
+    }
+    setFailure(rejected);
   };
 
   const onSignIn = async (data: SigninFormSchema) => {
@@ -79,7 +91,7 @@ const SignInForm = () => {
     try {
       const claim = await claimSignInSend(data.email, new Date());
       if (!claim.send) {
-        setFailure(claim.failure);
+        applyFailure(data.email, claim.failure);
         return;
       }
 
@@ -123,7 +135,7 @@ const SignInForm = () => {
       if (!sendIntentSurvivesOutcome(rejected.kind)) {
         await releaseSendIntent(data.email);
       }
-      setFailure(rejected);
+      applyFailure(data.email, rejected);
       if (rejected.navigateToOtp) {
         router.navigate(
           `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
@@ -140,7 +152,7 @@ const SignInForm = () => {
       if (!sendIntentSurvivesOutcome(rejected.kind)) {
         await releaseSendIntent(data.email);
       }
-      setFailure(rejected);
+      applyFailure(data.email, rejected);
       if (rejected.navigateToOtp) {
         router.navigate(
           `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
@@ -154,6 +166,21 @@ const SignInForm = () => {
 
   const handleFormSubmit: SubmitHandler<SigninFormSchema> = (formData) => {
     void onSignIn(formData);
+  };
+
+  const emailValue = form.watch("email") ?? "";
+  const control = signInControlState({
+    failure,
+    email: emailValue,
+    heldEmail,
+  });
+
+  const openExistingCode = () => {
+    const email = normalizeLoginEmail(emailValue);
+    if (!email) return;
+    router.navigate(
+      `/(auth)/otp-verification/${encodeURIComponent(email)}?holdMail=1`
+    );
   };
 
   const sessionExpired = authstore.sessionNotice === "expired";
@@ -236,14 +263,34 @@ const SignInForm = () => {
         </View>
       ) : null}
 
+      {control.offerExistingCode ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Enter a confirmation code you already have"
+          testID="sign-in-existing-code"
+          onPress={openExistingCode}
+          style={styles.codeLink}
+        >
+          <Text size="sm" weight="bold" style={{ color: THEME.colors.primary }}>
+            Enter a code you already have. This does not send another email.
+          </Text>
+        </Pressable>
+      ) : null}
+
       <View style={styles.formAction}>
         <CustomButton
           title={loading ? "Signing in" : "Sign in"}
-          accessibilityLabel={loading ? "Signing in" : "Sign in"}
+          accessibilityLabel={
+            loading
+              ? "Signing in"
+              : control.submitEnabled
+                ? "Sign in"
+                : "Sign in held. This address will not be sent again until the hour ends."
+          }
           testID="sign-in-submit"
           onPress={form.handleSubmit(handleFormSubmit)}
           loading={loading}
-          disabled={loading}
+          disabled={loading || !control.submitEnabled}
         />
       </View>
     </View>
@@ -275,5 +322,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 4,
+  },
+  codeLink: {
+    minHeight: 44,
+    justifyContent: "center",
   },
 });

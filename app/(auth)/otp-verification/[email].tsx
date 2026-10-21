@@ -38,6 +38,10 @@ const OtpVerfication: React.FC = () => {
   const query = useLocalSearchParams();
   const emailParam = query.email as unknown as string;
   const email = decodeURIComponent(emailParam || "");
+  const holdMailParam = Array.isArray(query.holdMail)
+    ? query.holdMail[0]
+    : query.holdMail;
+  const holdMail = holdMailParam === "1" || holdMailParam === "true";
   const [code, setCode] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [expired, setExpired] = useState(false);
@@ -67,6 +71,10 @@ const OtpVerfication: React.FC = () => {
     setSeconds(59);
   };
   const resendCode = async () => {
+    if (holdMail) {
+      setError("This screen will not send another email.");
+      return;
+    }
     if (expired) {
       setError("");
       try {
@@ -201,7 +209,13 @@ const OtpVerfication: React.FC = () => {
               </Text>
             )}
 
-            {expired && (
+            {expired && holdMail ? (
+              <Text size="sm" style={{ textAlign: "center" }}>
+                A new code was not requested from this screen.
+              </Text>
+            ) : null}
+
+            {expired && !holdMail && (
               <View style={styles.footer}>
                 <Text>Didn't receive any code?</Text>
                 <Pressable onPress={resendCode}>

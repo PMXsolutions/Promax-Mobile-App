@@ -3,6 +3,7 @@ import {
   classifyLoginError,
   cooldownForEmail,
   isLoginTimeoutError,
+  signInControlState,
   emailAwaitingConfirmation,
   mergeMailCooldownBooks,
   isMailLimitMessage,
@@ -38,6 +39,44 @@ describe("classifyLoginError", () => {
     expect(failure.allowImmediateRetry).toBe(false);
     expect(failure.message).toContain(PLAY_TOAST);
     expect(failure.message).toContain("will not send another sign-in request");
+    expect(failure.message).toContain("does not prove an hourly limit");
+    expect(failure.message).toContain("not signed in");
+    expect(failure.message).toContain("was not requested");
+  });
+
+  it("keeps the catch-all mail sentence off the code screen even when unconfirmed text is also present", () => {
+    const failure = classifyLoginError({
+      message: `Email Not Confirmed. ${PLAY_TOAST}`,
+    });
+
+    expect(failure.kind).toBe("mail_rate_limited");
+    expect(failure.navigateToOtp).toBe(false);
+    expect(failure.allowImmediateRetry).toBe(false);
+  });
+
+  it("holds Sign in for the same address and leaves a different address open", () => {
+    const held = signInControlState({
+      failure: classifyLoginError({ message: PLAY_TOAST }),
+      email: "Staff@Example.com",
+      heldEmail: "staff@example.com",
+    });
+    const other = signInControlState({
+      failure: classifyLoginError({ message: PLAY_TOAST }),
+      email: "other@example.com",
+      heldEmail: "staff@example.com",
+    });
+    const cleared = signInControlState({
+      failure: classifyLoginError({ message: "Invalid Login Attempt" }),
+      email: "staff@example.com",
+      heldEmail: "staff@example.com",
+    });
+
+    expect(held.submitEnabled).toBe(false);
+    expect(held.offerExistingCode).toBe(true);
+    expect(other.submitEnabled).toBe(true);
+    expect(other.offerExistingCode).toBe(false);
+    expect(cleared.submitEnabled).toBe(true);
+    expect(cleared.offerExistingCode).toBe(false);
   });
 
   it("starts the hour for a mail-send failure and does not open OTP", () => {

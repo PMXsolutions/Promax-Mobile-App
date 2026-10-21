@@ -394,13 +394,38 @@ export function classifyLoginError(input: LoginErrorInput): LoginFailure {
   };
 }
 
+/**
+ * The hosted AccountController catch on the unconfirmed-email path uses this
+ * sentence for any mail exception. The client cannot tell that from a real
+ * hourly limit, so the copy must not claim the limit was verified. Another
+ * sign-in request stays withheld. A code is not requested from here.
+ */
 export function mailRateLimitFailure(serverMessage: string): LoginFailure {
   return {
     kind: "mail_rate_limited",
     title: "Email could not be sent",
-    message: `PromaxCare could not send a verification email (${serverMessage}). Wait one hour before trying this address again. This app will not send another sign-in request for it until then.`,
+    message: `PromaxCare returned a mail-send failure (${serverMessage}). The same sentence is also returned when a confirmation email fails, so this response does not prove an hourly limit on the account. This app will not send another sign-in request for this address until the hour ends. You are not signed in. A new confirmation email was not requested.`,
     navigateToOtp: false,
     allowImmediateRetry: false,
+  };
+}
+
+/** Held mail failures disable Sign in for that address. A different address stays open. */
+export function signInControlState(input: {
+  failure: LoginFailure | null;
+  email: string;
+  heldEmail: string | null;
+}): { submitEnabled: boolean; offerExistingCode: boolean } {
+  if (!input.failure || input.failure.kind !== "mail_rate_limited") {
+    return { submitEnabled: true, offerExistingCode: false };
+  }
+  const typed = normalizeLoginEmail(input.email);
+  const held =
+    input.heldEmail == null ? "" : normalizeLoginEmail(input.heldEmail);
+  const sameAddress = typed.length > 0 && typed === held;
+  return {
+    submitEnabled: !sameAddress,
+    offerExistingCode: sameAddress,
   };
 }
 
