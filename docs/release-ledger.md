@@ -77,11 +77,31 @@ These items are missing. They were not recreated from this remote.
 | Pull request | Latest commit | What it holds | Independent review |
 | --- | --- | --- | --- |
 | [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `ff0881301a4de6e9a04cc4707708e62b124151e7` | A sign-in intent is reserved before `auth_login`. If no store retains it, the request is withheld and can be tried again. No password is stored | [Retest sign-in ff08813](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `ff08813`: 3 suites, 41 tests, passed. No assertion was weakened. All three writes failing withholds the send. A retained intent blocks a restart, a duplicate, and an interrupted send until the hour ends. This is not another storage fallback. |
-| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `1095c75e654f00067e2d04db1d1073587b324738` | A submitted attempt is tombstoned and read back before that attempt's copies are removed. The AsyncStorage prefix is a mask, not encryption. Plaintext and that mask are not protected-draft acceptance | [Retest draft tombstone 1095c75](https://cursor.com/agents/bc-6203ec83-dda9-5cc7-9079-99ed54257f86) retested `1095c75`: 3 suites, 33 tests, passed. No assertion was weakened. Restart and a restored SecureStore copy do not bring back that attempt. A lost response, an unsent attempt, and another company or staff key stay. Cleanup failure leaves the bodies. If the tombstone cannot be stored, nothing is deleted. |
+| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `0d73f38c11995d5510d70cdb90bf747c2a4d3bdf` | An unreadable tombstone keeps the draft and blocks send until the stores answer. The AsyncStorage prefix is a mask, not encryption. Plaintext and that mask are not protected-draft acceptance | [Retest unreadable draft status](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `0d73f38`: 3 suites, 35 tests, passed. Both reads throwing blocks resend and leaves the body. Restart stays blocked. Recovery of a stored tombstone hides that attempt. Another company and staff key stay. The Jest SecureStore double is a memory map. |
 | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` | Cancel, mileage, report, and notification requests wait for this sign-in's roster or message list | [Retest profile 8c09eaa](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) retested `bc3ec9b`: 2 suites, 12 tests, passed. The server was not asked to reject another tenant. |
 | [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only. Not a store update. |
 
 The independent rows above re-ran the latest commits in existing checkouts. They are unit and source checks. They are not a device, hosted, or store pass.
+
+## Local draft storage
+
+These are separate facts. The retention choice stays in the parked list.
+
+### Platform secure storage
+
+This is the installed package `expo-secure-store` `14.2.4`, read from that package on this host. The draft Jest double is a `Map`. It does not run this native code, so the unit tests are not Keychain or Keystore proof.
+
+- iOS `ios/SecureStoreModule.swift` stores a generic-password Keychain item. `ios/SecureStoreOptions.swift` defaults `keychainAccessible` to `whenUnlocked`, mapped to `kSecAttrAccessibleWhenUnlocked`. This app calls `setItemAsync` with no options, so that default stands, and `requireAuthentication` is not set.
+- Android `encryptors/AESEncryptor.kt` generates an AES key in Android Keystore and encrypts with AES/GCM. The ciphertext goes to SharedPreferences. This app does not set `requireAuthentication`, so user authentication is not required. API 22 and below in that package uses `HybridAESEncryptor`.
+- `writeSecureBody` passes the report JSON into that API. On a device, the native module encrypts that string. The unit tests store the same string in the mock map.
+
+### AsyncStorage draft bytes
+
+This is this repository, not the platform module.
+
+- `libs/report-draft.ts` writes AsyncStorage with the prefix `promaxcare.draft.v1.` and XORs the bytes. That file says this is not encryption.
+- If the SecureStore mask key cannot be created, a new draft is plaintext JSON. An existing masked draft is not replaced.
+- Plaintext fallback and the mask remain unaccepted as protected-draft storage.
 
 ## Still blocked
 
@@ -89,7 +109,7 @@ The independent rows above re-ran the latest commits in existing checkouts. They
 | --- | --- |
 | Android and iOS builds | No Android SDK, `adb`, emulator, or Apple toolchain. No package was produced. |
 | Hosted sign-in, clock-in, report save, and document read | No disposable API and no authorised account. No production request was sent. |
-| Remember me and logout deletion | Remember me is unchanged. Logout still keeps the draft. The AsyncStorage prefix on `1095c75` is a mask, not encryption. SecureStore holds the draft in items of at most 2048 bytes. A new draft whose secure key cannot be stored is plain text. Removal on logout was not added. Confidentiality versus retention for that device key and those plaintext chunks is parked. |
+| Remember me and logout deletion | Remember me is unchanged. Logout still keeps the draft. The AsyncStorage prefix on `0d73f38` is a mask, not encryption. SecureStore values are capped at 2048 bytes. A new draft whose secure key cannot be stored is plain text. Removal on logout was not added. The platform Keychain and Keystore notes above are not a protected-draft pass. Confidentiality versus retention stays parked. |
 | Server tenant and assignment enforcement | Blocked until an isolated disposable API can run those tests. Client gates on pull request 11 are not that proof. `pmx_api_v2` was not readable. |
 | Live company iPhone binary | Bundle `au.com.promaxsolutions.promaxcare` version `1.1.0` is on the App Store. Its source tree and IPA are not on this host. |
 | Live `com.promax-app` binary | Store version is `1.2.0` from Aermeans. This remote is `1.1.0`. |
