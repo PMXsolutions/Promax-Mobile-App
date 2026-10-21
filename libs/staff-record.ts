@@ -37,3 +37,30 @@ export function documentOwnedBySession(
   const userId = Number(session.userId);
   return owner === staffId || (Number.isFinite(userId) && owner === userId);
 }
+
+export function shiftVisibleToSession(
+  shift: { staffId?: number | null; companyID?: number | null } | null | undefined,
+  session: { staffId?: number | null; companyId?: number | null }
+): boolean {
+  if (!shift) return false;
+
+  const staffId = Number(shift.staffId);
+  const sessionStaff = Number(session.staffId);
+  if (Number.isFinite(staffId) && staffId > 0) {
+    if (!Number.isFinite(sessionStaff) || staffId !== sessionStaff) return false;
+  }
+
+  const companyId = Number(shift.companyID);
+  const sessionCompany = Number(session.companyId);
+  if (
+    Number.isFinite(companyId) &&
+    companyId > 0 &&
+    Number.isFinite(sessionCompany) &&
+    sessionCompany > 0 &&
+    companyId !== sessionCompany
+  ) {
+    return false;
+  }
+
+  return true;
+}

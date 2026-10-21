@@ -1,7 +1,11 @@
 import { documentNameForSubmit } from "@/libs/document-name";
 import { displaySydneyDate } from "@/libs/display-date";
 import { pathForNotificationData } from "@/libs/notification-route";
-import { documentOwnedBySession, isOwnStaffRecord } from "@/libs/staff-record";
+import {
+  documentOwnedBySession,
+  isOwnStaffRecord,
+  shiftVisibleToSession,
+} from "@/libs/staff-record";
 import { mileageSubmitDecision } from "@/libs/trip-mileage";
 
 describe("trip mileage", () => {
@@ -37,6 +41,20 @@ describe("documents and profile ownership", () => {
     expect(isOwnStaffRecord("4", 4)).toBe(true);
     expect(isOwnStaffRecord("5", 4)).toBe(false);
     expect(isOwnStaffRecord("", 4)).toBe(false);
+  });
+
+  it("hides a shift assigned to another staff member or company", () => {
+    const session = { staffId: 4, companyId: 9 };
+    expect(
+      shiftVisibleToSession({ staffId: 4, companyID: 9 }, session)
+    ).toBe(true);
+    expect(
+      shiftVisibleToSession({ staffId: 5, companyID: 9 }, session)
+    ).toBe(false);
+    expect(
+      shiftVisibleToSession({ staffId: 4, companyID: 8 }, session)
+    ).toBe(false);
+    expect(shiftVisibleToSession({ companyID: 9 }, session)).toBe(true);
   });
 
   it("denies a document from another company or another user", () => {
