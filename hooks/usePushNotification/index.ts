@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { Platform, Alert } from "react-native";
+import { Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import axiosInstance from "@/libs/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
+import { pathForNotificationData } from "@/libs/notification-route";
 
 export interface NotificationData {
   title?: string;
@@ -94,7 +96,10 @@ const usePushNotifications = (
       responseListener.current =
         Notifications.addNotificationResponseReceivedListener(
           (response: Notifications.NotificationResponse) => {
-            void response;
+            const data = response.notification.request.content.data as
+              | Record<string, unknown>
+              | undefined;
+            router.push(pathForNotificationData(data) as never);
           }
         );
 
@@ -159,7 +164,6 @@ async function registerForPushNotificationsAsync(): Promise<
     }
 
     if (finalStatus !== "granted") {
-      Alert.alert("Failed to get push token for push notification!");
       return;
     }
 
@@ -169,15 +173,13 @@ async function registerForPushNotificationsAsync(): Promise<
         Constants?.easConfig?.projectId;
 
       if (!projectId) {
-        throw new Error("Project ID not found");
+        return;
       }
 
       token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     } catch (e) {
       console.error("Error getting expo push token", e);
     }
-  } else {
-    Alert.alert("Must use physical device for Push Notifications");
   }
 
   return token;

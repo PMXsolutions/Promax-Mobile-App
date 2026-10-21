@@ -7,17 +7,47 @@ import { profileQuery } from "@/hooks/queries/profile";
 import { THEME } from "@/constants/theme";
 import { Image } from "react-native";
 import ProfileTag from "@/components/profile/profile-tag";
-import { formattedTime } from "@/helpers/shift-service";
+import { displaySydneyDate } from "@/libs/display-date";
+import ErrorState from "@/components/shared/error-state";
+import Loader from "@/components/shared/loader";
 import CustomButton from "@/components/shared/custom-button";
 import { router } from "expo-router";
 
 const PersonalInfo = () => {
   const { staff } = useAuthStore();
 
-  const { data: staffData } = profileQuery.useFetchStaffProfile(
-    staff?.staffId as number
-  );
-  const dob = new Date(staffData?.dateOfBirth as string);
+  const {
+    data: staffData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = profileQuery.useFetchStaffProfile(staff?.staffId as number);
+  const dob = displaySydneyDate(staffData?.dateOfBirth);
+
+  if (isLoading) {
+    return (
+      <Loader name="2-curves" color={THEME.colors.secondary} title="Loading..." />
+    );
+  }
+
+  if (isError || !staffData) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Personal Information"} />
+        <ErrorState
+          message={
+            error instanceof Error
+              ? error.message
+              : "Personal information could not be loaded."
+          }
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      </ScreenWrapper>
+    );
+  }
 
   return (
     <ScreenWrapper barStyle="dark-content">
@@ -46,12 +76,7 @@ const PersonalInfo = () => {
         <ProfileTag label={"Email"} value={staffData?.email!} />
         <ProfileTag label={"Gender"} value={staffData?.gender!} />
 
-        {staffData && (
-          <ProfileTag
-            label={"Date of Birth"}
-            value={formattedTime(dob, "d MMMM, yyyy")}
-          />
-        )}
+        {dob ? <ProfileTag label={"Date of Birth"} value={dob} /> : null}
         <ProfileTag label={"Nationality"} value={staffData?.country!} />
         <ProfileTag label={"State"} value={staffData?.state!} />
         <ProfileTag label={"City"} value={staffData?.city!} />

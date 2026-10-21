@@ -45,21 +45,13 @@ const Profile = () => {
   const {
     data: staffData,
     isLoading,
-    // error,
-    // refetch,
+    isError,
+    error,
+    refetch,
   } = profileQuery.useFetchStaffProfile(staff?.staffId as number);
-  // const onRefresh = async () => {
-  //   await refetch();
-  // };
-  // if (error) {
-  //   return (
-  //     <ErrorState
-  //       message="Unable to load profile."
-  //       onRetry={onRefresh}
-  //       icon="file-alert-outline" // Or any icon you want
-  //     />
-  //   );
-  // }
+  const onRefresh = async () => {
+    await refetch();
+  };
 
   const appVersion = Constants.expoConfig?.version;
   return (
@@ -87,21 +79,36 @@ const Profile = () => {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          <ProfileHeader data={staffData!} />
-
-          <View style={{ paddingVertical: 8, rowGap: THEME.spacing.sm }}>
-            {labelArr.map((item, index) => (
-              <ProfileLabel
-                key={index} // Ensure a unique key for each item
-                index={index} // Ensure a unique key for each item
-                iconName={item.iconName}
-                label={item.title}
-                link={item.url}
-                edit={item.edit}
-                id={staffData?.staffId as number}
-              />
-            ))}
-          </View>
+          {!staff?.staffId || isError ? (
+            <ErrorState
+              message={
+                !staff?.staffId
+                  ? "Your staff profile is not available."
+                  : error instanceof Error
+                    ? error.message
+                    : "Unable to load profile."
+              }
+              onRetry={onRefresh}
+              icon="account-alert-outline"
+            />
+          ) : (
+            <>
+              <ProfileHeader data={staffData!} />
+              <View style={{ paddingVertical: 8, rowGap: THEME.spacing.sm }}>
+                {labelArr.map((item, index) => (
+                  <ProfileLabel
+                    key={index}
+                    index={index}
+                    iconName={item.iconName}
+                    label={item.title}
+                    link={item.url}
+                    edit={item.edit}
+                    id={staffData?.staffId as number}
+                  />
+                ))}
+              </View>
+            </>
+          )}
           <TouchableWithoutFeedback onPress={() => setModalVisible(true)}>
             <View style={styles.butcontainer}>
               <View style={styles.label}>

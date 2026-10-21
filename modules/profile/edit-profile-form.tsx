@@ -21,6 +21,7 @@ import { router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { profileService } from "@/services/profile";
 import useAuthStore from "@/store/use-auth-store";
+import { isOwnStaffRecord } from "@/libs/staff-record";
 import {
   pickImageOrUseCamera,
   resizeImage,
@@ -40,8 +41,11 @@ import { ImageSourceModal } from "@/components/shared/image-source-modal";
 // };
 
 const EditProfileForm = ({ id }: { id: string }) => {
-  const { data: staffData } = profileQuery.useFetchStaffProfile(Number(id));
-  const { user } = useAuthStore();
+  const { user, staff } = useAuthStore();
+  const ownsRecord = isOwnStaffRecord(id, staff?.staffId);
+  const { data: staffData } = profileQuery.useFetchStaffProfile(
+    ownsRecord ? Number(id) : 0
+  );
   const [signatureModalVisible, setSignatureModalVisible] = useState(false);
   const [imageSourceModalVisible, setImageSourceModalVisible] = useState(false);
 
@@ -221,8 +225,23 @@ const EditProfileForm = ({ id }: { id: string }) => {
   });
 
   const handleFormSubmit = () => {
-    onSubmit(); // Should call the mutation function
+    if (!ownsRecord || !staffData) {
+      showMessage({
+        message: "This profile is not assigned to your sign-in.",
+        type: "danger",
+      });
+      return;
+    }
+    onSubmit();
   };
+
+  if (!ownsRecord) {
+    return (
+      <View style={{ padding: 24 }}>
+        <Text>This profile is not assigned to your sign-in.</Text>
+      </View>
+    );
+  }
 
   return (
     <>

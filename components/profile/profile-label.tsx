@@ -21,7 +21,11 @@ const ProfileLabel = ({
 }) => {
   return (
     <TouchableWithoutFeedback
-      onPress={() => (edit ? router.push(`${link}/${id} `) : router.push(link))}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={() =>
+        edit ? router.push(`${link}/${id}`) : router.push(link)
+      }
     >
       <View style={styles.container}>
         <View style={styles.label}>
