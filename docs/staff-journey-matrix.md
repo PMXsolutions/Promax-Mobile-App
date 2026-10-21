@@ -4,7 +4,9 @@ Date of this inspection: 21 October 2026.
 
 Owner: mobile integration lead for `PMXsolutions/Promax-Mobile-App`. Care OS branches were not checked out and were not edited.
 
-This file is the working matrix. It separates inspected code, unit tests run in this workspace, and device or hosted proof. Unit tests are not native acceptance and are not a Play-readiness claim.
+This file is the branch note for sign-in and session only. The single acceptance matrix is `docs/staff-journey-matrix.md` on `cursor/mobile-acceptance-matrix-65b8`. Unit tests are not native acceptance and are not a Play-readiness claim.
+
+Follow-up on this branch: the mail cooldown is one device-local record per normalized email, so a second address does not erase the first hour. The known Play sentence is read from `message` / `Message` and from a nested `response.message`, including a string error body. No `auth_login` request was sent.
 
 ## Baseline that was actually present
 

@@ -17,13 +17,15 @@ import { fontFamilyForStartup } from "@/libs/startup-fonts";
 import {
   LoginFailure,
   classifyLoginError,
+  cooldownForEmail,
   evaluateMailCooldown,
   mailCooldownUntil,
+  messageFromLoginPayload,
   missingTokenFailure,
   readLoginErrorInput,
   roleDeniedFailure,
 } from "@/libs/login-failure";
-import { loadMailCooldown, saveMailCooldown } from "@/libs/login-mail-guard";
+import { loadMailCooldownBook, saveMailCooldown } from "@/libs/login-mail-guard";
 import {
   SingleFlightLock,
   acquireSingleFlight,
@@ -55,9 +57,9 @@ const SignInForm = () => {
     authstore.clearSessionNotice();
 
     try {
-      const cooldown = await loadMailCooldown();
+      const book = await loadMailCooldownBook();
       const gate = evaluateMailCooldown({
-        cooldown,
+        cooldown: cooldownForEmail(book, data.email),
         email: data.email,
         now: new Date(),
       });
@@ -74,11 +76,7 @@ const SignInForm = () => {
       const userProfile = response?.userProfile || response?.UserProfile;
       const staffProfile = response?.staffProfile || response?.StaffProfile;
       const accessToken = userProfile?.token || userProfile?.Token;
-      const bodyMessage =
-        response?.response?.message ||
-        response?.Response?.Message ||
-        response?.message ||
-        response?.Message;
+      const bodyMessage = messageFromLoginPayload(response);
 
       if (String(status).toLowerCase() === "success" && userProfile) {
         const role = userProfile?.role || userProfile?.Role;

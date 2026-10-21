@@ -1,11 +1,15 @@
 import {
   MAIL_COOLDOWN_MS,
   classifyLoginError,
+  cooldownForEmail,
   evaluateMailCooldown,
   mailCooldownUntil,
+  messageFromLoginPayload,
   parseMailCooldown,
+  parseMailCooldownBook,
   readLoginErrorInput,
   roleDeniedFailure,
+  upsertMailCooldown,
 } from "@/libs/login-failure";
 import {
   acquireSingleFlight,
@@ -140,6 +144,78 @@ describe("mail cooldown", () => {
       email: "a@b.c",
       untilIso: "2026-10-21T08:00:00.000Z",
     });
+  });
+
+  it("keeps a cooldown for each email when a second address is limited", () => {
+    const first = {
+      email: "staff@example.com",
+      untilIso: mailCooldownUntil(now),
+    };
+    const book = upsertMailCooldown(
+      parseMailCooldownBook(JSON.stringify(first)),
+      {
+        email: "other@example.com",
+        untilIso: mailCooldownUntil(now),
+      },
+      now
+    );
+
+    expect(
+      evaluateMailCooldown({
+        cooldown: cooldownForEmail(book, "staff@example.com"),
+        email: "staff@example.com",
+        now: new Date(now.getTime() + 1000),
+      }).blocked
+    ).toBe(true);
+    expect(
+      evaluateMailCooldown({
+        cooldown: cooldownForEmail(book, "other@example.com"),
+        email: "other@example.com",
+        now: new Date(now.getTime() + 1000),
+      }).blocked
+    ).toBe(true);
+  });
+});
+
+describe("login error payload", () => {
+  it("reads the Play sentence from the fields main already displayed", () => {
+    expect(
+      messageFromLoginPayload({
+        response: { status: "Failed", message: PLAY_TOAST },
+      })
+    ).toBe(PLAY_TOAST);
+    expect(
+      classifyLoginError({
+        message: messageFromLoginPayload({
+          Response: { Message: PLAY_TOAST },
+        }),
+      }).kind
+    ).toBe("mail_rate_limited");
+  });
+
+  it("reads the Play sentence from a string body or a nested response message", () => {
+    const asString = classifyLoginError(
+      readLoginErrorInput({
+        isAxiosError: true,
+        message: "Request failed with status code 500",
+        response: { status: 500, data: PLAY_TOAST },
+      })
+    );
+    const nested = classifyLoginError(
+      readLoginErrorInput({
+        isAxiosError: true,
+        message: "Request failed with status code 500",
+        response: {
+          status: 500,
+          data: { response: { message: PLAY_TOAST } },
+        },
+      })
+    );
+
+    expect(asString.kind).toBe("mail_rate_limited");
+    expect(asString.navigateToOtp).toBe(false);
+    expect(nested.kind).toBe("mail_rate_limited");
+    expect(nested.allowImmediateRetry).toBe(false);
   });
 });
 

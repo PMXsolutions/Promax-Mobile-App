@@ -62,6 +62,103 @@ export function parseMailCooldown(raw: string | null): MailCooldownRecord | null
   }
 }
 
+export interface MailCooldownBook {
+  entries: MailCooldownRecord[];
+}
+
+export function parseMailCooldownBook(raw: string | null): MailCooldownBook {
+  if (!raw) return { entries: [] };
+
+  try {
+    const parsed = JSON.parse(raw) as
+      | Partial<MailCooldownRecord>
+      | { entries?: unknown };
+    if (parsed && typeof parsed === "object" && "entries" in parsed) {
+      const entries = Array.isArray(parsed.entries) ? parsed.entries : [];
+      return {
+        entries: entries
+          .map((entry) => parseMailCooldown(JSON.stringify(entry)))
+          .filter((entry): entry is MailCooldownRecord => entry != null),
+      };
+    }
+  } catch {
+    return { entries: [] };
+  }
+
+  const single = parseMailCooldown(raw);
+  return single ? { entries: [single] } : { entries: [] };
+}
+
+export function upsertMailCooldown(
+  book: MailCooldownBook,
+  record: MailCooldownRecord,
+  now: Date
+): MailCooldownBook {
+  const email = normalizeLoginEmail(record.email);
+  const kept = book.entries.filter((entry) => {
+    if (normalizeLoginEmail(entry.email) === email) return false;
+    const until = new Date(entry.untilIso).getTime();
+    return !Number.isNaN(until) && until > now.getTime();
+  });
+  return {
+    entries: [...kept, { email, untilIso: record.untilIso }],
+  };
+}
+
+export function cooldownForEmail(
+  book: MailCooldownBook | null,
+  email: string
+): MailCooldownRecord | null {
+  if (!book) return null;
+  const wanted = normalizeLoginEmail(email);
+  return (
+    book.entries.find((entry) => normalizeLoginEmail(entry.email) === wanted) ??
+    null
+  );
+}
+
+const LOGIN_MESSAGE_KEYS = [
+  "message",
+  "Message",
+  "title",
+  "Title",
+  "detail",
+  "Detail",
+] as const;
+
+function collectLoginMessages(value: unknown, depth: number): string[] {
+  if (depth > 5 || value == null) return [];
+  if (typeof value === "string") return [value];
+  if (typeof value !== "object") return [];
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectLoginMessages(item, depth + 1));
+  }
+
+  const record = value as Record<string, unknown>;
+  const found: string[] = [];
+  for (const key of LOGIN_MESSAGE_KEYS) {
+    if (typeof record[key] === "string") found.push(record[key]);
+  }
+  for (const key of ["response", "Response", "error", "Error", "errors", "Errors"]) {
+    if (key in record) {
+      found.push(...collectLoginMessages(record[key], depth + 1));
+    }
+  }
+  return found;
+}
+
+/** Prefer the known mail-limit sentence over a generic message in the same body. */
+export function messageFromLoginPayload(payload: unknown): string | undefined {
+  const messages = collectLoginMessages(payload, 0)
+    .map((message) => message.trim())
+    .filter((message) => message.length > 0);
+  return (
+    messages.find((message) => PLAY_MAIL_RATE_LIMIT.test(message)) ||
+    messages.find((message) => /error sending mail/i.test(message)) ||
+    messages[0]
+  );
+}
+
 export function readLoginErrorInput(error: unknown): LoginErrorInput {
   if (!error || typeof error !== "object") {
     return {
@@ -89,7 +186,7 @@ export function readLoginErrorInput(error: unknown): LoginErrorInput {
 
   const data = candidate.response?.data;
   return {
-    message: data?.message || data?.Message || candidate.message,
+    message: messageFromLoginPayload(data) || candidate.message,
     httpStatus: candidate.response?.status,
     noResponse: !candidate.response,
     timedOut: candidate.code === "ECONNABORTED",
