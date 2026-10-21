@@ -27,6 +27,12 @@ Care OS branches were not edited. No production login, email, clock-in, report, 
 
 `npx jest --watchAll=false --forceExit --testPathPattern='roster-report-reliability|shift-service'` on 21 October 2026: 2 suites, 13 tests, passed. That is a unit pass only.
 
+## Inspector follow-up on 21 October 2026
+
+[Roster clock-in gaps](bc-a942d1fd-2454-5746-83c1-9f65ffdf86cc) and [Report draft save gaps](bc-bac639ad-128f-5a20-9bf8-abd8dc78c9aa) reviewed `main` before this branch. Their crash, loader, draft, and toast findings are covered above. This follow-up also ignores a second clock-in tap while a check or request is already running, draws the out-of-range map circle at 1000 metres, and refreshes the open report after a successful edit.
+
+[Trip maps mileage gaps](bc-cb08bea5-1f9f-5154-877a-ff2f40381344), [Documents profile gaps](bc-bcc55231-93af-5142-b9e7-3dff489bda35), [Notification deep link gaps](bc-5f87a3cf-791b-543e-acc9-9f7095c630e3), and [Release provenance inspector](bc-57d2ac8c-b8ed-584e-9f0e-c6132cb6826e) are recorded on the profile, document, and trip branch. Care OS trip commits stay untouched.
+
 ## Still not this branch
 
 Documents, profile, bank, trip mileage, push, deep links, health declaration, company package id `au.com.promaxsolutions.promaxcare`, and the missing local Expo 54 tree stay out of scope. The Android package remains `com.tobby95.pmaxapp`.

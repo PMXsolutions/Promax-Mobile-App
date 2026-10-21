@@ -20,6 +20,7 @@ import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomBackdrop from "@/components/ui/custom-backdrop";
 import MapPreviewBottomSheet from "@/components/shift/map-preview-modal";
+import { CLOCK_IN_RADIUS_METERS } from "@/libs/geofence";
 import ErrorState from "@/components/shared/error-state";
 import InlineNotice from "@/components/shared/inline-notice";
 
@@ -168,6 +169,7 @@ const ShiftDetail = () => {
             longitude: shift?.profile?.longitude!,
           }}
           distance={lastDistance ?? 0}
+          threshold={CLOCK_IN_RADIUS_METERS}
           lightweight={false}
         />
       )}

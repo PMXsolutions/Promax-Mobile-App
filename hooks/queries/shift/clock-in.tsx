@@ -6,7 +6,7 @@ import { Alert } from "react-native";
 import { ShiftRosterService } from "@/services/shift";
 import { showMessage } from "react-native-flash-message";
 import { attendanceErrorMessage } from "@/libs/attendance-error";
-import { CLOCK_IN_RADIUS_METERS, geofenceDecision, hasClientCoordinates } from "@/libs/geofence";
+import { CLOCK_IN_RADIUS_METERS, canStartClockAttempt, geofenceDecision, hasClientCoordinates } from "@/libs/geofence";
 
 type ClockInCheckResult =
   | { success: true; distance: number }
@@ -126,6 +126,15 @@ const useClockIn = (
   });
 
   const handleClock = async () => {
+    if (
+      !canStartClockAttempt({
+        pending: clockInPending,
+        checking: distanceCheckLoading,
+      })
+    ) {
+      return;
+    }
+
     setDistanceCheckLoading(true);
 
     setBlockerMessage(null);

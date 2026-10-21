@@ -125,6 +125,9 @@ const EditReportForm = ({
           queryKey: ["staffReports", staff?.staffId],
         }),
         queryClient.invalidateQueries({ queryKey: ["shifts"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["staffReport", Number(reportId), Number(rosterId)],
+        }),
       ]);
     },
 

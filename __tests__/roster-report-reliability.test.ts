@@ -1,6 +1,7 @@
 import { attendanceErrorMessage } from "@/libs/attendance-error";
 import {
   CLOCK_IN_RADIUS_METERS,
+  canStartClockAttempt,
   geofenceDecision,
   hasClientCoordinates,
 } from "@/libs/geofence";
@@ -107,6 +108,18 @@ describe("report drafts", () => {
 });
 
 describe("clock-in rules", () => {
+  it("ignores a second clock-in tap while the first check is running", () => {
+    expect(canStartClockAttempt({ pending: false, checking: false })).toBe(
+      true
+    );
+    expect(canStartClockAttempt({ pending: true, checking: false })).toBe(
+      false
+    );
+    expect(canStartClockAttempt({ pending: false, checking: true })).toBe(
+      false
+    );
+  });
+
   it("keeps the 1000 metre boundary inclusive and does not widen it", () => {
     expect(CLOCK_IN_RADIUS_METERS).toBe(1000);
     expect(geofenceDecision(1000)).toBe("inside");
