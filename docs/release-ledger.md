@@ -1,6 +1,22 @@
 # Staff release ledger
 
-Target: 22 October 2026, Australia/Sydney. This is the qualified slice that can be demonstrated from the remote staff app. It is not a store release, an EAS build, an OTA update, or a production publication. The production destination is still being chosen. The date does not turn a blocked row into a pass.
+Target: 22 October 2026, Australia/Sydney. Care OS is the go-live. This mobile ledger is the frontline staff catch-up record. It is not Ready to Update, a store release, an EAS build, an OTA update, or a production publication. The date does not turn a blocked row into a pass.
+
+## Scope
+
+PromaxCare mobile stays staff-only. Admin, auditor, and company-admin menus were not added. The working iPhone identity stays `com.promax-app`, app version `1.1.0`. The released iPhone binary was not on this host, so a device comparison of that build is Blocked. No production write, notification, store action, or VM operation was run for this comparison.
+
+The deployed web shell at `https://app.promaxcare.com.au/` returned HTTP 200 on 21 October 2026. `last-modified` was Sun, 11 Oct 2026 17:50:30 GMT. The meta tag `app-release` is `quality-surveys-2026-09-09`. The staff menu in `/assets/index-BV83UWOU.js` was read with a public GET. The web repository was not readable with this credential.
+
+| Deployed web staff item | Mobile source on these branches | Status |
+| --- | --- | --- |
+| My Dashboard, My Shift Roster, My Shift Report | Home, shift detail, shift report | Present in source. Device and hosted save/reload are Blocked. |
+| My Availabilities | Availability tab | Present in source. Hosted save is Blocked. |
+| My Documents | Documents tab | Present in source. Hosted read is Blocked. |
+| My Attendance, My Progress Note, My Daily Report, My Incident Report, My Timesheet | No matching screen | Gap. Not built in this pass. API proof is Blocked. |
+| PBS, Training, tickets, knowledge base, Chat with SIMA | No matching screen | Gap. Not built in this pass. |
+| Policies for me, care plan and handover | Present on `codex/care-plan-intelligence-r1` at `b773e1d`, same iPhone bundle id | Not merged. Acknowledge and clarification are writes. Downstream web result is Blocked. |
+| Surveys & Feedback, Policy & Compliance admin, invoices | Admin or other-role menus | Out of scope. No admin access was added. |
 
 ## Identity
 
@@ -36,7 +52,7 @@ These rows are the staff-app changes under review. Independent review of the lat
 
 | Pull request | Latest commit | What it holds | Independent review |
 | --- | --- | --- | --- |
-| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `07d266bf267bfe5de8ca903a4bebb42397733900` | Sign-in mail failures stay on the form for one hour per email, including `Error sending mail.` | [Retest sign-in 07d266b](https://cursor.com/agents/bc-3b7456cc-d8d7-5716-a6a2-a85e425ded83) in progress |
+| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `93414b4` | A repeated unconfirmed email opens the code screen without another `auth_login`. An aborted request stays a timeout | [Retest sign-in 07d266b](https://cursor.com/agents/bc-3b7456cc-d8d7-5716-a6a2-a85e425ded83) reviewed `07d266b`. Author unit run on `93414b4`: 2 suites, 26 tests, passed. That review has not re-run `93414b4`. |
 | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `f5303520de14d717d420fff03c2fe0b32895b3c4` | Report drafts require a positive company id and staff id, and do not send unless the in-flight draft is stored | [Retest drafts f530352](https://cursor.com/agents/bc-62a56eb0-3e9d-5dd3-92e3-6f771c624d9c) in progress |
 | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f` | A document needs a positive company id. A shift is requested only after it is on this staff member's roster | [Retest profile 7ec97f1](https://cursor.com/agents/bc-d854589c-f749-59b9-a200-c4542b57e848) reviewed `7ec97f1`. Author unit run on `8c09eaa`: 2 suites, 11 tests, passed. That review has not re-run `8c09eaa`. |
 | [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only |
