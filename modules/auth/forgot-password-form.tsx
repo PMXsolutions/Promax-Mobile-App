@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 
@@ -11,17 +11,24 @@ import CustomButton from "@/components/shared/custom-button";
 import Text from "@/components/shared/text";
 import { showMessage } from "react-native-flash-message";
 import { AuthService } from "@/services/auth";
+import {
+  SingleFlightLock,
+  acquireSingleFlight,
+  releaseSingleFlight,
+} from "@/libs/single-flight";
 import { ForgotpasswordSchema } from "./types";
 import Feather from "@expo/vector-icons/Feather";
 
 const ForgotPasswordForm = () => {
   const [loading, setLoading] = useState(false);
+  const flight = useRef<SingleFlightLock>({ held: false });
 
   const form = useForm<ForgotpasswordSchema>({
     resolver: zodResolver(forgotPasswordSchema),
   });
 
   const onforgetPassword = async (payload: ForgotpasswordSchema) => {
+    if (!acquireSingleFlight(flight.current)) return;
     setLoading(true);
 
     try {
@@ -49,6 +56,7 @@ const ForgotPasswordForm = () => {
         type: "danger",
       });
     } finally {
+      releaseSingleFlight(flight.current);
       setLoading(false);
     }
   };
