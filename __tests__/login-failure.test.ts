@@ -1,0 +1,375 @@
+import {
+  MAIL_COOLDOWN_MS,
+  classifyLoginError,
+  cooldownForEmail,
+  isLoginTimeoutError,
+  signInControlState,
+  emailAwaitingConfirmation,
+  mergeMailCooldownBooks,
+  isMailLimitMessage,
+  rememberUnconfirmedEmail,
+  resetUnconfirmedEmailsForTests,
+  signInRepeatDecision,
+  sendIntentSurvivesOutcome,
+  unreadableMailLimitFailure,
+  unretainedSendIntentFailure,
+  evaluateMailCooldown,
+  mailCooldownUntil,
+  messageFromLoginPayload,
+  parseMailCooldown,
+  parseMailCooldownBook,
+  readLoginErrorInput,
+  roleDeniedFailure,
+  upsertMailCooldown,
+} from "@/libs/login-failure";
+import {
+  acquireSingleFlight,
+  releaseSingleFlight,
+} from "@/libs/single-flight";
+
+const PLAY_TOAST =
+  "Error sending mail. Too many mails sent. Retry in One hour time.";
+
+describe("classifyLoginError", () => {
+  it("keeps the Play mail-limit response on the sign-in screen and blocks another request", () => {
+    const failure = classifyLoginError({ message: PLAY_TOAST, httpStatus: 500 });
+
+    expect(failure.kind).toBe("mail_rate_limited");
+    expect(failure.navigateToOtp).toBe(false);
+    expect(failure.allowImmediateRetry).toBe(false);
+    expect(failure.message).toContain(PLAY_TOAST);
+    expect(failure.message).toContain("will not send another sign-in request");
+    expect(failure.message).toContain("does not prove an hourly limit");
+    expect(failure.message).toContain("not signed in");
+    expect(failure.message).toContain("was not requested");
+  });
+
+  it("keeps the catch-all mail sentence off the code screen even when unconfirmed text is also present", () => {
+    const failure = classifyLoginError({
+      message: `Email Not Confirmed. ${PLAY_TOAST}`,
+    });
+
+    expect(failure.kind).toBe("mail_rate_limited");
+    expect(failure.navigateToOtp).toBe(false);
+    expect(failure.allowImmediateRetry).toBe(false);
+  });
+
+  it("holds Sign in for the same address and leaves a different address open", () => {
+    const held = signInControlState({
+      failure: classifyLoginError({ message: PLAY_TOAST }),
+      email: "Staff@Example.com",
+      heldEmail: "staff@example.com",
+    });
+    const other = signInControlState({
+      failure: classifyLoginError({ message: PLAY_TOAST }),
+      email: "other@example.com",
+      heldEmail: "staff@example.com",
+    });
+    const cleared = signInControlState({
+      failure: classifyLoginError({ message: "Invalid Login Attempt" }),
+      email: "staff@example.com",
+      heldEmail: "staff@example.com",
+    });
+
+    expect(held.submitEnabled).toBe(false);
+    expect(held.offerExistingCode).toBe(true);
+    expect(other.submitEnabled).toBe(true);
+    expect(other.offerExistingCode).toBe(false);
+    expect(cleared.submitEnabled).toBe(true);
+    expect(cleared.offerExistingCode).toBe(false);
+  });
+
+  it("starts the hour for a mail-send failure and does not open OTP", () => {
+    const failure = classifyLoginError({
+      message: "Error sending mail.",
+      httpStatus: 500,
+    });
+    const plain = classifyLoginError(
+      readLoginErrorInput(new Error("Error sending mail."))
+    );
+
+    expect(failure.kind).toBe("mail_rate_limited");
+    expect(failure.navigateToOtp).toBe(false);
+    expect(failure.allowImmediateRetry).toBe(false);
+    expect(plain.kind).toBe("mail_rate_limited");
+    expect(plain.navigateToOtp).toBe(false);
+  });
+
+  it("opens the code screen again without another sign-in request", () => {
+    const failure = classifyLoginError({
+      message:
+        "Email Not Confirmed. An OTP has been sent to your mail to confirm your email",
+    });
+
+    resetUnconfirmedEmailsForTests();
+    expect(signInRepeatDecision("staff@example.com", "Staff@Example.com")).toBe(
+      "otp"
+    );
+    expect(signInRepeatDecision("staff@example.com", "other@example.com")).toBe(
+      "post"
+    );
+    expect(signInRepeatDecision(null, "staff@example.com")).toBe("post");
+    expect(failure.navigateToOtp).toBe(true);
+    expect(failure.allowImmediateRetry).toBe(false);
+    rememberUnconfirmedEmail("Staff@Example.com");
+    expect(emailAwaitingConfirmation("staff@example.com")).toBe(true);
+    expect(signInRepeatDecision(null, "staff@example.com")).toBe("otp");
+    expect(emailAwaitingConfirmation("other@example.com")).toBe(false);
+    expect(signInRepeatDecision(null, "other@example.com")).toBe("post");
+    resetUnconfirmedEmailsForTests();
+  });
+
+  it("does not treat a mail-limit sentence as a plain network failure", () => {
+    expect(
+      isMailLimitMessage(
+        "Error sending mail. Too many mails sent. Retry in One hour time."
+      )
+    ).toBe(true);
+    expect(isMailLimitMessage("Network Error")).toBe(false);
+    expect(unreadableMailLimitFailure().message).toContain("was not sent");
+  });
+
+  it("withholds the request when the sign-in intent cannot be saved", () => {
+    const failure = unretainedSendIntentFailure();
+    expect(failure.allowImmediateRetry).toBe(true);
+    expect(failure.navigateToOtp).toBe(false);
+    expect(failure.message).toContain("was not sent");
+    expect(sendIntentSurvivesOutcome("timeout")).toBe(true);
+    expect(sendIntentSurvivesOutcome("mail_rate_limited")).toBe(true);
+    expect(sendIntentSurvivesOutcome("invalid_credentials")).toBe(false);
+  });
+
+  it("keeps the later cooldown when both stored copies are combined", () => {
+    const merged = mergeMailCooldownBooks(
+      {
+        entries: [
+          { email: "staff@example.com", untilIso: "2026-10-21T09:00:00.000Z" },
+        ],
+      },
+      {
+        entries: [
+          { email: "Staff@Example.com", untilIso: "2026-10-21T11:00:00.000Z" },
+        ],
+      }
+    );
+    expect(merged.entries).toEqual([
+      { email: "staff@example.com", untilIso: "2026-10-21T11:00:00.000Z" },
+    ]);
+  });
+
+  it("keeps an aborted sign-in request as a timeout", () => {
+    const timeout = {
+      isAxiosError: true,
+      code: "ECONNABORTED",
+      message: "timeout of 30000ms exceeded",
+    };
+    const wrapped = {
+      isAxiosError: true,
+      message: "Cannot reach PromaxCare API.",
+      response: { data: { message: "Cannot reach PromaxCare API." } },
+    };
+
+    expect(isLoginTimeoutError(timeout)).toBe(true);
+    expect(isLoginTimeoutError(wrapped)).toBe(false);
+    expect(classifyLoginError(readLoginErrorInput(timeout)).kind).toBe("timeout");
+  });
+
+  it("still sends a genuine unconfirmed-email response to the code screen", () => {
+    const failure = classifyLoginError({
+      message:
+        "Email Not Confirmed. An OTP has been sent to your mail to confirm your email",
+    });
+
+    expect(failure.kind).toBe("email_unconfirmed");
+    expect(failure.navigateToOtp).toBe(true);
+  });
+
+  it("keeps invalid credentials distinct from the mail limit", () => {
+    const failure = classifyLoginError({ message: "Invalid Login Attempt" });
+
+    expect(failure.kind).toBe("invalid_credentials");
+    expect(failure.navigateToOtp).toBe(false);
+    expect(failure.allowImmediateRetry).toBe(true);
+  });
+
+  it("reports a timeout without signing the user in", () => {
+    const failure = classifyLoginError(
+      readLoginErrorInput({
+        isAxiosError: true,
+        code: "ECONNABORTED",
+        message: "timeout of 30000ms exceeded",
+      })
+    );
+
+    expect(failure.kind).toBe("timeout");
+    expect(failure.message).toContain("not signed in");
+  });
+
+  it("reports a network drop when the server does not answer", () => {
+    const failure = classifyLoginError(
+      readLoginErrorInput({
+        isAxiosError: true,
+        message: "Network Error",
+      })
+    );
+
+    expect(failure.kind).toBe("network");
+  });
+
+  it("does not start a session for a non-staff role", () => {
+    const failure = roleDeniedFailure();
+
+    expect(failure.kind).toBe("role_denied");
+    expect(failure.message).toContain("No session was started");
+  });
+});
+
+describe("mail cooldown", () => {
+  const now = new Date("2026-10-21T07:00:00.000Z");
+
+  it("blocks the same address for one hour and allows a different address", () => {
+    const cooldown = {
+      email: "Staff@Example.com",
+      untilIso: mailCooldownUntil(now),
+    };
+
+    expect(new Date(cooldown.untilIso).getTime() - now.getTime()).toBe(
+      MAIL_COOLDOWN_MS
+    );
+    expect(
+      evaluateMailCooldown({
+        cooldown,
+        email: "staff@example.com",
+        now: new Date(now.getTime() + 1000),
+      }).blocked
+    ).toBe(true);
+    expect(
+      evaluateMailCooldown({
+        cooldown,
+        email: "other@example.com",
+        now: new Date(now.getTime() + 1000),
+      }).blocked
+    ).toBe(false);
+  });
+
+  it("allows the same address after the hour", () => {
+    const cooldown = {
+      email: "staff@example.com",
+      untilIso: mailCooldownUntil(now),
+    };
+
+    expect(
+      evaluateMailCooldown({
+        cooldown,
+        email: "staff@example.com",
+        now: new Date(now.getTime() + MAIL_COOLDOWN_MS),
+      }).blocked
+    ).toBe(false);
+  });
+
+  it("ignores a corrupt stored cooldown instead of blocking sign-in", () => {
+    expect(parseMailCooldown("not-json")).toBeNull();
+    expect(parseMailCooldown(JSON.stringify({ email: "a@b.c" }))).toBeNull();
+    expect(
+      parseMailCooldown(
+        JSON.stringify({ email: "A@B.C", untilIso: "2026-10-21T08:00:00.000Z" })
+      )
+    ).toEqual({
+      email: "a@b.c",
+      untilIso: "2026-10-21T08:00:00.000Z",
+    });
+  });
+
+  it("keeps a cooldown for each email when a second address is limited", () => {
+    const first = {
+      email: "staff@example.com",
+      untilIso: mailCooldownUntil(now),
+    };
+    const book = upsertMailCooldown(
+      parseMailCooldownBook(JSON.stringify(first)),
+      {
+        email: "other@example.com",
+        untilIso: mailCooldownUntil(now),
+      },
+      now
+    );
+
+    expect(
+      evaluateMailCooldown({
+        cooldown: cooldownForEmail(book, "staff@example.com"),
+        email: "staff@example.com",
+        now: new Date(now.getTime() + 1000),
+      }).blocked
+    ).toBe(true);
+    expect(
+      evaluateMailCooldown({
+        cooldown: cooldownForEmail(book, "other@example.com"),
+        email: "other@example.com",
+        now: new Date(now.getTime() + 1000),
+      }).blocked
+    ).toBe(true);
+  });
+});
+
+describe("login error payload", () => {
+  it("reads the Play sentence from the fields main already displayed", () => {
+    expect(
+      messageFromLoginPayload({
+        response: { status: "Failed", message: PLAY_TOAST },
+      })
+    ).toBe(PLAY_TOAST);
+    expect(
+      classifyLoginError({
+        message: messageFromLoginPayload({
+          Response: { Message: PLAY_TOAST },
+        }),
+      }).kind
+    ).toBe("mail_rate_limited");
+  });
+
+  it("reads the Play sentence from a string body or a nested response message", () => {
+    const asString = classifyLoginError(
+      readLoginErrorInput({
+        isAxiosError: true,
+        message: "Request failed with status code 500",
+        response: { status: 500, data: PLAY_TOAST },
+      })
+    );
+    const nested = classifyLoginError(
+      readLoginErrorInput({
+        isAxiosError: true,
+        message: "Request failed with status code 500",
+        response: {
+          status: 500,
+          data: { response: { message: PLAY_TOAST } },
+        },
+      })
+    );
+
+    expect(asString.kind).toBe("mail_rate_limited");
+    expect(asString.navigateToOtp).toBe(false);
+    expect(nested.kind).toBe("mail_rate_limited");
+    expect(nested.allowImmediateRetry).toBe(false);
+  });
+
+  it("starts the hour when a plain Error carries the Play sentence", () => {
+    const failure = classifyLoginError(
+      readLoginErrorInput(new Error(PLAY_TOAST))
+    );
+
+    expect(failure.kind).toBe("mail_rate_limited");
+    expect(failure.navigateToOtp).toBe(false);
+    expect(failure.allowImmediateRetry).toBe(false);
+  });
+});
+
+describe("single flight sign-in", () => {
+  it("ignores a second tap while the first request is still running", () => {
+    const lock = { held: false };
+
+    expect(acquireSingleFlight(lock)).toBe(true);
+    expect(acquireSingleFlight(lock)).toBe(false);
+    releaseSingleFlight(lock);
+    expect(acquireSingleFlight(lock)).toBe(true);
+  });
+});

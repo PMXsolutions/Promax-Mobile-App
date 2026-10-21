@@ -4,7 +4,7 @@ import { FormInput, FormPasswordInput } from "@/components/wrapper";
 import { THEME } from "@/constants/theme";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router, Stack } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { View } from "react-native";
 import { ScrollView, StyleSheet } from "react-native";
@@ -15,6 +15,11 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ChangePasswordSchema } from "./types";
 import { changePasswordSchema } from "./validation";
 import { AuthService } from "@/services/auth";
+import {
+  SingleFlightLock,
+  acquireSingleFlight,
+  releaseSingleFlight,
+} from "@/libs/single-flight";
 import { isAxiosError } from "axios";
 import { showMessage } from "react-native-flash-message";
 
@@ -23,6 +28,7 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
   const bottomInset = insets.bottom;
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const flight = useRef<SingleFlightLock>({ held: false });
   const strengthBarWidth = useSharedValue(0);
   const strengthBarColor = useSharedValue(0);
 
@@ -34,7 +40,7 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
   const newPassword = form.watch("new_password");
 
   const onSubmitPasswordChange = async (data: ChangePasswordSchema) => {
-    if (submitting) return;
+    if (!acquireSingleFlight(flight.current)) return;
     setSubmitting(true);
     try {
       const result = await AuthService.resetPassword({
@@ -54,6 +60,7 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
         : "Could not reset password";
       showMessage({ message: String(message), type: "danger" });
     } finally {
+      releaseSingleFlight(flight.current);
       setSubmitting(false);
     }
   };
@@ -100,6 +107,7 @@ const ChangePasswordForm = ({ email }: { email: string }) => {
   return (
     <ScrollView
       contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
       <FormInput

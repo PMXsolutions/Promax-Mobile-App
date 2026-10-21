@@ -7,10 +7,6 @@ import {
   View,
   ViewStyle,
   StyleProp,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Platform,
 } from "react-native";
 import Animated, {
   interpolateColor,
@@ -21,8 +17,8 @@ import Animated, {
 
 import { THEME } from "@/constants/theme";
 import normalize from "@/libs/normalize";
-import { useTheme } from "@react-navigation/native";
 import Text from "./text";
+import { fontFamilyForStartup } from "@/libs/startup-fonts";
 
 /**
  * Props for the TextInput component.
@@ -83,17 +79,13 @@ const TextInput: React.FC<TextInputProps> = ({
     onBlur?.();
   };
 
-  const { colors } = useTheme();
-
   return (
-    // <KeyboardAvoidingView
-    //   behavior={Platform.OS === "ios" ? "padding" : "height"}
-    // >
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={[styles.outerContainer, containerStyle]}>
         {label && (
           <View style={{ flexDirection: "row" }}>
-            <Text style={styles.inputLabel}>{label} </Text>
+            <Text style={styles.inputLabel} weight="semiBold">
+              {label}{" "}
+            </Text>
             {required && <Text style={{ color: "#f60000" }}>*</Text>}
           </View>
         )}
@@ -102,7 +94,12 @@ const TextInput: React.FC<TextInputProps> = ({
         >
           {icon && <View style={styles.iconContainer}>{icon}</View>}
           <NativeTextInput
-            style={[styles.input, inputStyle, style]} // Ensure styles here use only TextStyle
+            style={[
+              styles.input,
+              { fontFamily: fontFamilyForStartup(THEME.fontFamily.medium) },
+              inputStyle,
+              style,
+            ]}
             placeholder={placeholder}
             value={value}
             onChangeText={onChangeText}
@@ -110,11 +107,10 @@ const TextInput: React.FC<TextInputProps> = ({
             onBlur={handleBlur}
             placeholderTextColor={THEME.colors.grayBg}
             {...props}
+            accessibilityLabel={props.accessibilityLabel ?? label}
           />
         </Animated.View>
       </View>
-    </TouchableWithoutFeedback>
-    // </KeyboardAvoidingView>
   );
 };
 
@@ -136,13 +132,12 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontFamily: THEME.fontFamily.medium,
     fontSize: THEME.fontSize.md,
     color: "#000",
+    minHeight: 44,
   },
   inputLabel: {
     fontSize: THEME.fontSize.md,
-    fontFamily: THEME.fontFamily.semiBold,
     marginBottom: 5,
     color: THEME.colors.grayBg,
   },

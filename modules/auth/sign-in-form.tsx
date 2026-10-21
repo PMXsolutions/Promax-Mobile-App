@@ -1,41 +1,100 @@
-import { StyleSheet, View, Alert } from "react-native";
-import React, { useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
+import React, { useRef, useState } from "react";
 import CustomButton from "@/components/shared/custom-button";
+import Text from "@/components/shared/text";
 import { Link, router } from "expo-router";
 import { THEME } from "@/constants/theme";
 import Feather from "@expo/vector-icons/Feather";
 import { SigninFormSchema } from "./types";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { showMessage } from "react-native-flash-message";
 import { signInFormSchema } from "./validation";
 import useAuthStore from "@/store/use-auth-store";
 import { AuthService } from "@/services/auth";
 import { FormInput, FormPasswordInput } from "@/components/wrapper";
 import Checkbox from "@/components/shared/checkbox";
-import { isAxiosError } from "axios";
-
-const readApiMessage = (error: unknown): string | undefined => {
-  if (!isAxiosError(error)) {
-    return error instanceof Error ? error.message : undefined;
-  }
-  const data = error.response?.data as
-    | { message?: string; Message?: string }
-    | undefined;
-  return data?.message || data?.Message;
-};
+import { fontFamilyForStartup } from "@/libs/startup-fonts";
+import {
+  LoginFailure,
+  classifyLoginError,
+  emailAwaitingConfirmation,
+  mailCooldownUntil,
+  messageFromLoginPayload,
+  missingTokenFailure,
+  normalizeLoginEmail,
+  readLoginErrorInput,
+  roleDeniedFailure,
+  sendIntentSurvivesOutcome,
+  signInControlState,
+  unreadableMailLimitFailure,
+} from "@/libs/login-failure";
+import {
+  claimSignInSend,
+  loadUnconfirmedEmails,
+  persistUnconfirmedEmail,
+  releaseSendIntent,
+  saveMailCooldown,
+  unconfirmedReadFailed,
+} from "@/libs/login-mail-guard";
+import {
+  SingleFlightLock,
+  acquireSingleFlight,
+  releaseSingleFlight,
+} from "@/libs/single-flight";
 
 const SignInForm = () => {
   const [loading, setLoading] = useState(false);
+  const [failure, setFailure] = useState<LoginFailure | null>(null);
+  const [heldEmail, setHeldEmail] = useState<string | null>(null);
   const [checked, setChecked] = useState(true);
+  const flight = useRef<SingleFlightLock>({ held: false });
   const form = useForm<SigninFormSchema>({
     resolver: zodResolver(signInFormSchema),
   });
   const authstore = useAuthStore();
 
+  const rememberMailLimit = async (email: string) => {
+    await saveMailCooldown({
+      email,
+      untilIso: mailCooldownUntil(new Date()),
+    });
+  };
+
+  const applyFailure = (email: string, rejected: LoginFailure) => {
+    if (rejected.kind === "mail_rate_limited") {
+      setHeldEmail(normalizeLoginEmail(email));
+    } else {
+      setHeldEmail(null);
+    }
+    setFailure(rejected);
+  };
+
   const onSignIn = async (data: SigninFormSchema) => {
+    await loadUnconfirmedEmails();
+    if (unconfirmedReadFailed()) {
+      setFailure(unreadableMailLimitFailure());
+      return;
+    }
+    if (emailAwaitingConfirmation(data.email)) {
+      router.navigate(
+        `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
+      );
+      return;
+    }
+
+    if (!acquireSingleFlight(flight.current)) return;
+
     setLoading(true);
+    setFailure(null);
+    authstore.clearSessionNotice();
+
     try {
+      const claim = await claimSignInSend(data.email, new Date());
+      if (!claim.send) {
+        applyFailure(data.email, claim.failure);
+        return;
+      }
+
       const response = await AuthService.loginUser(data);
       const status =
         response?.response?.status ||
@@ -44,74 +103,107 @@ const SignInForm = () => {
       const userProfile = response?.userProfile || response?.UserProfile;
       const staffProfile = response?.staffProfile || response?.StaffProfile;
       const accessToken = userProfile?.token || userProfile?.Token;
+      const bodyMessage = messageFromLoginPayload(response);
 
       if (String(status).toLowerCase() === "success" && userProfile) {
         const role = userProfile?.role || userProfile?.Role;
-        if (role === "Staff") {
-          if (!accessToken) {
-            showMessage({
-              message: "Login succeeded but no access token was returned.",
-              type: "danger",
-            });
-            return;
-          }
-          authstore.login(userProfile, staffProfile, accessToken);
-          router.replace("/(root)/(tabs)");
+        if (role !== "Staff") {
+          await releaseSendIntent(data.email);
+          setFailure(roleDeniedFailure());
           return;
         }
-        Alert.alert(
-          "Info",
-          "Thank you for your interest in our mobile app. At this time, the app is exclusively available for staff members. In the meantime, you can continue to access our web platform for all your needs."
-        );
+        if (!accessToken) {
+          await releaseSendIntent(data.email);
+          setFailure(missingTokenFailure());
+          return;
+        }
+        await releaseSendIntent(data.email);
+        authstore.login(userProfile, staffProfile, accessToken);
+        router.replace("/(root)/(tabs)");
         return;
       }
 
-      showMessage({
-        message:
-          response?.response?.message ||
-          response?.Response?.Message ||
-          "Unable to login!",
-        type: "danger",
+      const rejected = classifyLoginError({
+        message: bodyMessage || "Unable to sign in.",
       });
-    } catch (error: unknown) {
-      const message = readApiMessage(error);
-
-      if (message === "User Not Found") {
-        showMessage({ message: "User not found", type: "danger" });
-      } else if (
-        message === "Email Not Confirmed" ||
-        message ===
-          "Email Not Confirmed. An OTP has been sent to your mail to confirm your email"
-      ) {
-        showMessage({
-          message: message || "Email not confirmed",
-          type: "danger",
-        });
+      if (rejected.kind === "mail_rate_limited") {
+        await rememberMailLimit(data.email);
+      }
+      if (rejected.kind === "email_unconfirmed") {
+        await persistUnconfirmedEmail(data.email);
+      }
+      if (!sendIntentSurvivesOutcome(rejected.kind)) {
+        await releaseSendIntent(data.email);
+      }
+      applyFailure(data.email, rejected);
+      if (rejected.navigateToOtp) {
         router.navigate(
           `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
         );
-      } else if (message === "Invalid Login Attempt") {
-        showMessage({
-          message: "Incorrect Email or Password",
-          type: "danger",
-        });
-      } else {
-        showMessage({
-          message: message || "Unable to login!",
-          type: "danger",
-        });
+      }
+    } catch (error: unknown) {
+      const rejected = classifyLoginError(readLoginErrorInput(error));
+      if (rejected.kind === "mail_rate_limited") {
+        await rememberMailLimit(data.email);
+      }
+      if (rejected.kind === "email_unconfirmed") {
+        await persistUnconfirmedEmail(data.email);
+      }
+      if (!sendIntentSurvivesOutcome(rejected.kind)) {
+        await releaseSendIntent(data.email);
+      }
+      applyFailure(data.email, rejected);
+      if (rejected.navigateToOtp) {
+        router.navigate(
+          `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
+        );
       }
     } finally {
+      releaseSingleFlight(flight.current);
       setLoading(false);
     }
   };
 
   const handleFormSubmit: SubmitHandler<SigninFormSchema> = (formData) => {
-    onSignIn(formData);
+    void onSignIn(formData);
   };
+
+  const emailValue = form.watch("email") ?? "";
+  const control = signInControlState({
+    failure,
+    email: emailValue,
+    heldEmail,
+  });
+
+  const openExistingCode = () => {
+    const email = normalizeLoginEmail(emailValue);
+    if (!email) return;
+    router.navigate(
+      `/(auth)/otp-verification/${encodeURIComponent(email)}?holdMail=1`
+    );
+  };
+
+  const sessionExpired = authstore.sessionNotice === "expired";
 
   return (
     <View style={styles.form}>
+      {sessionExpired && !failure ? (
+        <View
+          style={styles.notice}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          testID="sign-in-session-expired"
+        >
+          <Text weight="bold" size="sm">
+            Session expired
+          </Text>
+          <Text size="sm">
+            Your session expired. Sign in again. Nothing on this screen was
+            submitted.
+          </Text>
+        </View>
+      ) : null}
+
       <FormInput
         keyboardType="email-address"
         control={form.control}
@@ -120,6 +212,10 @@ const SignInForm = () => {
         placeholder="Enter your email"
         autoCapitalize="none"
         autoCorrect={false}
+        autoComplete="email"
+        textContentType="emailAddress"
+        testID="sign-in-email"
+        accessibilityLabel="Email"
         icon={<Feather name={"mail"} size={20} color={THEME.colors.grayBg} />}
       />
       <FormPasswordInput
@@ -127,6 +223,10 @@ const SignInForm = () => {
         name="password"
         label="Password"
         placeholder="Enter your password"
+        autoComplete="password"
+        textContentType="password"
+        testID="sign-in-password"
+        accessibilityLabel="Password"
         icon={<Feather name={"lock"} size={20} color={THEME.colors.grayBg} />}
       />
 
@@ -135,22 +235,62 @@ const SignInForm = () => {
 
         <Link
           href="/(auth)/forgot-password"
+          accessibilityRole="link"
+          accessibilityLabel="Forgot password"
           style={{
             color: THEME.colors.primary,
             fontSize: 14,
-            fontFamily: THEME.fontFamily.medium,
+            fontFamily: fontFamilyForStartup(THEME.fontFamily.medium),
+            minHeight: 44,
+            textAlignVertical: "center",
           }}
         >
           Forgot password?
         </Link>
       </View>
 
+      {failure ? (
+        <View
+          style={styles.notice}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          testID="sign-in-error"
+        >
+          <Text weight="bold" size="sm">
+            {failure.title}
+          </Text>
+          <Text size="sm">{failure.message}</Text>
+        </View>
+      ) : null}
+
+      {control.offerExistingCode ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Enter a confirmation code you already have"
+          testID="sign-in-existing-code"
+          onPress={openExistingCode}
+          style={styles.codeLink}
+        >
+          <Text size="sm" weight="bold" style={{ color: THEME.colors.primary }}>
+            Enter a code you already have. This does not send another email.
+          </Text>
+        </Pressable>
+      ) : null}
+
       <View style={styles.formAction}>
         <CustomButton
-          title={"Sign In"}
+          title={loading ? "Signing in" : "Sign in"}
+          accessibilityLabel={
+            loading
+              ? "Signing in"
+              : control.submitEnabled
+                ? "Sign in"
+                : "Sign in held. This address will not be sent again until the hour ends."
+          }
+          testID="sign-in-submit"
           onPress={form.handleSubmit(handleFormSubmit)}
           loading={loading}
-          disabled={loading}
+          disabled={loading || !control.submitEnabled}
         />
       </View>
     </View>
@@ -175,5 +315,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  notice: {
+    backgroundColor: THEME.colors.toastBg.error,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 4,
+  },
+  codeLink: {
+    minHeight: 44,
+    justifyContent: "center",
   },
 });

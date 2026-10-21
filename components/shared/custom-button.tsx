@@ -62,6 +62,15 @@ const CustomButton = ({
   return (
     <TouchableOpacity
       {...props}
+      accessibilityRole={props.accessibilityRole ?? "button"}
+      accessibilityLabel={
+        props.accessibilityLabel ?? (loading ? `${title}. Loading` : title)
+      }
+      accessibilityState={{
+        ...props.accessibilityState,
+        disabled: isDisabled,
+        busy: loading,
+      }}
       onPress={isDisabled ? undefined : onPress}
       disabled={isDisabled}
       activeOpacity={isDisabled ? 1 : props.activeOpacity}
@@ -75,7 +84,11 @@ const CustomButton = ({
       {IconLeft && <IconLeft />}
 
       {loading ? (
-        <Animated.View entering={ZoomIn} exiting={ZoomOut}>
+        <Animated.View
+          entering={ZoomIn}
+          exiting={ZoomOut}
+          style={styles.spinner}
+        >
           <ActivityIndicator
             color={
               bgVariant === "primary"
@@ -84,15 +97,14 @@ const CustomButton = ({
             }
           />
         </Animated.View>
-      ) : (
-        <Text
-          style={getTextVariantStyle(textVariant)}
-          size="base"
-          weight="bold"
-        >
-          {title}
-        </Text>
-      )}
+      ) : null}
+      <Text
+        style={getTextVariantStyle(textVariant)}
+        size="base"
+        weight="bold"
+      >
+        {title}
+      </Text>
 
       {IconRight && <IconRight />}
     </TouchableOpacity>
@@ -102,8 +114,12 @@ const CustomButton = ({
 export default CustomButton;
 
 const styles = StyleSheet.create({
+  spinner: {
+    marginRight: 8,
+  },
   buttonBase: {
     // width: "100%",
+    minHeight: 48,
     height: 48,
     borderRadius: 5,
     padding: 12,

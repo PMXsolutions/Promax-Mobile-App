@@ -6,17 +6,22 @@ import { queryClient } from "@/libs/query";
 
 type AuthUser = Omit<UserProfileType, "token">;
 
+export type SessionNotice = "expired" | null;
+
 interface AuthState {
   isAuthenticated: boolean;
   user: AuthUser | null;
   staff: StaffProfileTypes | null;
   token: string | null;
+  sessionNotice: SessionNotice;
   login: (
     user: UserProfileType,
     staff: StaffProfileTypes,
     token: string
   ) => void;
   logout: () => Promise<void>;
+  expireSession: () => Promise<void>;
+  clearSessionNotice: () => void;
 }
 
 const useAuthStore = create<AuthState>()(
@@ -26,6 +31,7 @@ const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       staff: null,
+      sessionNotice: null,
       login: (userData, staffData, token) => {
         const { token: _token, ...userWithoutToken } = userData;
         set({
@@ -33,10 +39,31 @@ const useAuthStore = create<AuthState>()(
           user: userWithoutToken,
           token,
           staff: staffData,
+          sessionNotice: null,
         });
       },
+      clearSessionNotice: () => {
+        set({ sessionNotice: null });
+      },
       logout: async () => {
-        set({ isAuthenticated: false, user: null, token: null, staff: null });
+        set({
+          isAuthenticated: false,
+          user: null,
+          token: null,
+          staff: null,
+          sessionNotice: null,
+        });
+        queryClient.clear();
+        await storageUtil.removeItem("auth-storage");
+      },
+      expireSession: async () => {
+        set({
+          isAuthenticated: false,
+          user: null,
+          token: null,
+          staff: null,
+          sessionNotice: "expired",
+        });
         queryClient.clear();
         await storageUtil.removeItem("auth-storage");
       },

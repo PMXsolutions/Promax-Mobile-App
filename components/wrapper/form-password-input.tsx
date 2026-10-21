@@ -96,7 +96,6 @@ const styles = StyleSheet.create({
   errorText: {
     color: THEME.colors.error,
     fontSize: THEME.fontSize.sm,
-    fontFamily: THEME.fontFamily.regular,
   },
 });
 

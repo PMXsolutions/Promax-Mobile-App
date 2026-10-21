@@ -1,4 +1,5 @@
 import useAuthStore from "@/store/use-auth-store";
+import { sessionActionForStatus } from "@/libs/session-status";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
 // Define the structure of your API response data
@@ -51,36 +52,9 @@ axiosInstance.interceptors.response.use(
   (error: AxiosError) => {
     const { response } = error;
     if (response) {
-      switch (response.status) {
-        case 401: // Unauthorized
-          // toast.error("Session Time Out!!");
-          void useAuthStore.getState().logout();
-          //   localStorage.setItem("redirectPath", window.location.pathname);
-
-          break;
-
-        case 403:
-          // Forbidden responses are authorization failures for one action, not
-          // proof that the whole session is invalid.
-          break;
-
-        case 404:
-          // Perform actions to handle the 404 error
-          // window.location.href = '/not-found';
-          break;
-        case 500:
-          // toast.error("Ooops! An error occured ");
-          // Perform actions to handle the 500 error
-          // window.location.href = '/error';
-          break;
-        default:
-          // Perform actions for other errors
-          // window.location.href = '/error-page';
-          break;
+      if (sessionActionForStatus(response.status) === "expire") {
+        void useAuthStore.getState().expireSession();
       }
-    } else {
-      throw error;
-      // window.location.href = '/network-error';
     }
     return Promise.reject(error);
   }
