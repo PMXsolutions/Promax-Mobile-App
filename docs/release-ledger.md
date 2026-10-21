@@ -61,12 +61,23 @@ The same lockfile blob is on `main` and on pull requests 9, 10, and 11. An unloc
 
 ## Slice for 22 October
 
-These rows are source fixes on the Expo 53 remote. They are not a native candidate for either live iPhone listing or for Play. None of these rows is a device or hosted pass.
+The release target remains the company iPhone [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, App Store track `6810018262`, version `1.1.0`. These rows are Expo 53 source fixes. They do not complete that company app. None of these rows is a device, hosted, or store pass.
+
+## Prerequisites for the company app
+
+These items are missing. They were not recreated from this remote.
+
+| Needed | Why |
+| --- | --- |
+| The local company source tree that built `au.com.promaxsolutions.promaxcare` | It is not on this host or this git remote. Expo 54 / React 19.1 / React Native 0.81.5 must stay that tree. |
+| The build manifest for App Store version `1.1.0`, track `6810018262` | Need the commit, SDK, and build id that produced the live binary. `main` and Care OS are `com.promax-app` `1.1.0` and are not that manifest. |
+| The IPA for that build | No IPA is on this host, so binary lineage stays Blocked. |
+| An isolated disposable API | Server tenant and assignment checks stay Blocked until tests can run there. Client gates are not that proof. |
 
 | Pull request | Latest commit | What it holds | Independent review |
 | --- | --- | --- | --- |
-| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `49da8745883469be276a5002468f60c323d9cafc` | An unconfirmed address stays on the code screen for a new form. A mail-limit sentence is not rewritten as a network error. An unreadable cooldown book does not send | [Retest sign-in 93414b4](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `49da874`: author Jest 2 suites, 27 tests, passed, plus a deleted form probe. A process restart can post the unconfirmed address again. A failed cooldown write can post on a later launch if the next read is empty. |
-| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `0423ddb4081daee5bcff95e8f45d74d046fe239d` | A late editing write cannot replace an in-flight draft. The send claim is stored on the device | [Retest drafts 6ff0392](https://cursor.com/agents/bc-6203ec83-dda9-5cc7-9079-99ed54257f86) retested `0423ddb`: 3 suites, 19 tests, passed. Logout still leaves the plaintext draft. A second staff id cannot open that key. |
+| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `a0c535b7402ff7b79a404d2dbd16a0e33011144f` | An unconfirmed address and the mail hour are restored after a restart. No password is stored. If both stores cannot be read, sign-in is not sent | [Retest drafts 6ff0392](https://cursor.com/agents/bc-6203ec83-dda9-5cc7-9079-99ed54257f86) retested `a0c535b`: 3 suites, 32 tests, passed. No assertion was weakened. If both writes throw, a later empty read can still send. |
+| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `16e05534293409d51f288f29d494d749d6c305be` | Saved report text stays after logout, is masked in AsyncStorage, and is not deleted when the key cannot be read | [Retest sign-in 93414b4](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `16e0553`: 3 suites, 21 tests, passed. No assertion was weakened. A legacy plain draft still opens. |
 | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` | Cancel, mileage, report, and notification requests wait for this sign-in's roster or message list | [Retest profile 8c09eaa](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) retested `bc3ec9b`: 2 suites, 12 tests, passed. The server was not asked to reject another tenant. |
 | [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only. Not a store update. |
 
@@ -78,8 +89,8 @@ The independent rows above re-ran the latest commits in existing checkouts. They
 | --- | --- |
 | Android and iOS builds | No Android SDK, `adb`, emulator, or Apple toolchain. No package was produced. |
 | Hosted sign-in, clock-in, report save, and document read | No disposable API and no authorised account. No production request was sent. |
-| Remember me, draft encryption, and logout deletion | Product choices left as they are. Drafts stay plaintext so the same staff member can restore them. |
-| API mail-before-password and server tenant checks | `pmx_api_v2` was not readable and was not changed. Client gates are not server enforcement. |
+| Remember me and logout deletion | Remember me is unchanged. Logout still keeps the draft so the same staff member can restore it. A new write on `16e0553` masks the body. A legacy plain draft that is never rewritten stays plain text. That mask is not store encryption and not removal. |
+| Server tenant and assignment enforcement | Blocked until an isolated disposable API can run those tests. Client gates on pull request 11 are not that proof. `pmx_api_v2` was not readable. |
 | Live company iPhone binary | Bundle `au.com.promaxsolutions.promaxcare` version `1.1.0` is on the App Store. Its source tree and IPA are not on this host. |
 | Live `com.promax-app` binary | Store version is `1.2.0` from Aermeans. This remote is `1.1.0`. |
 | Play listing | Public Play URLs for both packages returned HTTP 404. No APK. |
