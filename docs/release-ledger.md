@@ -81,7 +81,7 @@ Reported checkpoints `google-play-recovery-2026-10-21.json` and `google-play-rel
 
 | Check | Record | Status |
 | --- | --- | --- |
-| Rejection on 22 September | Unresponsive UI controls / broken functionality, and an inaccurate health declaration under Others. | Recorded. Causes stay separate below. |
+| Rejection on 22 September | Unresponsive UI controls / broken functionality, and an inaccurate health declaration under Others. With console access restored, the current policy detail still says unresponsive buttons and icons, and that the app is unavailable. | Recorded. The ten changes and the full rollout were not touched. |
 | Health categories on 21 October | Healthcare services and management; Medication and treatment management; Other, with a care-workforce explanation. | Already set in the console. Unsubmitted. No in-app screen was added. |
 | Unsubmitted changes | Ten, including Production 4 (`1.1.0`) Start full rollout. Managed publishing OFF. | Do not submit all. Publication needs a separate approval. |
 | Build 4 APK | SHA256 `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f`. | Downloaded hash recorded. Source mapping unresolved. |
@@ -109,9 +109,9 @@ The reported checkout is a source location. These acceptance items are still mis
 
 | Pull request | Latest commit | What it holds | Independent review |
 | --- | --- | --- | --- |
-| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `246c1b2d37e4d5fd5caf6e25fc4fd48a179f849c` | The Play mail sentence still withholds `auth_login`. It does not claim a verified hourly limit. Sign in is disabled for that address, and an existing code does not call `resend_otp`. The sign-in screen no longer nests a scroll view. | [Retest sign-in 246c1b2](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `246c1b2`: 3 suites, 44 tests, passed. No assertion was weakened. `ff08813` remains the intent commit underneath. This is not a device or Play pass. |
-| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `0d73f38c11995d5510d70cdb90bf747c2a4d3bdf` | An unreadable tombstone keeps the draft and blocks send until the stores answer. The AsyncStorage prefix is a mask, not encryption. Plaintext and that mask are not protected-draft acceptance | [Retest unreadable draft status](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `0d73f38`: 3 suites, 35 tests, passed. Both reads throwing blocks resend and leaves the body. Restart stays blocked. Recovery of a stored tombstone hides that attempt. Another company and staff key stay. The Jest SecureStore double is a memory map. |
-| [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` | Cancel, mileage, report, and notification requests wait for this sign-in's roster or message list | [Retest profile 8c09eaa](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) retested `bc3ec9b`: 2 suites, 12 tests, passed. The server was not asked to reject another tenant. |
+| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `2fa074d758ae6c598be4277c10c8e9e257fac03e` | A 401 query is not retried. Forgot-password and reset take the single-flight lock first. The reset screen keeps keyboard taps. `246c1b2` remains the mail-sentence lab record and was not re-run. | [Retest session retry 2fa074d](https://cursor.com/agents/bc-6203ec83-dda9-5cc7-9079-99ed54257f86) retested `session-retry-tap` only: 1 suite, 6 tests, passed. Not a device pass. |
+| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `926d28d37b66dd42627cb93e471960362eb087de` | Report screens keep keyboard taps. `0d73f38` remains the draft lab record and was not re-run. The mask is still not protected-draft acceptance. | [Retest report taps 926d28d](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `keyboard-tap-contract` only: 1 suite, 1 test, passed. Draft send functions were not changed. |
+| [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `8c1e1cbe90a7a60247215cdcd122a669703e8b84` | Profile and document screens keep keyboard taps. `bc3ec9b` remains the ownership lab record and was not re-run. | [Retest profile taps 8c1e1cb](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) retested `keyboard-tap-contract` only: 1 suite, 1 test, passed. The other-info Save button is outside that scroll view. |
 | [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only. Not a store update. |
 
 The independent rows above re-ran the latest commits in existing checkouts. They are unit and source checks. They are not a device, hosted, or store pass.
@@ -138,7 +138,7 @@ This is this repository, not the platform module.
 
 ## Checkpoint
 
-`246c1b2` is the Play sign-in source fix. It is not a release candidate. Passed unit rows stay in `docs/staff-journey-matrix.md`. The app is not Ready to Update.
+`246c1b2` and `efee15f` stay lab evidence, not device acceptance. `2fa074d`, `926d28d`, and `8c1e1cb` are further lab contracts. No background write queue was added. The draft suite was not repeated. The app is not Ready to Update. The company Expo 54 checkout and the working iOS release stay in place.
 
 | Still required | Class | Next action |
 | --- | --- | --- |
