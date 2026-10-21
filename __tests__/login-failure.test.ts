@@ -3,7 +3,12 @@ import {
   classifyLoginError,
   cooldownForEmail,
   isLoginTimeoutError,
+  emailAwaitingConfirmation,
+  isMailLimitMessage,
+  rememberUnconfirmedEmail,
+  resetUnconfirmedEmailsForTests,
   signInRepeatDecision,
+  unreadableMailLimitFailure,
   evaluateMailCooldown,
   mailCooldownUntil,
   messageFromLoginPayload,
@@ -54,6 +59,7 @@ describe("classifyLoginError", () => {
         "Email Not Confirmed. An OTP has been sent to your mail to confirm your email",
     });
 
+    resetUnconfirmedEmailsForTests();
     expect(signInRepeatDecision("staff@example.com", "Staff@Example.com")).toBe(
       "otp"
     );
@@ -63,6 +69,22 @@ describe("classifyLoginError", () => {
     expect(signInRepeatDecision(null, "staff@example.com")).toBe("post");
     expect(failure.navigateToOtp).toBe(true);
     expect(failure.allowImmediateRetry).toBe(false);
+    rememberUnconfirmedEmail("Staff@Example.com");
+    expect(emailAwaitingConfirmation("staff@example.com")).toBe(true);
+    expect(signInRepeatDecision(null, "staff@example.com")).toBe("otp");
+    expect(emailAwaitingConfirmation("other@example.com")).toBe(false);
+    expect(signInRepeatDecision(null, "other@example.com")).toBe("post");
+    resetUnconfirmedEmailsForTests();
+  });
+
+  it("does not treat a mail-limit sentence as a plain network failure", () => {
+    expect(
+      isMailLimitMessage(
+        "Error sending mail. Too many mails sent. Retry in One hour time."
+      )
+    ).toBe(true);
+    expect(isMailLimitMessage("Network Error")).toBe(false);
+    expect(unreadableMailLimitFailure().message).toContain("was not sent");
   });
 
   it("keeps an aborted sign-in request as a timeout", () => {

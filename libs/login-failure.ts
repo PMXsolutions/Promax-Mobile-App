@@ -51,15 +51,50 @@ export function isLoginTimeoutError(error: unknown): boolean {
   );
 }
 
+const unconfirmedEmails = new Set<string>();
+
+export function rememberUnconfirmedEmail(email: string): void {
+  const normalized = normalizeLoginEmail(email);
+  if (!normalized) return;
+  unconfirmedEmails.add(normalized);
+}
+
+export function emailAwaitingConfirmation(email: string): boolean {
+  return unconfirmedEmails.has(normalizeLoginEmail(email));
+}
+
+export function resetUnconfirmedEmailsForTests(): void {
+  unconfirmedEmails.clear();
+}
+
+export function isMailLimitMessage(message: string | undefined): boolean {
+  if (!message) return false;
+  return (
+    PLAY_MAIL_RATE_LIMIT.test(message) || /error sending mail/i.test(message)
+  );
+}
+
 export function signInRepeatDecision(
   previousEmail: string | null,
   email: string
 ): "post" | "otp" {
+  if (emailAwaitingConfirmation(email)) return "otp";
   if (!previousEmail) return "post";
   if (normalizeLoginEmail(previousEmail) !== normalizeLoginEmail(email)) {
     return "post";
   }
   return "otp";
+}
+
+export function unreadableMailLimitFailure(): LoginFailure {
+  return {
+    kind: "session",
+    title: "Sign-in limit unavailable",
+    message:
+      "This device could not read the sign-in limit, so this attempt was not sent.",
+    navigateToOtp: false,
+    allowImmediateRetry: true,
+  };
 }
 
 export function normalizeLoginEmail(email: string): string {

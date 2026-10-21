@@ -10,9 +10,15 @@ import {
 export const MAIL_COOLDOWN_STORAGE_KEY = "promaxcare.login-mail-cooldown";
 
 let memoryBook: MailCooldownBook | null = null;
+let readFailed = false;
 
 export function resetMailCooldownMemoryForTests(): void {
   memoryBook = null;
+  readFailed = false;
+}
+
+export function mailCooldownReadFailed(): boolean {
+  return readFailed;
 }
 
 export async function loadMailCooldownBook(): Promise<MailCooldownBook> {
@@ -21,8 +27,10 @@ export async function loadMailCooldownBook(): Promise<MailCooldownBook> {
   try {
     const raw = await AsyncStorage.getItem(MAIL_COOLDOWN_STORAGE_KEY);
     memoryBook = parseMailCooldownBook(raw);
+    readFailed = false;
     return memoryBook;
   } catch {
+    readFailed = true;
     return memoryBook ?? { entries: [] };
   }
 }

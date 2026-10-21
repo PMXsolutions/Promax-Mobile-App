@@ -20,13 +20,19 @@ import {
   cooldownForEmail,
   evaluateMailCooldown,
   mailCooldownUntil,
+  emailAwaitingConfirmation,
   messageFromLoginPayload,
   missingTokenFailure,
   readLoginErrorInput,
+  rememberUnconfirmedEmail,
   roleDeniedFailure,
-  signInRepeatDecision,
+  unreadableMailLimitFailure,
 } from "@/libs/login-failure";
-import { loadMailCooldownBook, saveMailCooldown } from "@/libs/login-mail-guard";
+import {
+  loadMailCooldownBook,
+  mailCooldownReadFailed,
+  saveMailCooldown,
+} from "@/libs/login-mail-guard";
 import {
   SingleFlightLock,
   acquireSingleFlight,
@@ -38,7 +44,6 @@ const SignInForm = () => {
   const [failure, setFailure] = useState<LoginFailure | null>(null);
   const [checked, setChecked] = useState(true);
   const flight = useRef<SingleFlightLock>({ held: false });
-  const unconfirmedEmail = useRef<string | null>(null);
   const form = useForm<SigninFormSchema>({
     resolver: zodResolver(signInFormSchema),
   });
@@ -52,8 +57,7 @@ const SignInForm = () => {
   };
 
   const onSignIn = async (data: SigninFormSchema) => {
-    const repeat = signInRepeatDecision(unconfirmedEmail.current, data.email);
-    if (repeat === "otp") {
+    if (emailAwaitingConfirmation(data.email)) {
       router.navigate(
         `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
       );
@@ -61,7 +65,6 @@ const SignInForm = () => {
     }
 
     if (!acquireSingleFlight(flight.current)) return;
-    unconfirmedEmail.current = null;
 
     setLoading(true);
     setFailure(null);
@@ -69,6 +72,10 @@ const SignInForm = () => {
 
     try {
       const book = await loadMailCooldownBook();
+      if (mailCooldownReadFailed()) {
+        setFailure(unreadableMailLimitFailure());
+        return;
+      }
       const gate = evaluateMailCooldown({
         cooldown: cooldownForEmail(book, data.email),
         email: data.email,
@@ -111,7 +118,7 @@ const SignInForm = () => {
         await rememberMailLimit(data.email);
       }
       if (rejected.kind === "email_unconfirmed") {
-        unconfirmedEmail.current = data.email;
+        rememberUnconfirmedEmail(data.email);
       }
       setFailure(rejected);
       if (rejected.navigateToOtp) {
@@ -125,7 +132,7 @@ const SignInForm = () => {
         await rememberMailLimit(data.email);
       }
       if (rejected.kind === "email_unconfirmed") {
-        unconfirmedEmail.current = data.email;
+        rememberUnconfirmedEmail(data.email);
       }
       setFailure(rejected);
       if (rejected.navigateToOtp) {
