@@ -204,6 +204,10 @@ function isEmailUnconfirmed(message: string): boolean {
 export function classifyLoginError(input: LoginErrorInput): LoginFailure {
   const message = input.message?.trim();
 
+  if (message && PLAY_MAIL_RATE_LIMIT.test(message)) {
+    return mailRateLimitFailure(message);
+  }
+
   if (input.timedOut) {
     return {
       kind: "timeout",
@@ -224,10 +228,6 @@ export function classifyLoginError(input: LoginErrorInput): LoginFailure {
       navigateToOtp: false,
       allowImmediateRetry: true,
     };
-  }
-
-  if (message && PLAY_MAIL_RATE_LIMIT.test(message)) {
-    return mailRateLimitFailure(message);
   }
 
   if (message && /error sending mail/i.test(message)) {

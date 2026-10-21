@@ -217,6 +217,16 @@ describe("login error payload", () => {
     expect(nested.kind).toBe("mail_rate_limited");
     expect(nested.allowImmediateRetry).toBe(false);
   });
+
+  it("starts the hour when a plain Error carries the Play sentence", () => {
+    const failure = classifyLoginError(
+      readLoginErrorInput(new Error(PLAY_TOAST))
+    );
+
+    expect(failure.kind).toBe("mail_rate_limited");
+    expect(failure.navigateToOtp).toBe(false);
+    expect(failure.allowImmediateRetry).toBe(false);
+  });
 });
 
 describe("single flight sign-in", () => {
