@@ -1,10 +1,23 @@
 # Staff release ledger
 
-Target: 22 October 2026, Australia/Sydney. Care OS is the go-live. This mobile ledger is the frontline staff catch-up record. It is not Ready to Update, a store release, an EAS build, an OTA update, or a production publication. The date does not turn a blocked row into a pass.
+Target: 22 October 2026, Australia/Sydney. Care OS is the go-live. This mobile ledger is the frontline staff catch-up record. It is not Ready to Update, a store release, an EAS build, an OTA update, or a production publication. A commit on this remote is not a pushed App Store or Play update. The date does not turn a blocked row into a pass.
+
+## Live store lineage
+
+Checked 21 October 2026. No IPA or APK was on this host. No store, EAS, or OTA command was run. The local Expo 54 company tree was not on this host and was not recreated.
+
+| Listing | What the public record says | What this remote is |
+| --- | --- | --- |
+| Live company iPhone, [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262) | Apple lookup `bundleId=au.com.promaxsolutions.promaxcare`, country `au`. Version `1.1.0`. Seller PROMAX IT SOLUTIONS PTY LTD. Track `6810018262`. Released 2026-09-25. Current version 2026-09-25T20:34:03Z. Size 56,905,728 bytes. Minimum iOS 15.1. No release notes. | That bundle id is not in this git remote. Binary-to-commit lineage is Blocked. |
+| Other live iPhone, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123) | Apple lookup `bundleId=com.promax-app`. Version `1.2.0`. Seller Aermeans Global Services Limited. Track `6748918123`. First release 2025-08-07. Current version 2025-09-11T18:46:32Z. Size 45,891,584 bytes. Notes mention multi-client reports and per-client kilometres. | `app.json` on `main` `de4eb2f` and on Care OS `981bea5` is version `1.1.0` with the same bundle. Neither commit is the live `1.2.0` binary. Care OS is not the company listing. |
+| Play `com.tobby95.pmaxapp` | `https://play.google.com/store/apps/details?id=com.tobby95.pmaxapp&hl=en&gl=au` returned HTTP 404. | This remote's package name. `app.json` version `1.1.0`. No APK. Not a public listing today. |
+| Play `au.com.promaxsolutions.promaxcare` | The same Play URL pattern returned HTTP 404. | Not a public listing today. |
+
+AppBrain, a third-party page, records `com.tobby95.pmaxapp` at version `1.2.1`, last update 12 September 2025, and says the public Play listing was removed. That page is not the Play store and not a binary on this host. Its `1.2.1` is not this remote's `1.1.0`.
 
 ## Scope
 
-PromaxCare mobile stays staff-only. Admin, auditor, and company-admin menus were not added. The working iPhone identity stays `com.promax-app`, app version `1.1.0`. The released iPhone binary was not on this host, so a device comparison of that build is Blocked. No production write, notification, store action, or VM operation was run for this comparison.
+PromaxCare mobile stays staff-only. Admin, auditor, and company-admin menus were not added. No new staff screen was added. No production write, notification, store action, or VM operation was run. Client gates now skip a cancel, mileage save, report fetch, and notification fetch unless the id is on this sign-in. `pmx_api_v2` was not readable, so server-side tenant enforcement stays Blocked.
 
 The deployed web shell at `https://app.promaxcare.com.au/` returned HTTP 200 on 21 October 2026. `last-modified` was Sun, 11 Oct 2026 17:50:30 GMT. The meta tag `app-release` is `quality-surveys-2026-09-09`. The staff menu in `/assets/index-BV83UWOU.js` was read with a public GET. The web repository was not readable with this credential.
 
@@ -25,7 +38,7 @@ The deployed web shell at `https://app.promaxcare.com.au/` returned HTTP 200 on 
 | Android package | `com.tobby95.pmaxapp` |
 | Remote app | Expo `53.0.20`, React `19.0.0`, React Native `0.79.5` |
 | Lockfile | `bun.lockb` `799331d86a1ff0795f2302f5e64b76691564ab6f` |
-| Company Expo 54 tree | Not on this remote. Package name `au.com.promaxsolutions.promaxcare` was not applied. This ledger does not replace that tree. |
+| Company Expo 54 tree | Not on this remote and not recreated. The live company iPhone bundle `au.com.promaxsolutions.promaxcare` was not applied to these commits. |
 
 ## Reproducible install
 
@@ -48,16 +61,16 @@ The same lockfile blob is on `main` and on pull requests 9, 10, and 11. An unloc
 
 ## Slice for 22 October
 
-These rows are the staff-app changes under review. [Retest drafts f530352](https://cursor.com/agents/bc-62a56eb0-3e9d-5dd3-92e3-6f771c624d9c) reviewed `f530352` and has not re-run `6ff0392`. Sign-in `93414b4` and profile `8c09eaa` still have no second run. None of these rows is a device or hosted pass.
+These rows are source fixes on the Expo 53 remote. They are not a native candidate for either live iPhone listing or for Play. None of these rows is a device or hosted pass.
 
 | Pull request | Latest commit | What it holds | Independent review |
 | --- | --- | --- | --- |
-| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `93414b4` | A repeated unconfirmed email opens the code screen without another `auth_login`. An aborted request stays a timeout | [Retest sign-in 07d266b](https://cursor.com/agents/bc-3b7456cc-d8d7-5716-a6a2-a85e425ded83) reviewed `07d266b`. Author unit run on `93414b4`: 2 suites, 26 tests, passed. That review has not re-run `93414b4`. |
-| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `6ff0392a720e9979109b1d27c8f21af2594567a6` | Integer draft keys, one in-flight send claim, and a save with no response stays blocked until the staff member checks | [Retest drafts f530352](https://cursor.com/agents/bc-62a56eb0-3e9d-5dd3-92e3-6f771c624d9c) reviewed `f530352`: 3 suites, 40 tests, passed. Author unit run on `6ff0392`: 2 suites, 17 tests, passed. That review has not re-run `6ff0392`. |
-| [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f` | A document needs a positive company id. A shift is requested only after it is on this staff member's roster | [Retest profile 7ec97f1](https://cursor.com/agents/bc-d854589c-f749-59b9-a200-c4542b57e848) reviewed `7ec97f1`. Author unit run on `8c09eaa`: 2 suites, 11 tests, passed. That review has not re-run `8c09eaa`. |
-| [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only |
+| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `49da8745883469be276a5002468f60c323d9cafc` | An unconfirmed address stays on the code screen for a new form. A mail-limit sentence is not rewritten as a network error. An unreadable cooldown book does not send | [Retest sign-in 93414b4](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `49da874`: author Jest 2 suites, 27 tests, passed, plus a deleted form probe. A process restart can post the unconfirmed address again. A failed cooldown write can post on a later launch if the next read is empty. |
+| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `0423ddb4081daee5bcff95e8f45d74d046fe239d` | A late editing write cannot replace an in-flight draft. The send claim is stored on the device | [Retest drafts 6ff0392](https://cursor.com/agents/bc-6203ec83-dda9-5cc7-9079-99ed54257f86) retested `0423ddb`: 3 suites, 19 tests, passed. Logout still leaves the plaintext draft. A second staff id cannot open that key. |
+| [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` | Cancel, mileage, report, and notification requests wait for this sign-in's roster or message list | [Retest profile 8c09eaa](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) retested `bc3ec9b`: 2 suites, 12 tests, passed. The server was not asked to reject another tenant. |
+| [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only. Not a store update. |
 
-Author unit runs already recorded in `docs/staff-journey-matrix.md` stay unit runs. They are not a second acceptance.
+The independent rows above re-ran the latest commits in existing checkouts. They are unit and source checks. They are not a device, hosted, or store pass.
 
 ## Still blocked
 
@@ -66,7 +79,10 @@ Author unit runs already recorded in `docs/staff-journey-matrix.md` stay unit ru
 | Android and iOS builds | No Android SDK, `adb`, emulator, or Apple toolchain. No package was produced. |
 | Hosted sign-in, clock-in, report save, and document read | No disposable API and no authorised account. No production request was sent. |
 | Remember me, draft encryption, and logout deletion | Product choices left as they are. Drafts stay plaintext so the same staff member can restore them. |
-| API mail-before-password | `pmx_api_v2` was not changed. The client hour is local only. |
+| API mail-before-password and server tenant checks | `pmx_api_v2` was not readable and was not changed. Client gates are not server enforcement. |
+| Live company iPhone binary | Bundle `au.com.promaxsolutions.promaxcare` version `1.1.0` is on the App Store. Its source tree and IPA are not on this host. |
+| Live `com.promax-app` binary | Store version is `1.2.0` from Aermeans. This remote is `1.1.0`. |
+| Play listing | Public Play URLs for both packages returned HTTP 404. No APK. |
 | Store, EAS, and OTA | Not run. Managed publishing was not changed. |
 | Production destination | Not chosen. |
 | Company Expo 54 delta | Not on this remote. |

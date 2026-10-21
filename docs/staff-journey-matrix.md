@@ -2,7 +2,9 @@
 
 Date: 21 October 2026. This is the single acceptance record for the current staff app. The 22 October Sydney slice is in [docs/release-ledger.md](release-ledger.md). It is not a store, Play, EAS, or OTA readiness claim. Pull requests 9, 10, and 11 stay draft. They were not merged.
 
-Care OS was not edited. `origin/cursor/care-os-mobile-test-target-466d` is `981bea5ca495dc8a091590e3fe4d004f9571d6f5`. No production login, email, SMS, push, invite, clock-in, report, document write, or access change was performed.
+Care OS was not edited. `origin/cursor/care-os-mobile-test-target-466d` is `981bea5ca495dc8a091590e3fe4d004f9571d6f5`. Its `app.json` is still `com.promax-app` version `1.1.0`. No production login, email, SMS, push, invite, clock-in, report, document write, store publish, or access change was performed.
+
+Live company iPhone, checked 21 October 2026 through Apple's lookup: [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, version `1.1.0`, seller PROMAX IT SOLUTIONS PTY LTD, released 2026-09-25. That bundle is not in this remote. The Expo 54 tree was not recreated. A second listing, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123), is bundle `com.promax-app` version `1.2.0`, seller Aermeans Global Services Limited, current version 2025-09-11. This remote's `app.json` is `1.1.0`. Play returned HTTP 404 for `com.tobby95.pmaxapp` and for `au.com.promaxsolutions.promaxcare`. These pull requests are not a pushed update.
 
 ## Provenance
 
@@ -20,9 +22,9 @@ Care OS was not edited. `origin/cursor/care-os-mobile-test-target-466d` is `981b
 | API base variable | `EXPO_PUBLIC_API_BASEURL` (unset in this agent). Code fallback host is the public API already committed in `libs/axiosInstance.ts` and `eas.json`. |
 | Maps variable | `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` (unset). Name only. |
 | Push file | `google-services.json` is gitignored and absent. Not requested. |
-| Sign-in PR | [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) `0e6c9d4065d36796d49254ad2c4d4868eb030aeb`, `de8516cdb879f37e30f3061e0545defc00ad56ad`, `c657dbea790ad9cc2534ca01279d1b32d1958c25`, `07d266bf267bfe5de8ca903a4bebb42397733900`, `93414b4` |
-| Roster and drafts PR | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) `9b9bbb8d5e87ceb3b664cd236b101a0838ed032e`, `09eaddc73eff4f1d11ecbad5e8411c0349950982`, `3af36b3814675a14c0c0c644e271234f58a0cbd5`, `f5303520de14d717d420fff03c2fe0b32895b3c4`, `6ff0392a720e9979109b1d27c8f21af2594567a6` |
-| Profile, documents, trip, notifications PR | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) `cb70d3baff018be936b62d06bb907e7397738e88`, `c9dc6a11dbb94e357eef2c47bee2629162571e15`, `66852ce2893eefaa7adc86f4c48760dcb1c759c2`, `7ec97f175939fec719f5108799191c460cd9302b`, `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f` |
+| Sign-in PR | [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) `93414b4e506e941cc37fd34781bfe65c7c4200e2`, `49da8745883469be276a5002468f60c323d9cafc` |
+| Roster and drafts PR | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) `6ff0392a720e9979109b1d27c8f21af2594567a6`, `0423ddb4081daee5bcff95e8f45d74d046fe239d` |
+| Profile, documents, trip, notifications PR | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f`, `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` |
 | Web display | Public `app.promaxcare.com.au` meta `app-release=quality-surveys-2026-09-09`. Literal `2.14.19` was not in that shell. `Promax-Web-FRONTEND` and `pmx_api_v2` were not readable with this credential. |
 
 ## Author unit runs on the follow-up commits
@@ -42,6 +44,9 @@ These are the author's runs on 21 October 2026. They are not a second-person pas
 | `66852ce2893eefaa7adc86f4c48760dcb1c759c2` | same command | 2 suites, 11 tests, passed |
 | `7ec97f175939fec719f5108799191c460cd9302b` | same command | 2 suites, 11 tests, passed |
 | `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f` | same command | 2 suites, 11 tests, passed |
+| `49da8745883469be276a5002468f60c323d9cafc` | `CI=1 npx jest --watchAll=false --watchman=false --forceExit --testPathPattern='login-failure\|startup-session' --no-coverage` | 2 suites, 27 tests, passed |
+| `0423ddb4081daee5bcff95e8f45d74d046fe239d` | `CI=1 npx jest --watchAll=false --watchman=false --forceExit --testPathPattern='roster-report-reliability\|shift-service\|report-draft-store' --no-coverage` | 3 suites, 19 tests, passed |
+| `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` | `CI=1 npx jest --watchAll=false --watchman=false --forceExit --testPathPattern='profile-trip-follow-up\|shift-service' --no-coverage` | 2 suites, 12 tests, passed |
 
 `npx tsc --noEmit` was not re-run on these follow-ups. A previous run of `main` still had existing type errors in `hooks/usePushNotification/index.ts`. `npm run test` is `jest --watchAll` and will not exit.
 
@@ -60,6 +65,9 @@ The first three rows are the parent reviews. The later rows retested the follow-
 | [Retest profile trip PR11](https://cursor.com/agents/bc-adf07140-f9ab-5759-8460-9cca76fdcb0c) | `cb70d3baff018be936b62d06bb907e7397738e88` | 2 suites, 9 tests, passed, 0 failed | Emergency and other-info edits fetched the route id with no staff check. A document id opened with no `companyId` or `userId` compare. Mileage is refused before `fill_mileage` when the odometer is blank, not finite, zero, or not greater at the end. GPS distance is not sent as the end reading. A notification opens a shift only for a positive shift id, and that shift screen did not check staff or company. |
 | [Retest profile follow-ups](https://cursor.com/agents/bc-adf07140-f9ab-5759-8460-9cca76fdcb0c) | `66852ce2893eefaa7adc86f4c48760dcb1c759c2` | 2 suites, 11 tests, passed, 0 failed | `c9dc6a1` is an ancestor. Emergency, other-info, mileage, and the notification path held. Still open on this commit: a shift with no `staffId` stayed on screen and could clock in, and a document detail was fetched by id before the ownership check. A payload with no positive `userId` and no positive `companyId` was treated as owned. Follow-up `7ec97f1` requires both shift ids and requests a document only after it appears on the signed-in staff list. |
 | [Retest profile 7ec97f1](https://cursor.com/agents/bc-d854589c-f749-59b9-a200-c4542b57e848) | `7ec97f175939fec719f5108799191c460cd9302b` | 2 suites, 11 tests, passed, 0 failed | Bun `1.4.3` frozen install exited 0. An extra uncommitted suite had 21 tests, 20 passed, 1 failed. Own, swapped, missing, and zero staff or company ids hide the shift actions. A document id absent from the staff list is not requested. Still open on this commit: a listed document with a matching user id and no company id stayed visible after the company changed, and `GET /ShiftRosters/{id}` ran before the roster check. Follow-up `8c09eaa` requires a positive company id and requests a shift only after that id is on this staff member's roster. This review did not re-run `8c09eaa`. |
+| [Retest sign-in 93414b4](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) | `49da8745883469be276a5002468f60c323d9cafc` | 2 suites, 27 tests, passed, 0 failed | First pass on `93414b4` was 2 suites, 26 tests, plus a deleted 20-test form probe. A new form could post an unconfirmed address again, a no-response mail sentence was rewritten as a network error, and a thrown cooldown read did not block. Follow-up `49da874` closes those in the same process. A process restart can post the unconfirmed address again. A failed cooldown write can post on a later launch when the next read is empty. The password is not in the cooldown record. |
+| [Retest drafts 6ff0392](https://cursor.com/agents/bc-6203ec83-dda9-5cc7-9079-99ed54257f86) | `0423ddb4081daee5bcff95e8f45d74d046fe239d` | 3 suites, 19 tests, passed, 0 failed | First pass on `6ff0392` was 2 suites, 17 tests. A late editing write could replace `in_flight`, and the send claim died with the process. Follow-up `0423ddb` repairs the late write and stores the claim. Logout still leaves the plaintext draft. A second staff id cannot open that key. |
+| [Retest profile 8c09eaa](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) | `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` | 2 suites, 12 tests, passed, 0 failed | First pass on `8c09eaa` was 2 suites, 11 tests. Cancel, mileage, a mismatched report id, and a notification id could be requested from the route. Follow-up `bc3ec9b` waits for this sign-in's roster or message list. The API was not called. Server-side rejection of another tenant remains Blocked. |
 
 The server is not asked to register the hour.
 
