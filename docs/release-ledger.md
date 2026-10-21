@@ -92,7 +92,7 @@ Reported checkpoints `google-play-recovery-2026-10-21.json` and `google-play-rel
 | App controls | `246c1b2` removes the nested sign-in `ScrollView`. | Android tester steps are in `docs/staff-journey-matrix.md`. Device run stays Blocked here. |
 | Reviewer account or mail delivery | `246c1b2` withholds another sign-in, disables Sign in for that address, and does not call `resend_otp` from the existing-code path. | Stop on that sentence. Hand the account to the Care OS lead. |
 | Declaration | Console categories above. | Leave them unsubmitted. |
-| API catch | No mobile edit. | Care OS splits the catch and returns a distinct limit code on a disposable API. |
+| API catch | No mobile edit. Care OS lead is assigned `cb079dbc` on `cursor/account-mail-order-466d` for a local fake-mail sign-in error and order fix. That branch is not on this mobile remote. Hosted cause remains unverified. | Keep the current client contract until that owner supplies an exact independently retested API contract. A message that is `email not confirmed` or starts with `email not confirmed.` stays `email_unconfirmed` and is classified before the generic HTTP 401 sign-in branch. A 401 without that sentence does not open the code screen. Do not edit the API or the company release. Do not send mail or login. |
 
 [Retest sign-in 246c1b2](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `246c1b2`: 3 suites, 44 tests, passed. That worker did not write the commit. No assertion was weakened.
 
