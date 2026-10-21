@@ -16,10 +16,11 @@ import {
   restoredDraftNotice,
 } from "@/libs/report-draft";
 import {
+  commitSubmittedDraft,
   readDraftClaim,
   readReportDraft,
+  readSubmittedAttempt,
   removeDraftClaim,
-  removeReportDraft,
   writeDraftClaim,
   writeReportDraft,
 } from "@/libs/report-draft-store";
@@ -204,6 +205,10 @@ export function useReportDraft<T extends object>(options: {
     const current =
       draftRef.current ??
       createDraft(rosterId, form, new Date(), attemptRef.current);
+    if (await readSubmittedAttempt(key) === current.attemptId) {
+      setNotice("This report was already sent from this device. It was not sent again.");
+      return false;
+    }
     if (
       needsAcknowledge ||
       current.submitState === "in_flight" ||
@@ -247,14 +252,17 @@ export function useReportDraft<T extends object>(options: {
   };
 
   const markSaved = async () => {
+    const attemptId = draftRef.current?.attemptId;
     draftRef.current = null;
     setNotice(null);
     setNeedsAcknowledge(false);
     if (key) {
       releaseDraftSend(key);
       ownsClaim.current = false;
-      await removeDraftClaim(key);
-      await removeReportDraft(key);
+      if (attemptId) {
+        const result = await commitSubmittedDraft(key, attemptId);
+        if (result.submitted) await removeDraftClaim(key);
+      }
     }
   };
 

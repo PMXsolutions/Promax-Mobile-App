@@ -3,8 +3,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { createDraft } from "@/libs/report-draft";
 import {
+  commitSubmittedDraft,
   readDraftClaim,
   readReportDraft,
+  readSubmittedAttempt,
   resetDraftKeyMemoryForTests,
   writeDraftClaim,
   writeReportDraft,
@@ -12,35 +14,63 @@ import {
 
 jest.mock("@react-native-async-storage/async-storage", () => {
   const memory = new Map<string, string>();
+  const removes: string[] = [];
+  const state = {
+    setThrows: false,
+    removeThrows: false,
+    submittedGetThrows: false,
+  };
   let hold: Promise<void> | null = null;
   return {
-    getItem: async (key: string) => memory.get(key) ?? null,
+    getItem: async (key: string) => {
+      if (state.submittedGetThrows && key.endsWith(".submitted")) {
+        throw new Error("async tombstone get");
+      }
+      return memory.get(key) ?? null;
+    },
     setItem: async (key: string, value: string) => {
       const pending = hold;
       hold = null;
       if (pending) await pending;
+      if (state.setThrows) throw new Error("async set");
       memory.set(key, value);
     },
     removeItem: async (key: string) => {
+      removes.push(key);
+      if (state.removeThrows) throw new Error("async remove");
       memory.delete(key);
     },
     __holdNext(pending: Promise<void>) {
       hold = pending;
     },
+    __removes: removes,
+    __state: state,
   };
 });
 
 jest.mock("expo-secure-store", () => {
   const memory = new Map<string, string>();
-  const state = { getThrows: false, setThrows: false };
+  const state = {
+    getThrows: false,
+    setThrows: false,
+    deleteThrows: false,
+    submittedGetThrows: false,
+  };
   return {
     getItemAsync: async (key: string) => {
+      if (state.submittedGetThrows && key.endsWith(".submitted")) {
+        throw new Error("secure tombstone get");
+      }
       if (state.getThrows) throw new Error("secure get");
       return memory.get(key) ?? null;
     },
     setItemAsync: async (key: string, value: string) => {
       if (state.setThrows) throw new Error("secure set");
       memory.set(key, value);
+    },
+    deleteItemAsync: async (key: string) => {
+      if (state.deleteThrows) throw new Error("secure delete");
+      memory.delete(key);
     },
     __memory: memory,
     __state: state,
@@ -205,5 +235,361 @@ describe("report draft storage", () => {
     expect(await AsyncStorage.getItem(protectedKey)).toBe(protectedRaw);
     state.getThrows = false;
     state.setThrows = false;
+  });
+});
+
+type StorageState = {
+  setThrows: boolean;
+  removeThrows: boolean;
+  submittedGetThrows: boolean;
+};
+
+type SecureState = {
+  getThrows: boolean;
+  setThrows: boolean;
+  deleteThrows: boolean;
+  submittedGetThrows: boolean;
+};
+
+function asyncState(): StorageState {
+  return (AsyncStorage as unknown as { __state: StorageState }).__state;
+}
+
+function secureState(): SecureState {
+  return (SecureStore as unknown as { __state: SecureState }).__state;
+}
+
+function secureMemory(): Map<string, string> {
+  return (SecureStore as unknown as { __memory: Map<string, string> }).__memory;
+}
+
+function removedKeys(): string[] {
+  return (AsyncStorage as unknown as { __removes: string[] }).__removes;
+}
+
+function inFlightDraft(attemptId: string, text: string) {
+  return {
+    ...createDraft("12", { goal_Progress: text }, now, attemptId),
+    submitState: "in_flight" as const,
+  };
+}
+
+function secureChunks(key: string): string[] {
+  return [...secureMemory().keys()].filter((name) =>
+    name.startsWith(`${key}.sec.`)
+  );
+}
+
+describe("submitted draft tombstone", () => {
+  afterEach(() => {
+    const asyncFlags = asyncState();
+    asyncFlags.setThrows = false;
+    asyncFlags.removeThrows = false;
+    asyncFlags.submittedGetThrows = false;
+    const secureFlags = secureState();
+    secureFlags.getThrows = false;
+    secureFlags.setThrows = false;
+    secureFlags.deleteThrows = false;
+    secureFlags.submittedGetThrows = false;
+    removedKeys().length = 0;
+  });
+
+  it("restores a saved draft from secure storage until that attempt is tombstoned", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.resurrect";
+    const draft = inFlightDraft("attempt-saved", "sent progress");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+    const raw = await AsyncStorage.getItem(key);
+    const chunks = secureChunks(key).map(
+      (name) => [name, secureMemory().get(name)] as const
+    );
+    expect(chunks.length).toBeGreaterThan(0);
+
+    await AsyncStorage.removeItem(key);
+    resetDraftKeyMemoryForTests();
+    expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
+      goal_Progress: "sent progress",
+    });
+
+    const saved = await commitSubmittedDraft(key, draft.attemptId);
+    expect(saved).toEqual({ submitted: true, cleared: true });
+    resetDraftKeyMemoryForTests();
+    expect(await readReportDraft(key)).toBeNull();
+
+    if (raw) await AsyncStorage.setItem(key, raw);
+    for (const [name, value] of chunks) {
+      if (value) secureMemory().set(name, value);
+    }
+    resetDraftKeyMemoryForTests();
+    expect(await readReportDraft(key)).toBeNull();
+    expect(await writeReportDraft(key, draft)).toBe(false);
+    expect(await readReportDraft(key)).toBeNull();
+    expect(await AsyncStorage.getItem(`${key}.submitted`)).not.toContain(
+      "sent progress"
+    );
+    expect(await AsyncStorage.getItem(`${key}.submitted`)).not.toContain(
+      "goal_Progress"
+    );
+  });
+
+  it("records a successful acknowledgement before either body is removed", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.acked";
+    const draft = inFlightDraft("attempt-acked", "acked progress");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+    const maskKey = secureMemory().get("promaxcare.report-draft.key");
+    expect(maskKey).toBeTruthy();
+
+    removedKeys().length = 0;
+    const saved = await commitSubmittedDraft(key, draft.attemptId);
+    expect(saved).toEqual({ submitted: true, cleared: true });
+    expect(removedKeys()).toContain(key);
+    expect(await AsyncStorage.getItem(key)).toBeNull();
+    expect(secureChunks(key)).toEqual([]);
+
+    const tombstone = await AsyncStorage.getItem(`${key}.submitted`);
+    expect(JSON.parse(tombstone ?? "")).toEqual({
+      attemptId: "attempt-acked",
+    });
+    expect(tombstone).not.toContain("acked progress");
+    expect(tombstone).not.toContain("goal_Progress");
+    expect(secureMemory().get(`${key}.submitted`)).toBe(tombstone);
+    expect(new TextEncoder().encode(tombstone ?? "").length).toBeLessThanOrEqual(
+      2048
+    );
+    expect(secureMemory().get("promaxcare.report-draft.key")).toBe(maskKey);
+    expect(await readSubmittedAttempt(key)).toBe("attempt-acked");
+    resetDraftKeyMemoryForTests();
+    expect(await readReportDraft(key)).toBeNull();
+  });
+
+  it("keeps an unsent draft when a different attempt is acknowledged", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.unsent";
+    const unsent = createDraft(
+      "12",
+      { goal_Progress: "still typing" },
+      now,
+      "attempt-unsent"
+    );
+    expect(await writeReportDraft(key, unsent)).toBe(true);
+    const raw = await AsyncStorage.getItem(key);
+
+    const saved = await commitSubmittedDraft(key, "attempt-other");
+    expect(saved).toEqual({ submitted: true, cleared: true });
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+    expect(secureChunks(key).length).toBeGreaterThan(0);
+    expect((await readReportDraft<typeof unsent.form>(key))?.form).toEqual({
+      goal_Progress: "still typing",
+    });
+    expect(await readSubmittedAttempt(key)).toBe("attempt-other");
+  });
+
+  it("does not tombstone or delete a draft when the response was lost", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.lost";
+    const draft = inFlightDraft("attempt-lost", "maybe sent");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+    const raw = await AsyncStorage.getItem(key);
+
+    expect(await readSubmittedAttempt(key)).toBeNull();
+    expect(await AsyncStorage.getItem(`${key}.submitted`)).toBeNull();
+    expect(secureMemory().get(`${key}.submitted`)).toBeUndefined();
+    resetDraftKeyMemoryForTests();
+    expect((await readReportDraft<typeof draft.form>(key))?.submitState).toBe(
+      "in_flight"
+    );
+    expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
+      goal_Progress: "maybe sent",
+    });
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+
+    const hook = readFileSync("hooks/use-report-draft.ts", "utf8");
+    const markFailed = hook.slice(
+      hook.indexOf("const markFailed"),
+      hook.indexOf("return {")
+    );
+    expect(markFailed).not.toContain("commitSubmittedDraft");
+    expect(markFailed).not.toContain("removeReportDraft");
+    for (const form of [
+      "modules/report/add-report-form.tsx",
+      "modules/report/edit-report-form.tsx",
+    ]) {
+      const source = readFileSync(form, "utf8");
+      expect(source).toContain(
+        "await draft.markFailed(reportSaveNeedsAcknowledge(error))"
+      );
+      expect(source.indexOf("await draft.markSaved()")).toBeGreaterThan(
+        source.indexOf("onSuccess:")
+      );
+      expect(source.indexOf("await draft.markSaved()")).toBeLessThan(
+        source.indexOf("onError:")
+      );
+    }
+  });
+
+  it("keeps the bodies when cleanup fails and does not restore that attempt", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.cleanup";
+    const draft = inFlightDraft("attempt-cleanup", "cleanup progress");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+    const raw = await AsyncStorage.getItem(key);
+    const chunks = secureChunks(key).map(
+      (name) => [name, secureMemory().get(name)] as const
+    );
+
+    asyncState().removeThrows = true;
+    secureState().deleteThrows = true;
+    const saved = await commitSubmittedDraft(key, draft.attemptId);
+    expect(saved).toEqual({ submitted: true, cleared: false });
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+    for (const [name, value] of chunks) {
+      expect(secureMemory().get(name)).toBe(value);
+    }
+    expect(await readSubmittedAttempt(key)).toBe("attempt-cleanup");
+    resetDraftKeyMemoryForTests();
+    expect(await readReportDraft(key)).toBeNull();
+    expect(await writeReportDraft(key, draft)).toBe(false);
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+  });
+
+  it("does not delete a draft when the tombstone cannot be stored", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.unstored";
+    const draft = inFlightDraft("attempt-unstored", "keep this text");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+    const raw = await AsyncStorage.getItem(key);
+
+    asyncState().setThrows = true;
+    secureState().setThrows = true;
+    removedKeys().length = 0;
+    const saved = await commitSubmittedDraft(key, draft.attemptId);
+    expect(saved).toEqual({ submitted: false, cleared: false });
+    expect(removedKeys()).not.toContain(key);
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+    expect(await readSubmittedAttempt(key)).toBeNull();
+    expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
+      goal_Progress: "keep this text",
+    });
+  });
+
+  it("shows the draft again when a stored tombstone cannot be read", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.unreadable";
+    const draft = inFlightDraft("attempt-unreadable", "visible again");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+    asyncState().removeThrows = true;
+    secureState().deleteThrows = true;
+    expect(await commitSubmittedDraft(key, draft.attemptId)).toEqual({
+      submitted: true,
+      cleared: false,
+    });
+    const raw = await AsyncStorage.getItem(key);
+
+    asyncState().submittedGetThrows = true;
+    secureState().submittedGetThrows = true;
+    expect(await readSubmittedAttempt(key)).toBeNull();
+    expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
+      goal_Progress: "visible again",
+    });
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+    expect(removedKeys().filter((name) => name === key)).toEqual([key]);
+  });
+
+  it("blocks the same attempt after restart and still accepts a new one", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.restart";
+    const draft = inFlightDraft("attempt-restart", "restart progress");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+    expect(await commitSubmittedDraft(key, draft.attemptId)).toEqual({
+      submitted: true,
+      cleared: true,
+    });
+
+    resetDraftKeyMemoryForTests();
+    expect(await readReportDraft(key)).toBeNull();
+    expect(await readSubmittedAttempt(key)).toBe("attempt-restart");
+    expect(await writeReportDraft(key, draft)).toBe(false);
+    expect(await AsyncStorage.getItem(key)).toBeNull();
+
+    const next = createDraft(
+      "12",
+      { goal_Progress: "new unsent" },
+      new Date("2026-10-21T09:00:00.000Z"),
+      "attempt-next"
+    );
+    expect(await writeReportDraft(key, next)).toBe(true);
+    expect((await readReportDraft<typeof next.form>(key))?.form).toEqual({
+      goal_Progress: "new unsent",
+    });
+    expect(await readSubmittedAttempt(key)).toBe("attempt-restart");
+
+    const hook = readFileSync("hooks/use-report-draft.ts", "utf8");
+    const prepare = hook.slice(
+      hook.indexOf("const prepareSubmit"),
+      hook.indexOf("const markSaved")
+    );
+    const markSaved = hook.slice(
+      hook.indexOf("const markSaved"),
+      hook.indexOf("const markFailed")
+    );
+    expect(prepare.indexOf("readSubmittedAttempt")).toBeLessThan(
+      prepare.indexOf("claimDraftSend")
+    );
+    expect(prepare).toContain(
+      "This report was already sent from this device. It was not sent again."
+    );
+    expect(markSaved).toContain("commitSubmittedDraft");
+    expect(markSaved).not.toContain("removeReportDraft");
+    expect(markSaved.indexOf("commitSubmittedDraft")).toBeLessThan(
+      markSaved.indexOf("removeDraftClaim")
+    );
+    expect(hook).not.toContain("removeReportDraft");
+    const logout = readFileSync("store/use-auth-store.ts", "utf8");
+    expect(logout).not.toContain("removeReportDraft");
+    expect(logout).not.toContain("commitSubmittedDraft");
+    expect(readFileSync("libs/report-draft.ts", "utf8")).toContain(
+      "This is not encryption."
+    );
+  });
+
+  it("keeps another company and another staff draft when one attempt is submitted", async () => {
+    const submittedKey = "promaxcare.report-draft.c9.s4.create.tenant";
+    const otherCompany = "promaxcare.report-draft.c8.s4.create.tenant";
+    const otherStaff = "promaxcare.report-draft.c9.s5.create.tenant";
+    const sent = inFlightDraft("attempt-tenant", "company nine");
+    const companyDraft = createDraft(
+      "12",
+      { goal_Progress: "company eight" },
+      now,
+      "attempt-tenant"
+    );
+    const staffDraft = createDraft(
+      "12",
+      { goal_Progress: "staff five" },
+      now,
+      "attempt-other-staff"
+    );
+    expect(await writeReportDraft(submittedKey, sent)).toBe(true);
+    expect(await writeReportDraft(otherCompany, companyDraft)).toBe(true);
+    expect(await writeReportDraft(otherStaff, staffDraft)).toBe(true);
+    const companyRaw = await AsyncStorage.getItem(otherCompany);
+    const staffRaw = await AsyncStorage.getItem(otherStaff);
+
+    expect(await commitSubmittedDraft(submittedKey, sent.attemptId)).toEqual({
+      submitted: true,
+      cleared: true,
+    });
+    resetDraftKeyMemoryForTests();
+    expect(await readReportDraft(submittedKey)).toBeNull();
+    expect(await writeReportDraft(otherCompany, companyDraft)).toBe(true);
+    expect(
+      (await readReportDraft<typeof companyDraft.form>(otherCompany))?.form
+    ).toEqual({ goal_Progress: "company eight" });
+    expect(
+      (await readReportDraft<typeof staffDraft.form>(otherStaff))?.form
+    ).toEqual({ goal_Progress: "staff five" });
+    expect(await AsyncStorage.getItem(otherCompany)).toBe(companyRaw);
+    expect(await AsyncStorage.getItem(otherStaff)).toBe(staffRaw);
+    expect(await readSubmittedAttempt(otherCompany)).toBeNull();
+    expect(await readSubmittedAttempt(otherStaff)).toBeNull();
+    expect(await AsyncStorage.getItem(`${submittedKey}.submitted`)).not.toContain(
+      "company eight"
+    );
+    expect(await AsyncStorage.getItem(`${submittedKey}.submitted`)).not.toContain(
+      "staff five"
+    );
   });
 });

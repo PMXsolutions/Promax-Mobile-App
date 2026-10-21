@@ -120,10 +120,165 @@ async function writeSecureBody(draftKey: string, plain: string): Promise<boolean
   }
 }
 
+function tombstoneStorageKey(draftKey: string): string {
+  return `${draftKey}.submitted`;
+}
+
+function attemptFromTombstone(raw: string | null): string | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as { attemptId?: unknown };
+    return typeof parsed.attemptId === "string" && parsed.attemptId
+      ? parsed.attemptId
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Null means no readable tombstone. An unreadable tombstone does not hide a draft. */
+export async function readSubmittedAttempt(key: string): Promise<string | null> {
+  const name = tombstoneStorageKey(key);
+  try {
+    const fromAsync = attemptFromTombstone(await AsyncStorage.getItem(name));
+    if (fromAsync) return fromAsync;
+  } catch {
+    // The secure copy can still name the submitted attempt.
+  }
+  try {
+    return attemptFromTombstone(await SecureStore.getItemAsync(name));
+  } catch {
+    return null;
+  }
+}
+
+async function writeSubmittedTombstone(
+  key: string,
+  attemptId: string
+): Promise<boolean> {
+  const value = JSON.stringify({ attemptId });
+  const name = tombstoneStorageKey(key);
+  try {
+    await AsyncStorage.setItem(name, value);
+  } catch {
+    // SecureStore can still retain the tombstone.
+  }
+  try {
+    await SecureStore.setItemAsync(name, value);
+  } catch {
+    // AsyncStorage can still retain the tombstone.
+  }
+  return (await readSubmittedAttempt(key)) === attemptId;
+}
+
+function attemptIdOf(plain: string | null): string | null {
+  return parseReportDraft(plain)?.attemptId ?? null;
+}
+
+async function existingDraftKey(): Promise<string | null> {
+  if (memoryDraftKey) return memoryDraftKey;
+  try {
+    const existing = await SecureStore.getItemAsync(DRAFT_KEY_NAME);
+    if (existing) {
+      memoryDraftKey = existing;
+      return existing;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+async function deleteSecureChunks(key: string, header: string): Promise<void> {
+  const count = Number(header.split(":")[0]);
+  if (!Number.isInteger(count) || count <= 0 || count >= 1000) {
+    throw new Error("secure header");
+  }
+  for (let index = 0; index < count; index += 1) {
+    await SecureStore.deleteItemAsync(`${key}.sec.${index}`);
+  }
+  await SecureStore.deleteItemAsync(`${key}.sec.n`);
+}
+
+/**
+ * Removes copies of this attempt only. A different attempt on the same key is
+ * unsent work and stays. A copy we cannot attribute stays too.
+ */
+async function clearDraftBodies(
+  key: string,
+  attemptId: string
+): Promise<boolean> {
+  let cleared = true;
+
+  let header: string | null = null;
+  let headerKnown = true;
+  try {
+    header = await SecureStore.getItemAsync(`${key}.sec.n`);
+  } catch {
+    headerKnown = false;
+    cleared = false;
+  }
+
+  if (headerKnown && header) {
+    const storedAttempt = attemptIdOf(await readSecureBody(key));
+    if (storedAttempt === attemptId) {
+      try {
+        await deleteSecureChunks(key, header);
+      } catch {
+        cleared = false;
+      }
+    } else if (storedAttempt == null) {
+      cleared = false;
+    }
+  }
+
+  const raw = await readStoredRaw(key);
+  if (raw === "unreadable") {
+    cleared = false;
+  } else if (raw !== "missing") {
+    const keyMaterial = raw.startsWith(DRAFT_PROTECT_PREFIX)
+      ? await existingDraftKey()
+      : null;
+    const storedAttempt = attemptIdOf(plainDraft(raw, keyMaterial));
+    if (storedAttempt === attemptId) {
+      try {
+        await AsyncStorage.removeItem(key);
+      } catch {
+        cleared = false;
+      }
+    } else if (storedAttempt == null) {
+      cleared = false;
+    }
+  }
+
+  return cleared;
+}
+
+export async function commitSubmittedDraft(
+  key: string,
+  attemptId: string
+): Promise<{ submitted: boolean; cleared: boolean }> {
+  const submitted = await writeSubmittedTombstone(key, attemptId);
+  if (!submitted) return { submitted: false, cleared: false };
+  return { submitted: true, cleared: await clearDraftBodies(key, attemptId) };
+}
+
+function hideSubmitted<T>(
+  draft: ReportDraft<T> | null,
+  submittedAttempt: string | null
+): ReportDraft<T> | null {
+  if (!draft || !submittedAttempt) return draft;
+  return draft.attemptId === submittedAttempt ? null : draft;
+}
+
 export async function readReportDraft<T>(
   key: string
 ): Promise<ReportDraft<T> | null> {
-  const secure = parseReportDraft<T>(await readSecureBody(key));
+  const submittedAttempt = await readSubmittedAttempt(key);
+  const secure = hideSubmitted(
+    parseReportDraft<T>(await readSecureBody(key)),
+    submittedAttempt
+  );
   const raw = await readStoredRaw(key);
   const stored =
     raw === "missing" || raw === "unreadable"
@@ -132,7 +287,10 @@ export async function readReportDraft<T>(
           raw,
           raw.startsWith(DRAFT_PROTECT_PREFIX) ? await draftKey() : null
         );
-  const fromStored = stored == null ? null : parseReportDraft<T>(stored);
+  const fromStored = hideSubmitted(
+    stored == null ? null : parseReportDraft<T>(stored),
+    submittedAttempt
+  );
   if (secure && fromStored) {
     return Date.parse(secure.updatedAt) > Date.parse(fromStored.updatedAt)
       ? secure
@@ -145,6 +303,7 @@ export async function writeReportDraft<T>(
   key: string,
   draft: ReportDraft<T>
 ): Promise<boolean> {
+  if ((await readSubmittedAttempt(key)) === draft.attemptId) return false;
   const existingRaw = await readStoredRaw(key);
   if (existingRaw === "unreadable") return false;
   const keyMaterial = await draftKey();
@@ -214,6 +373,7 @@ export async function removeDraftClaim(key: string): Promise<void> {
   }
 }
 
+/** AsyncStorage body only. A successful save uses commitSubmittedDraft. */
 export async function removeReportDraft(key: string): Promise<void> {
   try {
     await AsyncStorage.removeItem(key);
