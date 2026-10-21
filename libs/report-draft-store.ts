@@ -12,6 +12,8 @@ import {
 } from "@/libs/report-draft";
 
 const DRAFT_KEY_NAME = "promaxcare.report-draft.key";
+const SECURE_CHUNK_BYTES = 1800;
+const SECURE_VALUE_LIMIT = 2048;
 
 const writeEpoch = new Map<string, number>();
 const latestPayload = new Map<string, string>();
@@ -55,15 +57,88 @@ function plainDraft(raw: string, key: string | null): string | null {
   return revealDraftPayload(raw, key);
 }
 
+function utf8Size(value: string): number {
+  return new TextEncoder().encode(value).length;
+}
+
+function splitForSecureStore(value: string): string[] | null {
+  const chunks: string[] = [];
+  let current = "";
+  for (const char of value) {
+    const next = current + char;
+    if (utf8Size(next) > SECURE_CHUNK_BYTES) {
+      if (!current || utf8Size(char) > SECURE_CHUNK_BYTES) return null;
+      chunks.push(current);
+      current = char;
+    } else {
+      current = next;
+    }
+  }
+  if (current) chunks.push(current);
+  return chunks;
+}
+
+async function readSecureBody(draftKey: string): Promise<string | null> {
+  try {
+    const header = await SecureStore.getItemAsync(`${draftKey}.sec.n`);
+    if (!header) return null;
+    const [countRaw, bytesRaw] = header.split(":");
+    const count = Number(countRaw);
+    const bytes = Number(bytesRaw);
+    if (!Number.isInteger(count) || count <= 0 || !Number.isInteger(bytes)) {
+      return null;
+    }
+    const parts: string[] = [];
+    for (let index = 0; index < count; index += 1) {
+      const part = await SecureStore.getItemAsync(`${draftKey}.sec.${index}`);
+      if (part == null || utf8Size(part) > SECURE_VALUE_LIMIT) return null;
+      parts.push(part);
+    }
+    const joined = parts.join("");
+    if (utf8Size(joined) !== bytes) return null;
+    return joined;
+  } catch {
+    return null;
+  }
+}
+
+async function writeSecureBody(draftKey: string, plain: string): Promise<boolean> {
+  const chunks = splitForSecureStore(plain);
+  if (!chunks || chunks.length === 0) return false;
+  try {
+    for (let index = 0; index < chunks.length; index += 1) {
+      if (utf8Size(chunks[index]) > SECURE_VALUE_LIMIT) return false;
+      await SecureStore.setItemAsync(`${draftKey}.sec.${index}`, chunks[index]);
+    }
+    await SecureStore.setItemAsync(
+      `${draftKey}.sec.n`,
+      `${chunks.length}:${utf8Size(plain)}`
+    );
+    return (await readSecureBody(draftKey)) === plain;
+  } catch {
+    return false;
+  }
+}
+
 export async function readReportDraft<T>(
   key: string
 ): Promise<ReportDraft<T> | null> {
+  const secure = parseReportDraft<T>(await readSecureBody(key));
   const raw = await readStoredRaw(key);
-  if (raw === "missing" || raw === "unreadable") return null;
-  const keyMaterial = raw.startsWith(DRAFT_PROTECT_PREFIX) ? await draftKey() : null;
-  const plain = plainDraft(raw, keyMaterial);
-  if (plain == null) return null;
-  return parseReportDraft<T>(plain);
+  const stored =
+    raw === "missing" || raw === "unreadable"
+      ? null
+      : plainDraft(
+          raw,
+          raw.startsWith(DRAFT_PROTECT_PREFIX) ? await draftKey() : null
+        );
+  const fromStored = stored == null ? null : parseReportDraft<T>(stored);
+  if (secure && fromStored) {
+    return Date.parse(secure.updatedAt) > Date.parse(fromStored.updatedAt)
+      ? secure
+      : fromStored;
+  }
+  return secure ?? fromStored;
 }
 
 export async function writeReportDraft<T>(
@@ -98,7 +173,11 @@ export async function writeReportDraft<T>(
       const currentPayload = latestPayload.get(key);
       if (currentToken == null || currentPayload == null) return false;
       await AsyncStorage.setItem(key, currentPayload);
-      if (writeEpoch.get(key) === currentToken) return true;
+      if (writeEpoch.get(key) === currentToken) {
+        const plain = revealDraftPayload(currentPayload, keyMaterial);
+        if (plain) await writeSecureBody(key, plain);
+        return true;
+      }
     }
     return false;
   } catch {

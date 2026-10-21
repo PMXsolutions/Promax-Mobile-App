@@ -80,6 +80,8 @@ export function draftClaimStorageKey(draftKey: string): string {
 
 export const DRAFT_PROTECT_PREFIX = "promaxcare.draft.v1.";
 
+/** Mask only. A raw AsyncStorage read hides the report. This is not encryption. */
+
 export function createDraftKey(): string {
   const bytes = new Uint8Array(32);
   const cryptoApi = globalThis.crypto;

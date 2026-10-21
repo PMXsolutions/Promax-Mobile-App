@@ -32,13 +32,14 @@ jest.mock("@react-native-async-storage/async-storage", () => {
 
 jest.mock("expo-secure-store", () => {
   const memory = new Map<string, string>();
-  const state = { getThrows: false };
+  const state = { getThrows: false, setThrows: false };
   return {
     getItemAsync: async (key: string) => {
       if (state.getThrows) throw new Error("secure get");
       return memory.get(key) ?? null;
     },
     setItemAsync: async (key: string, value: string) => {
+      if (state.setThrows) throw new Error("secure set");
       memory.set(key, value);
     },
     __memory: memory,
@@ -116,5 +117,56 @@ describe("report draft storage", () => {
     const logout = readFileSync("store/use-auth-store.ts", "utf8");
     expect(logout).not.toContain("removeReportDraft");
     expect(await AsyncStorage.getItem(key)).toBe(legacy);
+  });
+
+  it("keeps a long draft in secure storage under the 2048 byte item limit", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.long";
+    const progress = "p".repeat(4000);
+    const draft = createDraft(key, { goal_Progress: progress }, now, "a1");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+
+    const raw = await AsyncStorage.getItem(key);
+    expect(raw?.startsWith("promaxcare.draft.v1.")).toBe(true);
+    expect(raw).not.toContain(progress);
+    expect(raw).not.toContain("goal_Progress");
+
+    const secure = (SecureStore as unknown as { __memory: Map<string, string> })
+      .__memory;
+    const chunks = [...secure.entries()].filter(([name]) => name.startsWith(`${key}.sec.`));
+    expect(chunks.length).toBeGreaterThan(1);
+    for (const [, value] of chunks) {
+      expect(new TextEncoder().encode(value).length).toBeLessThanOrEqual(2048);
+    }
+
+    await AsyncStorage.removeItem(key);
+    resetDraftKeyMemoryForTests();
+    expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
+      goal_Progress: progress,
+    });
+  });
+
+  it("keeps the saved draft when secure storage rejects the copy", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.secure-fail";
+    const draft = createDraft(key, { goal_Progress: "kept after reject" }, now, "a1");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+    const before = await AsyncStorage.getItem(key);
+
+    (SecureStore as unknown as { __state: { setThrows: boolean } }).__state.setThrows =
+      true;
+    const updated = {
+      ...draft,
+      updatedAt: "2026-10-21T09:00:00.000Z",
+      form: { goal_Progress: "still kept" },
+    };
+    expect(await writeReportDraft(key, updated)).toBe(true);
+    const raw = await AsyncStorage.getItem(key);
+    expect(raw).not.toBe(before);
+    expect(raw).not.toContain("still kept");
+    expect(raw).not.toContain("goal_Progress");
+    expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
+      goal_Progress: "still kept",
+    });
+    (SecureStore as unknown as { __state: { setThrows: boolean } }).__state.setThrows =
+      false;
   });
 });
