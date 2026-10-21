@@ -1,6 +1,6 @@
 # PromaxCare staff mobile acceptance matrix
 
-Date: 21 October 2026. This is the single acceptance record for the current staff app. It is not a store, Play, EAS, or OTA readiness claim. Pull requests 9, 10, and 11 stay draft. They were not merged.
+Date: 21 October 2026. This is the single acceptance record for the current staff app. The 22 October Sydney slice is in [docs/release-ledger.md](release-ledger.md). It is not a store, Play, EAS, or OTA readiness claim. Pull requests 9, 10, and 11 stay draft. They were not merged.
 
 Care OS was not edited. `origin/cursor/care-os-mobile-test-target-466d` is `981bea5ca495dc8a091590e3fe4d004f9571d6f5`. No production login, email, SMS, push, invite, clock-in, report, document write, or access change was performed.
 
@@ -15,8 +15,8 @@ Care OS was not edited. `origin/cursor/care-os-mobile-test-target-466d` is `981b
 | Android package on these commits | `com.tobby95.pmaxapp` |
 | iOS bundle on these commits | `com.promax-app` |
 | Versions | `package.json` `1.0.0`. `app.json` `1.1.0`. Root `runtimeVersion` `1.0.0`. iOS runtime policy `appVersion`. `eas.json` `appVersionSource` `remote`. |
-| SDK on these commits | Expo `^53.0.20` (installed `53.0.27`), React `19.0.0`, React Native `0.79.5` |
-| Lockfile | `bun.lockb` only. No `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml`. `bun` is not installed here, so `bun install --frozen-lockfile` was not run. |
+| SDK on these commits | Locked install: Expo `53.0.20`, React `19.0.0`, React Native `0.79.5`. An unlocked npm install resolved Expo `53.0.27` and is not the reproducible tree. |
+| Lockfile | `bun.lockb` `799331d86a1ff0795f2302f5e64b76691564ab6f`. No `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml`. Fresh `bun install --frozen-lockfile` with Bun `1.4.3` is recorded below. |
 | API base variable | `EXPO_PUBLIC_API_BASEURL` (unset in this agent). Code fallback host is the public API already committed in `libs/axiosInstance.ts` and `eas.json`. |
 | Maps variable | `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` (unset). Name only. |
 | Push file | `google-services.json` is gitignored and absent. Not requested. |
@@ -65,7 +65,7 @@ Team environment [`d81efd47-cd22-11f1-bec7-b2318963e0b6`](https://cursor.com/das
 
 Verified on this machine: Node `v22.23.3`, npm `10.9.9`, Corepack `0.36.0`, Yarn `1.22.22`, pnpm `10.33.4`, Expo package `53.0.27`, OpenJDK `21.0.12.1`, Python `3.12.3`, git `2.43.0`, Linux `x86_64`.
 
-Missing: `bun`, `ANDROID_HOME`, Android SDK, `adb`, `emulator`, `sdkmanager`, `xcodebuild`, `simctl`, `watchman`. iOS builds cannot run here. No Android package was produced.
+This VM now has Bun `1.4.3` (`1.4.3+c6da4a4d3`) at `/usr/local/bin/bun`. The saved environment image does not, until a tested draft build is saved. Still missing: `ANDROID_HOME`, Android SDK, `adb`, `emulator`, `sdkmanager`, `xcodebuild`, `simctl`, `watchman`. iOS builds cannot run here. No Android package was produced.
 
 Safe GET only, 21 October 2026: `https://api.promaxcare.com.au/api` 404, `/swagger/index.html` 200, `/swagger/v1/swagger.json` 404, `/health` 404, `/api/health` 404. There is no isolated disposable API. Unit tests do not need the two public variables. Maps and push still need `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` and `google-services.json`, which were not added.
 
@@ -80,7 +80,9 @@ Both installs used a new directory under `/tmp`. The saved team environment and 
 | Bun `1.4.3` from `/tmp/bun-qual`, then `bun install --frozen-lockfile` with `package.json` and `bun.lockb` | `/tmp/promax-clean-bun` | Exit 0. 996 packages. Expo `53.0.20`, TypeScript `5.8.3`. |
 | That Bun tree running the same two suites from `c657dbe` | `/tmp/promax-jest-bun` | 2 suites, 24 tests, passed. |
 
-`bun` is not on the image PATH. The frozen lockfile is the reproducible install. The npm command resolves the version ranges, so Expo landed on `53.0.27` instead of the locked `53.0.20`. Neither command was written into the team environment. Native Android and iOS builds remain blocked on this host.
+The reproducible install is Bun `1.4.3` with `bun install --frozen-lockfile`. The npm command resolves version ranges, so Expo landed on `53.0.27` instead of the locked `53.0.20`. It is not the reproducible install.
+
+A fresh checkout of `main` `de4eb2f7a7af8835700d20034fbe3fee6e43f0c9` at `/tmp/promax-env-main` used the official GitHub release `bun-v1.4.3`. `bun-linux-x64.zip` matched release checksum `3e730528d89775f03f87f05c06787c4df4099d0a37f3f252e7b829cb23816e18`. The first frozen install exited 0 and installed 996 packages in 454 ms. The second exited 0 with no changes in 24 ms. The same script exited 0 again in 21 ms. Resolved versions: Expo `53.0.20`, React `19.0.0`, React Native `0.79.5`, TypeScript `5.8.3`, Jest `29.7.0`. `package.json` count 1227. No `package-lock.json` was written. The same `bun.lockb` blob `799331d86a1ff0795f2302f5e64b76691564ab6f` is on `main` and pull requests 9, 10, and 11. Native Android and iOS builds remain blocked on this host. The saved environment was not changed.
 
 ## Acceptance
 
@@ -119,7 +121,7 @@ Status is Passed, Failed, Blocked, or NA. Passed means the named unit contract p
 
 ## Parked decisions
 
-- Whether to save an install script on team environment `d81efd47-cd22-11f1-bec7-b2318963e0b6`. Recommended command, not applied: `npm install --no-package-lock --ignore-scripts --legacy-peer-deps`. No `start` script. No Android SDK. No secrets.
+- Joshua authorised the Bun `1.4.3` frozen-lockfile install on team environment `d81efd47-cd22-11f1-bec7-b2318963e0b6`. The saved config is unchanged until he saves a tested draft. No `start` script. No Android SDK. No secrets. No new environment. The unlocked npm install is not the reproducible command.
 - Whether the API should reject mail before password checks.
 - Whether Remember me should persist, and whether health declaration belongs on mobile.
 - Whether the Android package becomes `au.com.promaxsolutions.promaxcare`, and whether `1.0.0` / `1.1.0` / runtime / EAS remote versions are aligned.
