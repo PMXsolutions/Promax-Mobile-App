@@ -30,7 +30,17 @@ export function useTripTracker() {
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") return;
+      if (status !== "granted") {
+        Alert.alert(
+          "Location needed",
+          "Trip tracking stays off until location is allowed.",
+          [
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+            { text: "OK" },
+          ]
+        );
+        return;
+      }
 
       try {
         const location = await Location.getCurrentPositionAsync({
@@ -51,7 +61,7 @@ export function useTripTracker() {
     })();
   }, []);
 
-  const startTracking = async () => {
+  const startTracking = async (options?: { preserveStart?: boolean }) => {
     const { status, canAskAgain } =
       await Location.requestForegroundPermissionsAsync();
 
@@ -81,7 +91,9 @@ export function useTripTracker() {
       watchId.current = null;
     }
 
-    tripStart.current = new Date();
+    if (!options?.preserveStart || !tripStart.current) {
+      tripStart.current = new Date();
+    }
     setTripState("STARTED");
 
     try {
@@ -134,7 +146,7 @@ export function useTripTracker() {
 
   const resumeTracking = async () => {
     setTripState("STARTED");
-    await startTracking();
+    await startTracking({ preserveStart: true });
   };
 
   const stopTracking = () => {

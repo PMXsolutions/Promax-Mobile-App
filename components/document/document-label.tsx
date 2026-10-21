@@ -5,6 +5,7 @@ import {
   TouchableWithoutFeedback,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { formatInTimeZone } from "date-fns-tz";
 import { CollapsableContainer } from "../wrapper/collapsible-wrapper";
@@ -66,17 +67,24 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
     },
 
     onError: (error: any) => {
-      console.log(error);
-
       showMessage({
-        message: error.response?.data?.message,
+        message:
+          error?.response?.data?.message ||
+          "The document could not be deleted.",
         type: "danger",
       });
     },
   });
 
   const handleDocDelete = () => {
-    onSubmit();
+    Alert.alert("Delete document", "Delete this document from your list?", [
+      { text: "Keep", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => onSubmit(),
+      },
+    ]);
   };
 
   const aus_timezone = "Australia/Sydney";
@@ -184,6 +192,11 @@ export const DocumentLabel = ({ item }: { item: Partial<DocumentData> }) => {
               <Text weight="semiBold" size="sm" style={styles.actionsTitle}>
                 What would you like to do?
               </Text>
+              {statusMessage ? (
+                <Text size="sm" accessibilityRole="alert">
+                  {statusMessage}
+                </Text>
+              ) : null}
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity

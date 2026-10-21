@@ -154,7 +154,13 @@ const Document = () => {
             onSearch={handleSearch}
           />
         </View>
-        {error ? (
+        {!staff?.staffId ? (
+          <ErrorState
+            message="Your staff profile is not available, so documents cannot load."
+            onRetry={onRefresh}
+            icon="account-alert-outline"
+          />
+        ) : error ? (
           <ErrorState
             message="Unable to load documents."
             onRetry={onRefresh}

@@ -12,9 +12,18 @@ import { reportService } from "@/services/report";
 import { showMessage } from "react-native-flash-message";
 import { useLocalSearchParams } from "expo-router";
 import ActionSheetModal from "@/components/shared/action-sheet-modal";
+import { mileageSubmitDecision } from "@/libs/trip-mileage";
+import useAuthStore from "@/store/use-auth-store";
+import { shiftQuery } from "@/hooks/queries/shift";
+import { shiftListedForSession } from "@/libs/staff-record";
 
 export default function TripScreen() {
   const query = useLocalSearchParams();
+  const { user, staff } = useAuthStore();
+  const staffId = Number(staff?.staffId);
+  const rosterQuery = shiftQuery.useShiftRoster(
+    Number.isFinite(staffId) && staffId > 0 ? staffId : 0
+  );
 
   const {
     tripState,
@@ -37,6 +46,8 @@ export default function TripScreen() {
   const id = query.id as unknown as string;
 
   const [showSummary, setShowSummary] = useState(false);
+  const [startKm, setStartKm] = useState("");
+  const [endKm, setEndKm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const insets = useSafeAreaInsets();
 
@@ -158,24 +169,38 @@ export default function TripScreen() {
   };
 
   const handleSummarySubmit = async () => {
+    const decision = mileageSubmitDecision(startKm, endKm);
+    if (!decision.ok) {
+      Alert.alert("Mileage not saved", decision.message, [{ text: "OK" }]);
+      return;
+    }
+    if (!id || Number.isNaN(Number(id))) {
+      Alert.alert(
+        "Mileage not saved",
+        "This trip is not attached to a shift, so mileage was not sent.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+    const assigned = shiftListedForSession(rosterQuery.data, Number(id), {
+      staffId: staff?.staffId,
+      companyId: user?.companyId,
+    });
+    if (!assigned) {
+      Alert.alert(
+        "Mileage not saved",
+        "This shift is not assigned to your sign-in, so mileage was not sent.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Prepare trip data for API
-      const tripData = {
-        route,
-        distance: calculateDistance(),
-        duration: getTripDuration(),
-        stops,
-        destination,
-        startTime: new Date(), // You might want to store this in the hook
-        endTime: new Date(),
-      };
-
-      // console.log("Submit payload to backend:", tripData);
       const data = await reportService.fetchStaffKm(
         Number(id),
-        0,
-        tripData.distance
+        decision.startKm,
+        decision.endKm
       );
       showMessage({
         message: data.message,
@@ -193,7 +218,9 @@ export default function TripScreen() {
     } catch (error: unknown) {
       if (isAxiosError(error)) {
         showMessage({
-          message: error.response?.data?.message,
+          message:
+            error.response?.data?.message ||
+            "Mileage could not be saved. The trip is still on this screen.",
           type: "danger",
         });
       } else {
@@ -234,6 +261,10 @@ export default function TripScreen() {
         stops={stops}
         destination={destination}
         isLoading={isLoading}
+        startKm={startKm}
+        endKm={endKm}
+        onChangeStartKm={setStartKm}
+        onChangeEndKm={setEndKm}
         onSubmit={handleSummarySubmit}
         onCancel={handleSummaryCancel}
       />

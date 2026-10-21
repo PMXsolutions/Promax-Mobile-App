@@ -6,15 +6,44 @@ import useAuthStore from "@/store/use-auth-store";
 import { profileQuery } from "@/hooks/queries/profile";
 import { THEME } from "@/constants/theme";
 import ProfileTag from "@/components/profile/profile-tag";
-import { formattedTime } from "@/helpers/shift-service";
+import { displaySydneyDate } from "@/libs/display-date";
+import ErrorState from "@/components/shared/error-state";
+import Loader from "@/components/shared/loader";
 
 const EmploymentInfo = () => {
   const { staff } = useAuthStore();
 
-  const { data: staffData } = profileQuery.useFetchStaffProfile(
-    staff?.staffId as number
-  );
-  const djoined = new Date(staffData?.dateJoined as string);
+  const {
+    data: staffData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = profileQuery.useFetchStaffProfile(staff?.staffId as number);
+
+  if (isLoading) {
+    return (
+      <Loader name="2-curves" color={THEME.colors.secondary} title="Loading..." />
+    );
+  }
+
+  if (isError || !staffData) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Employment Details"} />
+        <ErrorState
+          message={
+            error instanceof Error
+              ? error.message
+              : "Employment details could not be loaded."
+          }
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      </ScreenWrapper>
+    );
+  }
 
   return (
     <ScreenWrapper barStyle="dark-content">
@@ -33,9 +62,12 @@ const EmploymentInfo = () => {
         />
         <ProfileTag
           label={"Date Joined"}
-          value={formattedTime(djoined, "d MMMM, yyyy")}
+          value={displaySydneyDate(staffData.dateJoined)}
         />
-        <ProfileTag label={"Salary"} value={staffData?.salary.toString()!} />
+        <ProfileTag
+          label={"Salary"}
+          value={staffData.salary == null ? "" : String(staffData.salary)}
+        />
 
         <ProfileTag label={"Level"} value={staffData?.level!} />
       </ScrollView>

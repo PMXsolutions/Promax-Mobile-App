@@ -1,4 +1,4 @@
-import { Button } from "react-native";
+import { Button, View } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
@@ -20,14 +20,23 @@ import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomBackdrop from "@/components/ui/custom-backdrop";
 import MapPreviewBottomSheet from "@/components/shift/map-preview-modal";
+import Text from "@/components/shared/text";
+import { shiftListedForSession, shiftVisibleToSession } from "@/libs/staff-record";
 
 const ShiftDetail = () => {
-  const { user } = useAuthStore();
+  const { user, staff } = useAuthStore();
   const query = useLocalSearchParams();
 
   const id = query.id as unknown as string;
   const clients = query.clients as unknown as string;
-  const { data: shift, isLoading } = shiftQuery.useShiftDetail(Number(id));
+  const session = { staffId: staff?.staffId, companyId: user?.companyId };
+  const staffId = Number(staff?.staffId);
+  const rosterQuery = shiftQuery.useShiftRoster(
+    Number.isFinite(staffId) && staffId > 0 ? staffId : 0
+  );
+  const shiftId = Number(id);
+  const listed = shiftListedForSession(rosterQuery.data, shiftId, session);
+  const { data: shift, isLoading } = shiftQuery.useShiftDetail(shiftId, listed);
 
   const {
     clockInPending,
@@ -70,7 +79,7 @@ const ShiftDetail = () => {
     return () => clearTimeout(timer);
   }, [modalVisible]);
 
-  const shiftActivities = shift?.activities.split(", ");
+  const shiftActivities = shift?.activities?.split(", ");
   // Live time tracking state
   const [now, setNow] = useState(new Date());
 
@@ -83,13 +92,27 @@ const ShiftDetail = () => {
   }, []);
 
   // const load = true;
-  if (isLoading) {
+  if (rosterQuery.isLoading || (listed && isLoading)) {
     return (
       <Loader
         name="2-curves"
         color={THEME.colors.secondary}
         title="Loading Shift.."
       />
+    );
+  }
+
+  if (
+    !listed ||
+    (shift && !shiftVisibleToSession(shift, session))
+  ) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={clients || "Shift"} />
+        <View style={{ padding: 24 }}>
+          <Text>This shift is not assigned to your sign-in.</Text>
+        </View>
+      </ScreenWrapper>
     );
   }
 

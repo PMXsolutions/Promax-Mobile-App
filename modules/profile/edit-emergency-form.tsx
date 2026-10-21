@@ -12,10 +12,15 @@ import { useMutation } from "@tanstack/react-query";
 import { profileService } from "@/services/profile";
 import useAuthStore from "@/store/use-auth-store";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import Text from "@/components/shared/text";
+import { isOwnStaffRecord } from "@/libs/staff-record";
 
 const EditEmergencyForm = ({ id }: { id: string }) => {
-  const { data: staffData } = profileQuery.useFetchStaffProfile(Number(id));
-  const { user } = useAuthStore();
+  const { user, staff } = useAuthStore();
+  const ownsRecord = isOwnStaffRecord(id, staff?.staffId);
+  const { data: staffData } = profileQuery.useFetchStaffProfile(
+    ownsRecord ? Number(id) : 0
+  );
   const [form, setForm] = useState({
     nextOfKin: "",
     kinEmail: "",
@@ -87,14 +92,30 @@ const EditEmergencyForm = ({ id }: { id: string }) => {
   });
 
   const handleFormSubmit = () => {
-    onSubmit(); // Should call the mutation function
+    if (!ownsRecord || !staffData) {
+      showMessage({
+        message: "This profile is not assigned to your sign-in.",
+        type: "danger",
+      });
+      return;
+    }
+    onSubmit();
   };
+
+  if (!ownsRecord) {
+    return (
+      <View style={{ padding: 24 }}>
+        <Text>This profile is not assigned to your sign-in.</Text>
+      </View>
+    );
+  }
 
   return (
     <>
       <KeyboardAwareWrapper>
         <ScrollView
           style={styles.container}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 10 }}
         >
           {/* Render fields here */}

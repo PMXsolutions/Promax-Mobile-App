@@ -11,6 +11,7 @@ import Select from "@/components/shared/select";
 import { documentNames } from "@/constants/profile-data";
 import { uploadDoc } from "@/utils/profile-image-handler";
 import { showMessage } from "react-native-flash-message";
+import { documentNameForSubmit } from "@/libs/document-name";
 import Text from "@/components/shared/text";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { Feather } from "@expo/vector-icons";
@@ -70,7 +71,11 @@ const AddForm = () => {
 
   const { mutate: onSubmit, isPending } = useMutation({
     mutationFn: async () => {
-      const finalDocName = docName === "others" ? otherDocName : docName;
+      const nameCheck = documentNameForSubmit(docName ?? "", otherDocName ?? "");
+      if (!nameCheck.ok) {
+        throw new Error(nameCheck.message);
+      }
+      const finalDocName = nameCheck.name;
       const reqBody = {
         docFile: selectedDocument,
         companyId: user?.companyId,
@@ -98,16 +103,20 @@ const AddForm = () => {
 
     onError: (error: any) => {
       showMessage({
-        message: "Document Submission failed",
+        message:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Document submission failed. The file is still selected.",
         type: "danger",
       });
     },
   });
 
   const handleFormSubmit = () => {
-    if (!docName || docName === "") {
+    const nameCheck = documentNameForSubmit(docName ?? "", otherDocName ?? "");
+    if (!nameCheck.ok) {
       showMessage({
-        message: "Please select or enter a document name",
+        message: nameCheck.message,
         type: "info",
       });
       return;
@@ -127,6 +136,7 @@ const AddForm = () => {
     <KeyboardAwareWrapper>
       <ScrollView
         style={styles.container}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 10 }}
       >
         <View style={{ rowGap: THEME.spacing.md }}>

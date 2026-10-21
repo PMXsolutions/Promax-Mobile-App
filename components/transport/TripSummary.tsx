@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  TextInput,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { GOOGLE_MAPS_API_KEY } from "@/constants/api-key";
@@ -23,6 +24,10 @@ type TripSummaryProps = {
   stops: Coord[];
   destination?: Coord | null;
   isLoading?: boolean;
+  startKm: string;
+  endKm: string;
+  onChangeStartKm: (value: string) => void;
+  onChangeEndKm: (value: string) => void;
   onSubmit: () => void;
   onCancel?: () => void;
 };
@@ -34,6 +39,10 @@ export default function TripSummary({
   stops,
   destination,
   isLoading = false,
+  startKm,
+  endKm,
+  onChangeStartKm,
+  onChangeEndKm,
   onSubmit,
   onCancel,
 }: TripSummaryProps) {
@@ -115,7 +124,7 @@ export default function TripSummary({
           <View style={styles.statCard}>
             <MaterialIcons name="straighten" size={24} color="#2196F3" />
             <Text style={styles.statValue}>{distance.toFixed(2)} km</Text>
-            <Text style={styles.statLabel}>Distance</Text>
+            <Text style={styles.statLabel}>Estimated route</Text>
           </View>
 
           <View style={styles.statCard}>
@@ -176,6 +185,29 @@ export default function TripSummary({
               <Text style={styles.infoValue}>{route.length}</Text>
             </View>
           </View>
+        </View>
+
+        <View style={styles.detailsContainer}>
+          <Text style={styles.infoLabel}>
+            Odometer readings are saved as mileage. The map distance above is
+            only an estimate.
+          </Text>
+          <TextInput
+            value={startKm}
+            onChangeText={onChangeStartKm}
+            keyboardType="decimal-pad"
+            placeholder="Start odometer (km)"
+            accessibilityLabel="Start odometer in kilometres"
+            style={styles.odometerInput}
+          />
+          <TextInput
+            value={endKm}
+            onChangeText={onChangeEndKm}
+            keyboardType="decimal-pad"
+            placeholder="End odometer (km)"
+            accessibilityLabel="End odometer in kilometres"
+            style={styles.odometerInput}
+          />
         </View>
 
         {/* Actions */}
@@ -306,6 +338,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#666",
     textAlign: "center",
+  },
+  odometerInput: {
+    minHeight: 48,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    color: "#000",
   },
   detailsContainer: {
     marginHorizontal: 24,

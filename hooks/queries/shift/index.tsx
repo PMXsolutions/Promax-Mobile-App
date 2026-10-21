@@ -14,11 +14,11 @@ const useShiftRoster = (staffId: number) => {
     enabled: !!staffId, // Only run the query if staffId is defined
   });
 };
-const useShiftDetail = (shiftId: number) => {
+const useShiftDetail = (shiftId: number, enabled = true) => {
   return useQuery<ShiftRosterType>({
     queryKey: ["shifts", "detail", { id: shiftId }],
     queryFn: () => ShiftRosterService.fetchShiftDetails(shiftId),
-    enabled: !!shiftId, // Only run the query if shiftId is defined
+    enabled: Number.isFinite(shiftId) && shiftId > 0 && enabled,
   });
 };
 

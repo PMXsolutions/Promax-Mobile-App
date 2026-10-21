@@ -10,11 +10,15 @@ const useFetchStaffReport = (staffId: number) => {
     enabled: !!staffId, // Only run the query if staffId is defined
   });
 };
-const useFetchReportInfo = (reportId: number, shiftId: number) => {
+const useFetchReportInfo = (
+  reportId: number,
+  shiftId: number,
+  enabled = true
+) => {
   return useQuery<ShiftReport>({
     queryKey: ["staffReport", reportId, shiftId],
     queryFn: () => reportService.fetchReportInfo(reportId, shiftId),
-    enabled: !!reportId && !!shiftId, // Only run the query if id and uid are defined
+    enabled: !!reportId && !!shiftId && enabled,
   });
 };
 
@@ -26,12 +30,12 @@ const useFetchStaffDocument = (staffId: number) => {
     enabled: !!staffId, // Only run the query if staffId is defined
   });
 };
-const useFetchStaffDocumentDetail = (docId: number) => {
+const useFetchStaffDocumentDetail = (docId: number, enabled = true) => {
   return useQuery<DocumentData>({
     queryKey: ["staffDocument", "edit", { id: docId }],
     queryFn: () => reportService.fetchStaffDocumentDetail(docId),
     refetchOnWindowFocus: false,
-    enabled: !!docId, // Only run the query if staffId is defined
+    enabled: !!docId && enabled,
   });
 };
 
