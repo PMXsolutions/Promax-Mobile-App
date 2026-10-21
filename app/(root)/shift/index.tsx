@@ -20,6 +20,8 @@ import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomBackdrop from "@/components/ui/custom-backdrop";
 import MapPreviewBottomSheet from "@/components/shift/map-preview-modal";
+import ErrorState from "@/components/shared/error-state";
+import InlineNotice from "@/components/shared/inline-notice";
 
 const ShiftDetail = () => {
   const { user } = useAuthStore();
@@ -27,7 +29,13 @@ const ShiftDetail = () => {
 
   const id = query.id as unknown as string;
   const clients = query.clients as unknown as string;
-  const { data: shift, isLoading } = shiftQuery.useShiftDetail(Number(id));
+  const {
+    data: shift,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = shiftQuery.useShiftDetail(Number(id));
 
   const {
     clockInPending,
@@ -39,6 +47,7 @@ const ShiftDetail = () => {
     setShowMapModal,
     showMapModal,
     staffLocation,
+    blockerMessage,
   } = useClockIn(
     user?.userId as string,
     shift?.shiftRosterId!,
@@ -70,7 +79,7 @@ const ShiftDetail = () => {
     return () => clearTimeout(timer);
   }, [modalVisible]);
 
-  const shiftActivities = shift?.activities.split(", ");
+  const shiftActivities = shift?.activities?.split(", ") ?? [];
   // Live time tracking state
   const [now, setNow] = useState(new Date());
 
@@ -93,6 +102,24 @@ const ShiftDetail = () => {
     );
   }
 
+  if (isError || !shift) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={clients || "Shift"} />
+        <ErrorState
+          message={
+            error instanceof Error
+              ? error.message
+              : "This shift could not be loaded."
+          }
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      </ScreenWrapper>
+    );
+  }
+
   return (
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={clients} />
@@ -105,7 +132,10 @@ const ShiftDetail = () => {
       )}
 
       {/* <Button title="Try me " onPress={openModal} /> */}
-      <ShiftDetailContent shift={shift!} />
+      {blockerMessage ? (
+        <InlineNotice title="Clock-in" message={blockerMessage} />
+      ) : null}
+      <ShiftDetailContent shift={shift} />
 
       {shift && (
         <ShiftAction

@@ -1,7 +1,7 @@
 import { ShiftRosterService } from "@/services/shift";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
 import { showMessage } from "react-native-flash-message";
+import { attendanceErrorMessage } from "@/libs/attendance-error";
 
 export const useClockOut = (user: string, shiftRosterId: number) => {
   const queryClient = useQueryClient();
@@ -22,13 +22,10 @@ export const useClockOut = (user: string, shiftRosterId: number) => {
       });
     },
     onError: (error) => {
-      if (isAxiosError(error)) {
-        showMessage({
-          message: error.response?.data?.message || "An error occurred",
-          description: error.response?.data?.title,
-          type: "danger",
-        });
-      }
+      showMessage({
+        message: attendanceErrorMessage(error, "clock out"),
+        type: "danger",
+      });
     },
   });
 };

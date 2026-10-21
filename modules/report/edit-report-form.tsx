@@ -1,5 +1,5 @@
 import { Image, ScrollView, StyleSheet, Switch, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { reportQuery } from "@/hooks/queries/report";
 import { THEME } from "@/constants/theme";
 import ReportFormHeader from "@/components/shift/report/report-header";
@@ -16,6 +16,9 @@ import { router } from "expo-router";
 import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import { validateReportForm } from "@/libs/report-validation";
+import { useReportDraft } from "@/hooks/use-report-draft";
+import InlineNotice from "@/components/shared/inline-notice";
 
 const EditReportForm = ({
   reportId,
@@ -25,7 +28,7 @@ const EditReportForm = ({
   rosterId: string;
 }) => {
   const { user, staff } = useAuthStore();
-  const { data, isLoading } = reportQuery.useFetchReportInfo(
+  const { data } = reportQuery.useFetchReportInfo(
     Number(reportId),
     Number(rosterId)
   );
@@ -51,36 +54,46 @@ const EditReportForm = ({
     isBehaviourConcerned: false,
     details_ifIsBehaviourConcerned: "",
   });
-  useEffect(() => {
-    if (data) {
-      setForm({
-        urgentMatters: data.urgentMatters || "",
-        medicationGiven: data.medicationGiven || "",
-        medicationSigned: data.medicationSigned || "",
-        medicationAvailable: data.medicationAvailable || "",
-        medicatioErrors: data.medicatioErrors || "",
-        isMealManagementPlan: data.isMealManagementPlan,
-        details_IfNotMealMaganagementPlan:
-          data.details_IfNotMealMaganagementPlan || "",
-        isDrinkingProblem: data.isDrinkingProblem,
-        details_IfProblemExist: data.details_IfProblemExist || "",
-        isHealthIssues: data.isHealthIssues,
-        details_IfHealthIssuesExist: data.details_IfHealthIssuesExist || "",
-        goal_Progress: data.goal_Progress || "",
-        contactFamily: data.contactFamily || "",
-        isIncident: data.isIncident,
-        details_IfIsIncipient: data.details_IfIsIncipient || "",
-        isBehaviourConcerned: data.isBehaviourConcerned,
-        details_ifIsBehaviourConcerned:
-          data.details_ifIsBehaviourConcerned || "",
-      });
-    }
+  const serverForm = useMemo(() => {
+    if (!data) return null;
+    return {
+      urgentMatters: data.urgentMatters || "",
+      medicationGiven: data.medicationGiven || "",
+      medicationSigned: data.medicationSigned || "",
+      medicationAvailable: data.medicationAvailable || "",
+      medicatioErrors: data.medicatioErrors || "",
+      isMealManagementPlan: data.isMealManagementPlan,
+      details_IfNotMealMaganagementPlan:
+        data.details_IfNotMealMaganagementPlan || "",
+      isDrinkingProblem: data.isDrinkingProblem,
+      details_IfProblemExist: data.details_IfProblemExist || "",
+      isHealthIssues: data.isHealthIssues,
+      details_IfHealthIssuesExist: data.details_IfHealthIssuesExist || "",
+      goal_Progress: data.goal_Progress || "",
+      contactFamily: data.contactFamily || "",
+      isIncident: data.isIncident,
+      details_IfIsIncipient: data.details_IfIsIncipient || "",
+      isBehaviourConcerned: data.isBehaviourConcerned,
+      details_ifIsBehaviourConcerned:
+        data.details_ifIsBehaviourConcerned || "",
+    };
   }, [data]);
+  const [formError, setFormError] = useState<string | null>(null);
+  const hasLocalEdits = useRef(false);
+  const draft = useReportDraft({
+    kind: "edit",
+    rosterId,
+    form,
+    setForm,
+    serverForm,
+    hasLocalEdits,
+  });
 
   const handleInputChange = <K extends keyof ShiftReport>(
     name: K,
     value: ShiftReport[K]
   ) => {
+    hasLocalEdits.current = true;
     setForm((prevState) => ({
       ...prevState,
       [name]: value,
@@ -99,7 +112,8 @@ const EditReportForm = ({
         reqBody as ShiftReport
       ); // Ensure this API call works
     },
-    onSuccess: ({ data }) => {
+    onSuccess: async ({ data }) => {
+      await draft.markSaved();
       showMessage({
         message: data.message,
         type: "success",
@@ -114,35 +128,26 @@ const EditReportForm = ({
       ]);
     },
 
-    onError: (error: any) => {
-      showMessage({
-        message: error.response?.data?.message || "Unable to update report.",
-        type: "danger",
-      });
+    onError: async (error: any) => {
+      await draft.markFailed();
+      setFormError(
+        error.response?.data?.message ||
+          "Unable to update report. Your text is still on this screen."
+      );
     },
   });
 
-  const handleFormSubmit = () => {
-    const cleanedGoalProgress = form.goal_Progress.replace(/\s/g, "");
-
-    if (!form.goal_Progress || cleanedGoalProgress.length < 100) {
-      showMessage({
-        message:
-          "Please provide at least 100 characters for 'Support plan progress and activities'",
-        type: "danger",
-      });
+  const handleFormSubmit = async () => {
+    const validation = validateReportForm(form);
+    if (!validation.ok) {
+      setFormError(validation.message);
       return;
     }
 
-    if (form.isIncident && !form.details_IfIsIncipient.trim()) {
-      showMessage({
-        message: "Please provide incident details before submitting.",
-        type: "danger",
-      });
-      return;
-    }
-
-    onSubmit(); // Call the mutation only if valid
+    setFormError(null);
+    const allowed = await draft.prepareSubmit();
+    if (!allowed) return;
+    onSubmit();
   };
 
   return (
@@ -437,10 +442,33 @@ const EditReportForm = ({
         </View>
         {/* </KeyboardAvoiderView> */}
         <View style={{ marginBottom: 10 }}>
+          {draft.notice ? (
+            <InlineNotice
+              title="Report draft"
+              message={draft.notice}
+              testID="report-draft-notice"
+            />
+          ) : null}
+          {formError ? (
+            <InlineNotice message={formError} testID="report-form-error" />
+          ) : null}
+          {draft.needsAcknowledge ? (
+            <CustomButton
+              title="I checked my reports"
+              bgVariant="light"
+              textVariant="primary"
+              onPress={() => {
+                void draft.acknowledge();
+              }}
+            />
+          ) : null}
           <CustomButton
             title={"Submit"}
-            onPress={() => handleFormSubmit()}
+            onPress={() => {
+              void handleFormSubmit();
+            }}
             loading={isPending}
+            disabled={isPending || draft.needsAcknowledge || !draft.ready}
           />
         </View>
       </ScrollView>
