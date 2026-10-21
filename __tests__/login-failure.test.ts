@@ -4,6 +4,7 @@ import {
   cooldownForEmail,
   isLoginTimeoutError,
   emailAwaitingConfirmation,
+  mergeMailCooldownBooks,
   isMailLimitMessage,
   rememberUnconfirmedEmail,
   resetUnconfirmedEmailsForTests,
@@ -85,6 +86,24 @@ describe("classifyLoginError", () => {
     ).toBe(true);
     expect(isMailLimitMessage("Network Error")).toBe(false);
     expect(unreadableMailLimitFailure().message).toContain("was not sent");
+  });
+
+  it("keeps the later cooldown when both stored copies are combined", () => {
+    const merged = mergeMailCooldownBooks(
+      {
+        entries: [
+          { email: "staff@example.com", untilIso: "2026-10-21T09:00:00.000Z" },
+        ],
+      },
+      {
+        entries: [
+          { email: "Staff@Example.com", untilIso: "2026-10-21T11:00:00.000Z" },
+        ],
+      }
+    );
+    expect(merged.entries).toEqual([
+      { email: "staff@example.com", untilIso: "2026-10-21T11:00:00.000Z" },
+    ]);
   });
 
   it("keeps an aborted sign-in request as a timeout", () => {

@@ -67,6 +67,32 @@ export function resetUnconfirmedEmailsForTests(): void {
   unconfirmedEmails.clear();
 }
 
+export function listUnconfirmedEmails(): string[] {
+  return [...unconfirmedEmails];
+}
+
+export function restoreUnconfirmedEmails(emails: readonly string[]): void {
+  for (const email of emails) rememberUnconfirmedEmail(email);
+}
+
+export function mergeMailCooldownBooks(
+  left: MailCooldownBook,
+  right: MailCooldownBook
+): MailCooldownBook {
+  const byEmail = new Map<string, MailCooldownRecord>();
+  for (const entry of [...left.entries, ...right.entries]) {
+    const email = normalizeLoginEmail(entry.email);
+    const previous = byEmail.get(email);
+    if (
+      !previous ||
+      Date.parse(entry.untilIso) > Date.parse(previous.untilIso)
+    ) {
+      byEmail.set(email, { email, untilIso: entry.untilIso });
+    }
+  }
+  return { entries: [...byEmail.values()] };
+}
+
 export function isMailLimitMessage(message: string | undefined): boolean {
   if (!message) return false;
   return (

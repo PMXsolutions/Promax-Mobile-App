@@ -18,20 +18,22 @@ import {
   LoginFailure,
   classifyLoginError,
   cooldownForEmail,
+  emailAwaitingConfirmation,
   evaluateMailCooldown,
   mailCooldownUntil,
-  emailAwaitingConfirmation,
   messageFromLoginPayload,
   missingTokenFailure,
   readLoginErrorInput,
-  rememberUnconfirmedEmail,
   roleDeniedFailure,
   unreadableMailLimitFailure,
 } from "@/libs/login-failure";
 import {
   loadMailCooldownBook,
+  loadUnconfirmedEmails,
   mailCooldownReadFailed,
+  persistUnconfirmedEmail,
   saveMailCooldown,
+  unconfirmedReadFailed,
 } from "@/libs/login-mail-guard";
 import {
   SingleFlightLock,
@@ -57,6 +59,11 @@ const SignInForm = () => {
   };
 
   const onSignIn = async (data: SigninFormSchema) => {
+    await loadUnconfirmedEmails();
+    if (unconfirmedReadFailed()) {
+      setFailure(unreadableMailLimitFailure());
+      return;
+    }
     if (emailAwaitingConfirmation(data.email)) {
       router.navigate(
         `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
@@ -118,7 +125,7 @@ const SignInForm = () => {
         await rememberMailLimit(data.email);
       }
       if (rejected.kind === "email_unconfirmed") {
-        rememberUnconfirmedEmail(data.email);
+        await persistUnconfirmedEmail(data.email);
       }
       setFailure(rejected);
       if (rejected.navigateToOtp) {
@@ -132,7 +139,7 @@ const SignInForm = () => {
         await rememberMailLimit(data.email);
       }
       if (rejected.kind === "email_unconfirmed") {
-        rememberUnconfirmedEmail(data.email);
+        await persistUnconfirmedEmail(data.email);
       }
       setFailure(rejected);
       if (rejected.navigateToOtp) {
