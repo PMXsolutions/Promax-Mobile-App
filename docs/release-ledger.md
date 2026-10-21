@@ -38,7 +38,7 @@ These rows are the staff-app changes under review. Independent review of the lat
 | --- | --- | --- | --- |
 | [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `07d266bf267bfe5de8ca903a4bebb42397733900` | Sign-in mail failures stay on the form for one hour per email, including `Error sending mail.` | [Retest sign-in 07d266b](https://cursor.com/agents/bc-3b7456cc-d8d7-5716-a6a2-a85e425ded83) in progress |
 | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `f5303520de14d717d420fff03c2fe0b32895b3c4` | Report drafts require a positive company id and staff id, and do not send unless the in-flight draft is stored | [Retest drafts f530352](https://cursor.com/agents/bc-62a56eb0-3e9d-5dd3-92e3-6f771c624d9c) in progress |
-| [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `7ec97f175939fec719f5108799191c460cd9302b` | A shift or document is shown only when it belongs to the signed-in staff member | [Retest profile 7ec97f1](https://cursor.com/agents/bc-d854589c-f749-59b9-a200-c4542b57e848) in progress |
+| [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f` | A document needs a positive company id. A shift is requested only after it is on this staff member's roster | [Retest profile 7ec97f1](https://cursor.com/agents/bc-d854589c-f749-59b9-a200-c4542b57e848) reviewed `7ec97f1`. Author unit run on `8c09eaa`: 2 suites, 11 tests, passed. That review has not re-run `8c09eaa`. |
 | [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only |
 
 Author unit runs already recorded in `docs/staff-journey-matrix.md` stay unit runs. They are not a second acceptance.
