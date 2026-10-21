@@ -22,6 +22,7 @@ import { queryClient } from "@/libs/query";
 import { router } from "expo-router";
 import { reportQuery } from "@/hooks/queries/report";
 import { DocumentData } from "@/types/report";
+import { documentOwnedBySession } from "@/libs/staff-record";
 
 const EditForm = ({ id }: { id: string }) => {
   const { data: docData, isLoading } = reportQuery.useFetchStaffDocumentDetail(
@@ -117,6 +118,20 @@ const EditForm = ({ id }: { id: string }) => {
   });
 
   const handleFormSubmit = () => {
+    if (
+      docData &&
+      !documentOwnedBySession(docData, {
+        companyId: user?.companyId,
+        staffId: staff?.staffId,
+        userId: user?.userId,
+      })
+    ) {
+      showMessage({
+        message: "This document is not assigned to your sign-in.",
+        type: "danger",
+      });
+      return;
+    }
     if (!form.documentName || form.documentName === "") {
       showMessage({
         message: "Document name is required",

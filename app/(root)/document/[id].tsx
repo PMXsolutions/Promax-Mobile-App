@@ -7,8 +7,13 @@ import { reportQuery } from "@/hooks/queries/report";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
 import ErrorState from "@/components/shared/error-state";
+import Text from "@/components/shared/text";
+import useAuthStore from "@/store/use-auth-store";
+import { documentOwnedBySession } from "@/libs/staff-record";
+import { View } from "react-native";
 
 const EditDocument = () => {
+  const { user, staff } = useAuthStore();
   const query = useLocalSearchParams();
 
   const id = query.id as unknown as string;
@@ -22,6 +27,24 @@ const EditDocument = () => {
         color={THEME.colors.secondary}
         title="Loading Document.."
       />
+    );
+  }
+
+  if (
+    data &&
+    !documentOwnedBySession(data, {
+      companyId: user?.companyId,
+      staffId: staff?.staffId,
+      userId: user?.userId,
+    })
+  ) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Edit Document"} />
+        <View style={{ padding: 24 }}>
+          <Text>This document is not assigned to your sign-in.</Text>
+        </View>
+      </ScreenWrapper>
     );
   }
 

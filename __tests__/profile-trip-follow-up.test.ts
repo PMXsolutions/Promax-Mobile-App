@@ -1,7 +1,7 @@
 import { documentNameForSubmit } from "@/libs/document-name";
 import { displaySydneyDate } from "@/libs/display-date";
 import { pathForNotificationData } from "@/libs/notification-route";
-import { isOwnStaffRecord } from "@/libs/staff-record";
+import { documentOwnedBySession, isOwnStaffRecord } from "@/libs/staff-record";
 import { mileageSubmitDecision } from "@/libs/trip-mileage";
 
 describe("trip mileage", () => {
@@ -37,6 +37,22 @@ describe("documents and profile ownership", () => {
     expect(isOwnStaffRecord("4", 4)).toBe(true);
     expect(isOwnStaffRecord("5", 4)).toBe(false);
     expect(isOwnStaffRecord("", 4)).toBe(false);
+  });
+
+  it("denies a document from another company or another user", () => {
+    const session = { companyId: 9, staffId: 4, userId: "15" };
+    expect(documentOwnedBySession({ companyId: 9, userId: 4 }, session)).toBe(
+      true
+    );
+    expect(documentOwnedBySession({ companyId: 9, userId: 15 }, session)).toBe(
+      true
+    );
+    expect(documentOwnedBySession({ companyId: 8, userId: 4 }, session)).toBe(
+      false
+    );
+    expect(documentOwnedBySession({ companyId: 9, userId: 99 }, session)).toBe(
+      false
+    );
   });
 
   it("leaves a missing date blank instead of formatting an invalid date", () => {
