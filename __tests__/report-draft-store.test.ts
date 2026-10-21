@@ -169,4 +169,41 @@ describe("report draft storage", () => {
     (SecureStore as unknown as { __state: { setThrows: boolean } }).__state.setThrows =
       false;
   });
+
+  it("keeps a new draft when the secure key cannot be stored, and does not replace a protected one", async () => {
+    const state = (
+      SecureStore as unknown as {
+        __state: { getThrows: boolean; setThrows: boolean };
+      }
+    ).__state;
+    const protectedKey = "promaxcare.report-draft.c9.s4.create.keep-protected";
+    resetDraftKeyMemoryForTests();
+    state.getThrows = false;
+    state.setThrows = false;
+    const protectedDraft = createDraft(
+      protectedKey,
+      { goal_Progress: "sealed text" },
+      now,
+      "a1"
+    );
+    expect(await writeReportDraft(protectedKey, protectedDraft)).toBe(true);
+    const protectedRaw = await AsyncStorage.getItem(protectedKey);
+    expect(protectedRaw?.startsWith("promaxcare.draft.v1.")).toBe(true);
+    expect(protectedRaw).not.toContain("sealed text");
+
+    resetDraftKeyMemoryForTests();
+    state.getThrows = true;
+    state.setThrows = true;
+    const fresh = "promaxcare.report-draft.c9.s4.create.no-key";
+    const draft = createDraft(fresh, { goal_Progress: "kept plain" }, now, "a1");
+    expect(await writeReportDraft(fresh, draft)).toBe(true);
+    expect(await AsyncStorage.getItem(fresh)).toContain("kept plain");
+    expect((await readReportDraft<typeof draft.form>(fresh))?.form).toEqual({
+      goal_Progress: "kept plain",
+    });
+    expect(await writeReportDraft(protectedKey, draft)).toBe(false);
+    expect(await AsyncStorage.getItem(protectedKey)).toBe(protectedRaw);
+    state.getThrows = false;
+    state.setThrows = false;
+  });
 });

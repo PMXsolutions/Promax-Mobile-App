@@ -155,8 +155,9 @@ export async function writeReportDraft<T>(
   ) {
     return false;
   }
-  if (!keyMaterial) return false;
-  const sealed = protectDraftPayload(JSON.stringify(draft), keyMaterial);
+  const sealed = keyMaterial
+    ? protectDraftPayload(JSON.stringify(draft), keyMaterial)
+    : JSON.stringify(draft);
   const token = (writeEpoch.get(key) ?? 0) + 1;
   writeEpoch.set(key, token);
   latestPayload.set(key, sealed);
@@ -174,8 +175,10 @@ export async function writeReportDraft<T>(
       if (currentToken == null || currentPayload == null) return false;
       await AsyncStorage.setItem(key, currentPayload);
       if (writeEpoch.get(key) === currentToken) {
-        const plain = revealDraftPayload(currentPayload, keyMaterial);
-        if (plain) await writeSecureBody(key, plain);
+        if (keyMaterial) {
+          const plain = revealDraftPayload(currentPayload, keyMaterial);
+          if (plain) await writeSecureBody(key, plain);
+        }
         return true;
       }
     }
