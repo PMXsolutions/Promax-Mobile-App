@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system";
 import * as SecureStore from "expo-secure-store";
 import {
   MailCooldownBook,
@@ -33,62 +34,95 @@ export function unconfirmedReadFailed(): boolean {
   return unconfirmedFailed;
 }
 
-async function readBoth(
+function sandboxPath(name: string): string | null {
+  const root = FileSystem.documentDirectory;
+  if (!root) return null;
+  return `${root}${name}`;
+}
+
+async function readSandbox(name: string): Promise<string | null> {
+  const path = sandboxPath(name);
+  if (!path || typeof FileSystem.readAsStringAsync !== "function") return null;
+  try {
+    const raw = await FileSystem.readAsStringAsync(path);
+    return raw || null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeSandbox(name: string, value: string): Promise<boolean> {
+  const path = sandboxPath(name);
+  if (!path || typeof FileSystem.writeAsStringAsync !== "function") return false;
+  try {
+    await FileSystem.writeAsStringAsync(path, value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readCopies(
   key: string
 ): Promise<{ raws: string[]; unreadable: boolean }> {
   const raws: string[] = [];
-  let failures = 0;
+  let primaryFailures = 0;
   try {
     const raw = await AsyncStorage.getItem(key);
     if (raw) raws.push(raw);
   } catch {
-    failures += 1;
+    primaryFailures += 1;
   }
   try {
     const raw = await SecureStore.getItemAsync(key);
     if (raw) raws.push(raw);
   } catch {
-    failures += 1;
+    primaryFailures += 1;
   }
-  return { raws, unreadable: failures === 2 };
+  const sandbox = await readSandbox(key);
+  if (sandbox) raws.push(sandbox);
+  return {
+    raws,
+    unreadable: primaryFailures === 2 && raws.length === 0,
+  };
 }
 
-async function writeBoth(key: string, value: string): Promise<boolean> {
+async function writeCopies(key: string, value: string): Promise<boolean> {
   let stored = false;
   try {
     await AsyncStorage.setItem(key, value);
     stored = true;
   } catch {
-    stored = false;
+    // SecureStore or the sandbox file can still hold this record.
   }
   try {
     await SecureStore.setItemAsync(key, value);
     stored = true;
   } catch {
-    // The other store may already hold this record.
+    // The sandbox file can still hold this record.
   }
+  if (await writeSandbox(key, value)) stored = true;
   return stored;
 }
 
 export async function loadMailCooldownBook(): Promise<MailCooldownBook> {
-  if (memoryBook) return memoryBook;
-
-  const read = await readBoth(MAIL_COOLDOWN_STORAGE_KEY);
+  const read = await readCopies(MAIL_COOLDOWN_STORAGE_KEY);
   if (read.unreadable) {
     readFailed = true;
-    return { entries: [] };
+    return memoryBook ?? { entries: [] };
   }
 
-  readFailed = false;
-  memoryBook = read.raws.reduce(
+  const disk = read.raws.reduce(
     (book, raw) => mergeMailCooldownBooks(book, parseMailCooldownBook(raw)),
     { entries: [] } as MailCooldownBook
   );
+  memoryBook = memoryBook ? mergeMailCooldownBooks(memoryBook, disk) : disk;
+  readFailed = false;
   return memoryBook;
 }
 
 export async function loadUnconfirmedEmails(): Promise<void> {
-  const read = await readBoth(UNCONFIRMED_EMAIL_STORAGE_KEY);
+  const read = await readCopies(UNCONFIRMED_EMAIL_STORAGE_KEY);
   if (read.unreadable) {
     unconfirmedFailed = true;
     return;
@@ -111,7 +145,7 @@ export async function loadUnconfirmedEmails(): Promise<void> {
 
 export async function persistUnconfirmedEmail(email: string): Promise<boolean> {
   rememberUnconfirmedEmail(email);
-  return writeBoth(
+  return writeCopies(
     UNCONFIRMED_EMAIL_STORAGE_KEY,
     JSON.stringify({ emails: listUnconfirmedEmails() })
   );
@@ -122,7 +156,7 @@ export async function saveMailCooldown(
 ): Promise<boolean> {
   let current = memoryBook;
   if (!current) {
-    const read = await readBoth(MAIL_COOLDOWN_STORAGE_KEY);
+    const read = await readCopies(MAIL_COOLDOWN_STORAGE_KEY);
     current = read.unreadable
       ? { entries: [] }
       : read.raws.reduce(
@@ -140,5 +174,5 @@ export async function saveMailCooldown(
     new Date()
   );
 
-  return writeBoth(MAIL_COOLDOWN_STORAGE_KEY, JSON.stringify(memoryBook));
+  return writeCopies(MAIL_COOLDOWN_STORAGE_KEY, JSON.stringify(memoryBook));
 }
