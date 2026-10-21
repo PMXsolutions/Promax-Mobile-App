@@ -64,6 +64,20 @@ export function draftWriteAfterDelay<T>(
   return current;
 }
 
+export function draftWriteMayReplace<T>(
+  existing: ReportDraft<T> | null,
+  incoming: ReportDraft<T>
+): boolean {
+  if (!existing) return true;
+  return !(
+    existing.submitState === "in_flight" && incoming.submitState === "editing"
+  );
+}
+
+export function draftClaimStorageKey(draftKey: string): string {
+  return `${draftKey}.claim`;
+}
+
 export function reportDraftStorageKey(
   kind: "create" | "edit",
   rosterId: string,

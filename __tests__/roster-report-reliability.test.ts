@@ -13,6 +13,7 @@ import {
   draftAfterEdit,
   draftSendBlocksAcknowledge,
   draftWriteAfterDelay,
+  draftWriteMayReplace,
   orphanDraftSend,
   parseReportDraft,
   releaseDraftSend,
@@ -152,6 +153,10 @@ describe("report drafts", () => {
     expect(draftWriteAfterDelay(null)).toBeNull();
     expect(draftWriteAfterDelay(inFlight)).toBeNull();
     expect(draftWriteAfterDelay(editing)).toBe(editing);
+    expect(draftWriteMayReplace(inFlight, editing)).toBe(false);
+    expect(draftWriteMayReplace(inFlight, { ...inFlight, submitState: "failed" })).toBe(
+      true
+    );
   });
 
   it("holds a save with no response until the staff member checks", () => {

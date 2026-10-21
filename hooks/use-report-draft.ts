@@ -16,8 +16,11 @@ import {
   restoredDraftNotice,
 } from "@/libs/report-draft";
 import {
+  readDraftClaim,
   readReportDraft,
+  removeDraftClaim,
   removeReportDraft,
+  writeDraftClaim,
   writeReportDraft,
 } from "@/libs/report-draft-store";
 
@@ -93,6 +96,7 @@ export function useReportDraft<T extends object>(options: {
     let cancelled = false;
     void (async () => {
       const stored = await readReportDraft<T>(key);
+      const persistedClaim = await readDraftClaim(key);
       if (cancelled || hydratedKey.current === key) return;
 
       if (stored && stored.rosterId === rosterId) {
@@ -103,9 +107,15 @@ export function useReportDraft<T extends object>(options: {
           ? { ...stored, form: formRef.current }
           : stored;
         draftRef.current = restored;
-        setNotice(restoredDraftNotice(stored));
+        setNotice(
+          persistedClaim || stored.submitState === "in_flight"
+            ? restoredDraftNotice({ ...stored, submitState: "in_flight" })
+            : restoredDraftNotice(stored)
+        );
         setNeedsAcknowledge(
-          stored.submitState === "in_flight" || draftSendIsClaimed(key)
+          stored.submitState === "in_flight" ||
+            persistedClaim ||
+            draftSendIsClaimed(key)
         );
       } else if (serverForm) {
         setForm(serverForm);
@@ -177,6 +187,7 @@ export function useReportDraft<T extends object>(options: {
     );
     if (key) {
       await writeReportDraft(key, next);
+      await removeDraftClaim(key);
       releaseDraftSend(key);
       ownsClaim.current = false;
     }
@@ -196,6 +207,7 @@ export function useReportDraft<T extends object>(options: {
     if (
       needsAcknowledge ||
       current.submitState === "in_flight" ||
+      (await readDraftClaim(key)) ||
       !claimDraftSend(key)
     ) {
       setNotice(restoredDraftNotice({ ...current, submitState: "in_flight" }));
@@ -204,8 +216,21 @@ export function useReportDraft<T extends object>(options: {
     }
 
     ownsClaim.current = true;
+    const claimed = await writeDraftClaim(key);
+    if (!claimed) {
+      releaseDraftSend(key);
+      ownsClaim.current = false;
+      setNotice(
+        "This report was not sent. This device could not store the send check."
+      );
+      return false;
+    }
+
     const begun = beginDraftSubmit(current, new Date(), attemptRef.current);
     if (!begun.ok) {
+      await removeDraftClaim(key);
+      releaseDraftSend(key);
+      ownsClaim.current = false;
       setNeedsAcknowledge(true);
       setNotice(restoredDraftNotice({ ...current, submitState: "in_flight" }));
       return false;
@@ -228,6 +253,7 @@ export function useReportDraft<T extends object>(options: {
     if (key) {
       releaseDraftSend(key);
       ownsClaim.current = false;
+      await removeDraftClaim(key);
       await removeReportDraft(key);
     }
   };
@@ -253,6 +279,7 @@ export function useReportDraft<T extends object>(options: {
     if (key) {
       releaseDraftSend(key);
       ownsClaim.current = false;
+      await removeDraftClaim(key);
       await writeReportDraft(key, next);
     }
   };
