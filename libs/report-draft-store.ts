@@ -1,32 +1,90 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import {
+  DRAFT_PROTECT_PREFIX,
   ReportDraft,
+  createDraftKey,
   draftClaimStorageKey,
   draftWriteMayReplace,
   parseReportDraft,
+  protectDraftPayload,
+  revealDraftPayload,
 } from "@/libs/report-draft";
+
+const DRAFT_KEY_NAME = "promaxcare.report-draft.key";
 
 const writeEpoch = new Map<string, number>();
 const latestPayload = new Map<string, string>();
+let memoryDraftKey: string | null = null;
+
+export function resetDraftKeyMemoryForTests(): void {
+  memoryDraftKey = null;
+}
+
+async function draftKey(): Promise<string | null> {
+  if (memoryDraftKey) return memoryDraftKey;
+  try {
+    const existing = await SecureStore.getItemAsync(DRAFT_KEY_NAME);
+    if (existing) {
+      memoryDraftKey = existing;
+      return existing;
+    }
+    const created = createDraftKey();
+    await SecureStore.setItemAsync(DRAFT_KEY_NAME, created);
+    memoryDraftKey = created;
+    return created;
+  } catch {
+    return memoryDraftKey;
+  }
+}
+
+async function readStoredRaw(
+  key: string
+): Promise<"missing" | "unreadable" | string> {
+  try {
+    const raw = await AsyncStorage.getItem(key);
+    return raw == null ? "missing" : raw;
+  } catch {
+    return "unreadable";
+  }
+}
+
+function plainDraft(raw: string, key: string | null): string | null {
+  if (!raw.startsWith(DRAFT_PROTECT_PREFIX)) return raw;
+  if (!key) return null;
+  return revealDraftPayload(raw, key);
+}
 
 export async function readReportDraft<T>(
   key: string
 ): Promise<ReportDraft<T> | null> {
-  try {
-    const raw = await AsyncStorage.getItem(key);
-    return parseReportDraft<T>(raw);
-  } catch {
-    return null;
-  }
+  const raw = await readStoredRaw(key);
+  if (raw === "missing" || raw === "unreadable") return null;
+  const keyMaterial = raw.startsWith(DRAFT_PROTECT_PREFIX) ? await draftKey() : null;
+  const plain = plainDraft(raw, keyMaterial);
+  if (plain == null) return null;
+  return parseReportDraft<T>(plain);
 }
 
 export async function writeReportDraft<T>(
   key: string,
   draft: ReportDraft<T>
 ): Promise<boolean> {
+  const existingRaw = await readStoredRaw(key);
+  if (existingRaw === "unreadable") return false;
+  const keyMaterial = await draftKey();
+  if (
+    typeof existingRaw === "string" &&
+    existingRaw.startsWith(DRAFT_PROTECT_PREFIX) &&
+    (!keyMaterial || revealDraftPayload(existingRaw, keyMaterial) == null)
+  ) {
+    return false;
+  }
+  if (!keyMaterial) return false;
+  const sealed = protectDraftPayload(JSON.stringify(draft), keyMaterial);
   const token = (writeEpoch.get(key) ?? 0) + 1;
   writeEpoch.set(key, token);
-  latestPayload.set(key, JSON.stringify(draft));
+  latestPayload.set(key, sealed);
 
   try {
     let guard = 0;

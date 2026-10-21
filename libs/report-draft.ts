@@ -78,6 +78,70 @@ export function draftClaimStorageKey(draftKey: string): string {
   return `${draftKey}.claim`;
 }
 
+export const DRAFT_PROTECT_PREFIX = "promaxcare.draft.v1.";
+
+export function createDraftKey(): string {
+  const bytes = new Uint8Array(32);
+  const cryptoApi = globalThis.crypto;
+  if (cryptoApi?.getRandomValues) {
+    cryptoApi.getRandomValues(bytes);
+  } else {
+    for (let index = 0; index < bytes.length; index += 1) {
+      bytes[index] = Math.floor(Math.random() * 256);
+    }
+  }
+  return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function utf8Bytes(value: string): Uint8Array {
+  return new TextEncoder().encode(value);
+}
+
+function bytesToString(bytes: Uint8Array): string {
+  return new TextDecoder().decode(bytes);
+}
+
+function toBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function fromBase64(value: string): Uint8Array | null {
+  try {
+    const binary = atob(value);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+function maskBytes(payload: Uint8Array, key: string): Uint8Array {
+  const secret = utf8Bytes(key);
+  if (secret.length === 0) return payload;
+  const out = new Uint8Array(payload.length);
+  for (let index = 0; index < payload.length; index += 1) {
+    out[index] = payload[index] ^ secret[index % secret.length];
+  }
+  return out;
+}
+
+export function protectDraftPayload(plain: string, key: string): string {
+  return `${DRAFT_PROTECT_PREFIX}${toBase64(maskBytes(utf8Bytes(plain), key))}`;
+}
+
+export function revealDraftPayload(stored: string, key: string): string | null {
+  if (!stored.startsWith(DRAFT_PROTECT_PREFIX)) return stored;
+  if (!key) return null;
+  const masked = fromBase64(stored.slice(DRAFT_PROTECT_PREFIX.length));
+  if (!masked) return null;
+  return bytesToString(maskBytes(masked, key));
+}
+
 export function reportDraftStorageKey(
   kind: "create" | "edit",
   rosterId: string,
