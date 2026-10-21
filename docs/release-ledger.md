@@ -48,12 +48,12 @@ The same lockfile blob is on `main` and on pull requests 9, 10, and 11. An unloc
 
 ## Slice for 22 October
 
-These rows are the staff-app changes under review. Independent review of the latest commits is still running, so none of these rows is accepted as a device or hosted pass.
+These rows are the staff-app changes under review. [Retest drafts f530352](https://cursor.com/agents/bc-62a56eb0-3e9d-5dd3-92e3-6f771c624d9c) reviewed `f530352` and has not re-run `6ff0392`. Sign-in `93414b4` and profile `8c09eaa` still have no second run. None of these rows is a device or hosted pass.
 
 | Pull request | Latest commit | What it holds | Independent review |
 | --- | --- | --- | --- |
 | [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `93414b4` | A repeated unconfirmed email opens the code screen without another `auth_login`. An aborted request stays a timeout | [Retest sign-in 07d266b](https://cursor.com/agents/bc-3b7456cc-d8d7-5716-a6a2-a85e425ded83) reviewed `07d266b`. Author unit run on `93414b4`: 2 suites, 26 tests, passed. That review has not re-run `93414b4`. |
-| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `f5303520de14d717d420fff03c2fe0b32895b3c4` | Report drafts require a positive company id and staff id, and do not send unless the in-flight draft is stored | [Retest drafts f530352](https://cursor.com/agents/bc-62a56eb0-3e9d-5dd3-92e3-6f771c624d9c) in progress |
+| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `6ff0392a720e9979109b1d27c8f21af2594567a6` | Integer draft keys, one in-flight send claim, and a save with no response stays blocked until the staff member checks | [Retest drafts f530352](https://cursor.com/agents/bc-62a56eb0-3e9d-5dd3-92e3-6f771c624d9c) reviewed `f530352`: 3 suites, 40 tests, passed. Author unit run on `6ff0392`: 2 suites, 17 tests, passed. That review has not re-run `6ff0392`. |
 | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f` | A document needs a positive company id. A shift is requested only after it is on this staff member's roster | [Retest profile 7ec97f1](https://cursor.com/agents/bc-d854589c-f749-59b9-a200-c4542b57e848) reviewed `7ec97f1`. Author unit run on `8c09eaa`: 2 suites, 11 tests, passed. That review has not re-run `8c09eaa`. |
 | [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only |
 
