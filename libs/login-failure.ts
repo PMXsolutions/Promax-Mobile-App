@@ -123,6 +123,29 @@ export function unreadableMailLimitFailure(): LoginFailure {
   };
 }
 
+export function unretainedSendIntentFailure(): LoginFailure {
+  return {
+    kind: "session",
+    title: "Sign-in limit unavailable",
+    message:
+      "This device could not save the sign-in limit, so this attempt was not sent.",
+    navigateToOtp: false,
+    allowImmediateRetry: true,
+  };
+}
+
+/** Mail may already have left the device. Other outcomes can drop the reserved intent. */
+export function sendIntentSurvivesOutcome(kind: LoginFailureKind): boolean {
+  return (
+    kind === "mail_rate_limited" ||
+    kind === "email_unconfirmed" ||
+    kind === "timeout" ||
+    kind === "network" ||
+    kind === "unknown" ||
+    kind === "session"
+  );
+}
+
 export function normalizeLoginEmail(email: string): string {
   return email.trim().toLowerCase();
 }

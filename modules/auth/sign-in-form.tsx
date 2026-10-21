@@ -17,21 +17,20 @@ import { fontFamilyForStartup } from "@/libs/startup-fonts";
 import {
   LoginFailure,
   classifyLoginError,
-  cooldownForEmail,
   emailAwaitingConfirmation,
-  evaluateMailCooldown,
   mailCooldownUntil,
   messageFromLoginPayload,
   missingTokenFailure,
   readLoginErrorInput,
   roleDeniedFailure,
+  sendIntentSurvivesOutcome,
   unreadableMailLimitFailure,
 } from "@/libs/login-failure";
 import {
-  loadMailCooldownBook,
+  claimSignInSend,
   loadUnconfirmedEmails,
-  mailCooldownReadFailed,
   persistUnconfirmedEmail,
+  releaseSendIntent,
   saveMailCooldown,
   unconfirmedReadFailed,
 } from "@/libs/login-mail-guard";
@@ -78,18 +77,9 @@ const SignInForm = () => {
     authstore.clearSessionNotice();
 
     try {
-      const book = await loadMailCooldownBook();
-      if (mailCooldownReadFailed()) {
-        setFailure(unreadableMailLimitFailure());
-        return;
-      }
-      const gate = evaluateMailCooldown({
-        cooldown: cooldownForEmail(book, data.email),
-        email: data.email,
-        now: new Date(),
-      });
-      if (gate.blocked && gate.failure) {
-        setFailure(gate.failure);
+      const claim = await claimSignInSend(data.email, new Date());
+      if (!claim.send) {
+        setFailure(claim.failure);
         return;
       }
 
@@ -106,13 +96,16 @@ const SignInForm = () => {
       if (String(status).toLowerCase() === "success" && userProfile) {
         const role = userProfile?.role || userProfile?.Role;
         if (role !== "Staff") {
+          await releaseSendIntent(data.email);
           setFailure(roleDeniedFailure());
           return;
         }
         if (!accessToken) {
+          await releaseSendIntent(data.email);
           setFailure(missingTokenFailure());
           return;
         }
+        await releaseSendIntent(data.email);
         authstore.login(userProfile, staffProfile, accessToken);
         router.replace("/(root)/(tabs)");
         return;
@@ -127,6 +120,9 @@ const SignInForm = () => {
       if (rejected.kind === "email_unconfirmed") {
         await persistUnconfirmedEmail(data.email);
       }
+      if (!sendIntentSurvivesOutcome(rejected.kind)) {
+        await releaseSendIntent(data.email);
+      }
       setFailure(rejected);
       if (rejected.navigateToOtp) {
         router.navigate(
@@ -140,6 +136,9 @@ const SignInForm = () => {
       }
       if (rejected.kind === "email_unconfirmed") {
         await persistUnconfirmedEmail(data.email);
+      }
+      if (!sendIntentSurvivesOutcome(rejected.kind)) {
+        await releaseSendIntent(data.email);
       }
       setFailure(rejected);
       if (rejected.navigateToOtp) {

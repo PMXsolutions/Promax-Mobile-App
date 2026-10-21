@@ -9,7 +9,9 @@ import {
   rememberUnconfirmedEmail,
   resetUnconfirmedEmailsForTests,
   signInRepeatDecision,
+  sendIntentSurvivesOutcome,
   unreadableMailLimitFailure,
+  unretainedSendIntentFailure,
   evaluateMailCooldown,
   mailCooldownUntil,
   messageFromLoginPayload,
@@ -86,6 +88,16 @@ describe("classifyLoginError", () => {
     ).toBe(true);
     expect(isMailLimitMessage("Network Error")).toBe(false);
     expect(unreadableMailLimitFailure().message).toContain("was not sent");
+  });
+
+  it("withholds the request when the sign-in intent cannot be saved", () => {
+    const failure = unretainedSendIntentFailure();
+    expect(failure.allowImmediateRetry).toBe(true);
+    expect(failure.navigateToOtp).toBe(false);
+    expect(failure.message).toContain("was not sent");
+    expect(sendIntentSurvivesOutcome("timeout")).toBe(true);
+    expect(sendIntentSurvivesOutcome("mail_rate_limited")).toBe(true);
+    expect(sendIntentSurvivesOutcome("invalid_credentials")).toBe(false);
   });
 
   it("keeps the later cooldown when both stored copies are combined", () => {
