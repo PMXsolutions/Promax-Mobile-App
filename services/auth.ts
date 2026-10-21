@@ -1,4 +1,5 @@
 import { publicAxios } from "@/libs/axiosInstance";
+import { isLoginTimeoutError } from "@/libs/login-failure";
 import { ForgotpasswordSchema, SigninFormSchema } from "@/modules/auth/types";
 import { isAxiosError } from "axios";
 
@@ -19,6 +20,9 @@ const loginUser = async (payload: SigninFormSchema) => {
     return data;
   } catch (error: unknown) {
     if (isAxiosError(error)) {
+      if (isLoginTimeoutError(error)) {
+        throw error;
+      }
       if (!error.response) {
         throw Object.assign(
           new Error(

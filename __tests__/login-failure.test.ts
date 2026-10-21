@@ -2,6 +2,8 @@ import {
   MAIL_COOLDOWN_MS,
   classifyLoginError,
   cooldownForEmail,
+  isLoginTimeoutError,
+  signInRepeatDecision,
   evaluateMailCooldown,
   mailCooldownUntil,
   messageFromLoginPayload,
@@ -44,6 +46,40 @@ describe("classifyLoginError", () => {
     expect(failure.allowImmediateRetry).toBe(false);
     expect(plain.kind).toBe("mail_rate_limited");
     expect(plain.navigateToOtp).toBe(false);
+  });
+
+  it("opens the code screen again without another sign-in request", () => {
+    const failure = classifyLoginError({
+      message:
+        "Email Not Confirmed. An OTP has been sent to your mail to confirm your email",
+    });
+
+    expect(signInRepeatDecision("staff@example.com", "Staff@Example.com")).toBe(
+      "otp"
+    );
+    expect(signInRepeatDecision("staff@example.com", "other@example.com")).toBe(
+      "post"
+    );
+    expect(signInRepeatDecision(null, "staff@example.com")).toBe("post");
+    expect(failure.navigateToOtp).toBe(true);
+    expect(failure.allowImmediateRetry).toBe(false);
+  });
+
+  it("keeps an aborted sign-in request as a timeout", () => {
+    const timeout = {
+      isAxiosError: true,
+      code: "ECONNABORTED",
+      message: "timeout of 30000ms exceeded",
+    };
+    const wrapped = {
+      isAxiosError: true,
+      message: "Cannot reach PromaxCare API.",
+      response: { data: { message: "Cannot reach PromaxCare API." } },
+    };
+
+    expect(isLoginTimeoutError(timeout)).toBe(true);
+    expect(isLoginTimeoutError(wrapped)).toBe(false);
+    expect(classifyLoginError(readLoginErrorInput(timeout)).kind).toBe("timeout");
   });
 
   it("still sends a genuine unconfirmed-email response to the code screen", () => {

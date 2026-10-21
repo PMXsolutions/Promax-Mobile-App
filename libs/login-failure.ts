@@ -37,6 +37,31 @@ export const MAIL_COOLDOWN_MS = 60 * 60 * 1000;
 const PLAY_MAIL_RATE_LIMIT =
   /too many mails sent/i;
 
+export function isLoginTimeoutError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as {
+    isAxiosError?: boolean;
+    code?: string;
+    response?: unknown;
+  };
+  return (
+    candidate.isAxiosError === true &&
+    candidate.response == null &&
+    candidate.code === "ECONNABORTED"
+  );
+}
+
+export function signInRepeatDecision(
+  previousEmail: string | null,
+  email: string
+): "post" | "otp" {
+  if (!previousEmail) return "post";
+  if (normalizeLoginEmail(previousEmail) !== normalizeLoginEmail(email)) {
+    return "post";
+  }
+  return "otp";
+}
+
 export function normalizeLoginEmail(email: string): string {
   return email.trim().toLowerCase();
 }

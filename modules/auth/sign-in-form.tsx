@@ -24,6 +24,7 @@ import {
   missingTokenFailure,
   readLoginErrorInput,
   roleDeniedFailure,
+  signInRepeatDecision,
 } from "@/libs/login-failure";
 import { loadMailCooldownBook, saveMailCooldown } from "@/libs/login-mail-guard";
 import {
@@ -37,6 +38,7 @@ const SignInForm = () => {
   const [failure, setFailure] = useState<LoginFailure | null>(null);
   const [checked, setChecked] = useState(true);
   const flight = useRef<SingleFlightLock>({ held: false });
+  const unconfirmedEmail = useRef<string | null>(null);
   const form = useForm<SigninFormSchema>({
     resolver: zodResolver(signInFormSchema),
   });
@@ -50,7 +52,16 @@ const SignInForm = () => {
   };
 
   const onSignIn = async (data: SigninFormSchema) => {
+    const repeat = signInRepeatDecision(unconfirmedEmail.current, data.email);
+    if (repeat === "otp") {
+      router.navigate(
+        `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
+      );
+      return;
+    }
+
     if (!acquireSingleFlight(flight.current)) return;
+    unconfirmedEmail.current = null;
 
     setLoading(true);
     setFailure(null);
@@ -99,6 +110,9 @@ const SignInForm = () => {
       if (rejected.kind === "mail_rate_limited") {
         await rememberMailLimit(data.email);
       }
+      if (rejected.kind === "email_unconfirmed") {
+        unconfirmedEmail.current = data.email;
+      }
       setFailure(rejected);
       if (rejected.navigateToOtp) {
         router.navigate(
@@ -109,6 +123,9 @@ const SignInForm = () => {
       const rejected = classifyLoginError(readLoginErrorInput(error));
       if (rejected.kind === "mail_rate_limited") {
         await rememberMailLimit(data.email);
+      }
+      if (rejected.kind === "email_unconfirmed") {
+        unconfirmedEmail.current = data.email;
       }
       setFailure(rejected);
       if (rejected.navigateToOtp) {
