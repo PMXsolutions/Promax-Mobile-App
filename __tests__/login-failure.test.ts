@@ -30,14 +30,20 @@ describe("classifyLoginError", () => {
     expect(failure.message).toContain("will not send another sign-in request");
   });
 
-  it("does not treat a mail transport error as an unconfirmed-email OTP flow", () => {
+  it("starts the hour for a mail-send failure and does not open OTP", () => {
     const failure = classifyLoginError({
       message: "Error sending mail.",
       httpStatus: 500,
     });
+    const plain = classifyLoginError(
+      readLoginErrorInput(new Error("Error sending mail."))
+    );
 
-    expect(failure.kind).toBe("mail_send_failed");
+    expect(failure.kind).toBe("mail_rate_limited");
     expect(failure.navigateToOtp).toBe(false);
+    expect(failure.allowImmediateRetry).toBe(false);
+    expect(plain.kind).toBe("mail_rate_limited");
+    expect(plain.navigateToOtp).toBe(false);
   });
 
   it("still sends a genuine unconfirmed-email response to the code screen", () => {

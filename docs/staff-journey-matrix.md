@@ -6,7 +6,7 @@ Owner: mobile integration lead for `PMXsolutions/Promax-Mobile-App`. Care OS bra
 
 This file is the branch note for sign-in and session only. The single acceptance matrix is `docs/staff-journey-matrix.md` on `cursor/mobile-acceptance-matrix-65b8`. Unit tests are not native acceptance and are not a Play-readiness claim.
 
-Follow-up on this branch: the mail cooldown is one device-local record per normalized email, so a second address does not erase the first hour. The known Play sentence is read from `message` / `Message`, from a nested `response.message`, from a string error body, and from a plain `Error` message. No `auth_login` request was sent.
+Follow-up on this branch: the mail cooldown is one device-local record per normalized email, so a second address does not erase the first hour. Any message containing the Play sentence or `Error sending mail` starts that hour, including a plain `Error`. No `auth_login` request was sent.
 
 ## Baseline that was actually present
 

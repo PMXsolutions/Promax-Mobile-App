@@ -3,7 +3,6 @@ export type LoginFailureKind =
   | "invalid_credentials"
   | "email_unconfirmed"
   | "mail_rate_limited"
-  | "mail_send_failed"
   | "network"
   | "timeout"
   | "session"
@@ -208,6 +207,10 @@ export function classifyLoginError(input: LoginErrorInput): LoginFailure {
     return mailRateLimitFailure(message);
   }
 
+  if (message && /error sending mail/i.test(message)) {
+    return mailRateLimitFailure(message);
+  }
+
   if (input.timedOut) {
     return {
       kind: "timeout",
@@ -225,16 +228,6 @@ export function classifyLoginError(input: LoginErrorInput): LoginFailure {
       title: "Cannot reach PromaxCare",
       message:
         "Sign-in could not reach the server. Check your connection and try again. You are not signed in.",
-      navigateToOtp: false,
-      allowImmediateRetry: true,
-    };
-  }
-
-  if (message && /error sending mail/i.test(message)) {
-    return {
-      kind: "mail_send_failed",
-      title: "Email could not be sent",
-      message: `PromaxCare could not send email (${message}). This screen is still working. Try again once after checking the address. If the same message returns, wait before another attempt.`,
       navigateToOtp: false,
       allowImmediateRetry: true,
     };
