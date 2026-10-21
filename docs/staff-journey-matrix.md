@@ -1,10 +1,12 @@
 # PromaxCare staff mobile acceptance matrix
 
-Date: 21 October 2026. This is the single acceptance record for the current staff app. The 22 October Sydney slice is in [docs/release-ledger.md](release-ledger.md). It is not a store, Play, EAS, or OTA readiness claim. Pull requests 9, 10, and 11 stay draft. They were not merged.
+Date: 22 October 2026. This is the single acceptance record for the current staff app. The 22 October Sydney slice is in [docs/release-ledger.md](release-ledger.md). It is not a store, Play, EAS, or OTA readiness claim. Pull requests 9, 10, and 11 stay draft. They were not merged.
 
 Care OS was not edited. `origin/cursor/care-os-mobile-test-target-466d` is `981bea5ca495dc8a091590e3fe4d004f9571d6f5`. Its `app.json` is still `com.promax-app` version `1.1.0`. No production login, email, SMS, push, invite, clock-in, report, document write, store publish, or access change was performed.
 
-Live company iPhone, checked 21 October 2026 through Apple's lookup: [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, version `1.1.0`, seller PROMAX IT SOLUTIONS PTY LTD, released 2026-09-25. That bundle is not in this remote. A preserved Expo 54 checkout was reported on Joshua's Mac and was not opened, copied, or rebuilt from this cloud host. A second listing, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123), is bundle `com.promax-app` version `1.2.0`, seller Aermeans Global Services Limited, current version 2025-09-11. This remote's `app.json` is `1.1.0`. Play returned HTTP 404 for `com.tobby95.pmaxapp` and for `au.com.promaxsolutions.promaxcare`. These pull requests are not a pushed update.
+Live company iPhone, checked 21 October 2026 through Apple's lookup: [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, version `1.1.0`, seller PROMAX IT SOLUTIONS PTY LTD, released 2026-09-25. That bundle is not in this remote. A preserved Expo 54 checkout was reported on Joshua's Mac and was not opened, copied, or rebuilt from this cloud host. On 22 October 2026 Joshua confirmed that company iPhone app was restored and works on iPhone. That is user-confirmed success of the existing release. It is not a finding that no iOS release exists, and it is not acceptance of pull requests 9, 10, 11, or 12. A second listing, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123), is bundle `com.promax-app` version `1.2.0`, seller Aermeans Global Services Limited, current version 2025-09-11. This remote's `app.json` is `1.1.0`. Play returned HTTP 404 for `com.tobby95.pmaxapp` and for `au.com.promaxsolutions.promaxcare`. These pull requests are not a pushed update.
+
+Former mobile distribution used Timi friend accounts. Joshua states the company now owns the Apple and Google accounts. Staff access from both stores is the priority. Google Play review fixes come first. The working iOS release stays as it is.
 
 ## Provenance
 
@@ -22,7 +24,7 @@ Live company iPhone, checked 21 October 2026 through Apple's lookup: [PromaxCare
 | API base variable | `EXPO_PUBLIC_API_BASEURL` (unset in this agent). Code fallback host is the public API already committed in `libs/axiosInstance.ts` and `eas.json`. |
 | Maps variable | `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` (unset). Name only. |
 | Push file | `google-services.json` is gitignored and absent. Not requested. |
-| Sign-in PR | [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) `bbd311d79bc577a95231dd75dcd8470f24d2eb75`, `ff0881301a4de6e9a04cc4707708e62b124151e7` |
+| Sign-in PR | [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) `bbd311d79bc577a95231dd75dcd8470f24d2eb75`, `ff0881301a4de6e9a04cc4707708e62b124151e7`, `246c1b2d37e4d5fd5caf6e25fc4fd48a179f849c` |
 | Roster and drafts PR | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) `16e05534293409d51f288f29d494d749d6c305be`, `a883fdd3443db8f656a707e765be3544da3b26d6`, `1095c75e654f00067e2d04db1d1073587b324738`, `0d73f38c11995d5510d70cdb90bf747c2a4d3bdf` |
 | Profile, documents, trip, notifications PR | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f`, `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` |
 | Web display | Public `app.promaxcare.com.au` meta `app-release=quality-surveys-2026-09-09`. Literal `2.14.19` was not in that shell. `Promax-Web-FRONTEND` and `pmx_api_v2` were not readable with this credential. |
@@ -38,6 +40,46 @@ Read-only discovery recorded on 21 October 2026. It is not released-build proof.
 | Historical September release-status document | Links that tree to company app `6810018262` and build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5`. | Historical link. Current App Store binary provenance stays unproven. |
 | Installed and store artifact mapping | Current App Store binary of track `6810018262` version `1.1.0` to that checkout, including its uncommitted files, plus the IPA. | Blocked. No IPA is on this host. |
 | Native and API acceptance | Device runs and an isolated disposable API. | Blocked. |
+
+## 22 October Play review record
+
+Reported from Mac checkpoints `google-play-recovery-2026-10-21.json` and `google-play-release-checkpoint-2026-10-04.txt`. This cloud host did not open those files. A console browser-control timeout during inspection is not a product failure. No login was sent. No credential was changed. Confirmation was not bypassed. Managed publishing was not switched on. Nothing was submitted.
+
+| Fact | Record |
+| --- | --- |
+| Company package | `au.com.promaxsolutions.promaxcare` |
+| Play app | `4975822694822650269` |
+| Developer | `7848143770069177658` |
+| September 22 rejection | Unresponsive UI controls / broken functionality, and an inaccurate health declaration under Others. |
+| 21 October console inspection | Health categories already set: Healthcare services and management; Medication and treatment management; Other, with a care-workforce explanation. |
+| Unsubmitted changes | Ten, including Production 4 (`1.1.0`) Start full rollout. Managed publishing is OFF. Do not submit all. |
+| Downloaded build 4 APK | SHA256 `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f`. Source-artifact mapping is unresolved. |
+| Screenshot sentence | Matches the local AccountController unconfirmed-email catch, which labels any mail exception as too many mails. The hosted reviewer account and the hosted cause were not verified. |
+
+## Review issue, fix, and native test
+
+Three causes stay separate. `246c1b2` is an Expo 53 source fix on pull request 9. It is not a release candidate. Reconcile it into the company Expo 54 checkout before any candidate. Leave that dirty tree and the working iOS binary unchanged. Do not rebuild the legacy Expo 53 tree over them.
+
+| Review issue | Class | Source fix | Native or user step | Status |
+| --- | --- | --- | --- | --- |
+| Unresponsive sign-in controls | App control | `246c1b2` removes the nested `ScrollView` on the sign-in screen. The keyboard-aware scroller keeps `keyboardShouldPersistTaps="handled"`. | On an Android device, open Sign in, show the keyboard, and tap email, password, and Sign in. Record whether each tap lands. | Unit contract passed. Device run Blocked. No emulator on this host. |
+| Mail sentence on the review screenshot | Reviewer account or backend delivery | `246c1b2` still withholds another `auth_login` for that address. It does not treat the sentence as a verified hourly limit, does not open a resend, and disables Sign in for that address. A code the person already has opens with `holdMail=1` and does not call `resend_otp`. A genuine `Email Not Confirmed...` response still opens the code screen. | Use a company-confirmed staff account. If that sentence appears, stop. Do not retry the address and do not tap Resend. Hand the account state to the Care OS lead. | Unit contract passed. Hosted cause Blocked. |
+| Health declaration marked Others | Declaration correctness | No in-app health screen was added. | The console categories above are already set. Leave the ten changes unsubmitted until a separate publication approval. | Console record. Not a mobile code pass. Not submitted. |
+| API catch labels every mail exception as too many mails | Care OS API | No API edit from this mobile branch. | Care OS splits that catch, checks the password before mail, and returns a distinct limit code. Test it on a disposable API. | Blocked. Do not compete with that edit. |
+
+[Retest sign-in 246c1b2](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `246c1b2` detached and did not write it: 3 suites, 44 tests, passed. Older mail, unconfirmed, and tap-target expects were not weakened. After a new form mount the button is enabled until the persisted hour answers; that answer still runs before `loginUser`, so the restart does not send another email. This is not a device or Play pass.
+
+## Android tester and reviewer steps
+
+These steps are for a person with the company Play account and an Android device. This host must not run them. Publication of any result needs a separate approval.
+
+1. Confirm the package is `au.com.promaxsolutions.promaxcare`, Play app `4975822694822650269`, developer `7848143770069177658`. Do not install `com.tobby95.pmaxapp` for this check.
+2. Hash the downloaded build 4 APK. Continue only when the SHA256 is `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f`. That file is still not mapped to a commit, so a result on it is not a result for `246c1b2`.
+3. Install that APK. Leave managed publishing OFF. Do not press Start full rollout and do not submit the ten pending changes.
+4. Use a staff account the company has already confirmed. Do not create a login from this record, do not change the password, and do not turn confirmation off.
+5. Open Sign in, focus the email field, and tap the password field and Sign in while the keyboard is open. Write down any control that does not receive the tap.
+6. If the screen shows `Error sending mail. Too many mails sent. Retry in One hour time.`, stop on that address for the hour. Do not tap Resend. Treat it as an unverified mail-send failure, which includes the unconfirmed-email catch, and send the account state to the Care OS lead. Do not send another sign-in.
+7. A later candidate has to be reconciled into the uncommitted Expo 54 checkout first. Do not replace that checkout with an Expo 53 rebuild, and do not rebuild or submit until publication is approved separately.
 
 ## Author unit runs on the follow-up commits
 
@@ -60,6 +102,7 @@ These are the author's runs on 21 October 2026. They are not a second-person pas
 | `a0c535b7402ff7b79a404d2dbd16a0e33011144f` | `CI=1 npx jest --watchAll=false --watchman=false --forceExit --testPathPattern='login-failure\|login-persistence\|startup-session' --no-coverage` | 3 suites, 32 tests, passed |
 | `bbd311d79bc577a95231dd75dcd8470f24d2eb75` | same command | 3 suites, 35 tests, passed |
 | `ff0881301a4de6e9a04cc4707708e62b124151e7` | same command | 3 suites, 41 tests, passed |
+| `246c1b2d37e4d5fd5caf6e25fc4fd48a179f849c` | same command | 3 suites, 44 tests, passed |
 | `0423ddb4081daee5bcff95e8f45d74d046fe239d` | `CI=1 npx jest --watchAll=false --watchman=false --forceExit --testPathPattern='roster-report-reliability\|shift-service\|report-draft-store' --no-coverage` | 3 suites, 19 tests, passed |
 | `16e05534293409d51f288f29d494d749d6c305be` | same command | 3 suites, 21 tests, passed |
 | `a883fdd3443db8f656a707e765be3544da3b26d6` | same command | 3 suites, 24 tests, passed |
@@ -95,6 +138,7 @@ The first three rows are the parent reviews. The later rows retested the follow-
 | [Retest drafts a883fdd](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) | `a883fdd3443db8f656a707e765be3544da3b26d6` | 3 suites, 24 tests, passed, 0 failed | Resumed the sign-in reviewer for this draft commit. The in-flight race expect still requires `goal_Progress` `new`. The AsyncStorage prefix is a mask, not encryption. A 4000-character draft fits in SecureStore items of at most 2048 bytes and still reads after AsyncStorage is removed. A rejected secure copy does not delete the draft. If the secure key cannot be stored, a new draft is kept as plain text, and an existing masked draft is not replaced. That plain copy is not secure storage. This is not the company app. |
 | [Retest draft tombstone 1095c75](https://cursor.com/agents/bc-6203ec83-dda9-5cc7-9079-99ed54257f86) | `1095c75e654f00067e2d04db1d1073587b324738` | 3 suites, 33 tests, passed, 0 failed | Resumed the finished sign-in reviewer after `1095c75` was pushed. This worker did not write that commit. Removing only AsyncStorage still restored the SecureStore copy. After the tombstone reads back, restart and restored chunks do not bring that attempt back, and the same attempt id cannot be written again. A lost response is not tombstoned. Cleanup failure leaves both bodies and still does not restore that attempt. Another company and another staff id keep their drafts. If the tombstone cannot be stored, nothing is deleted. If both tombstone reads throw, the draft stays visible and is not deleted. Older expects were not weakened. The mask is not encryption. This is not the company app. |
 | [Retest unreadable draft status](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) | `0d73f38c11995d5510d70cdb90bf747c2a4d3bdf` | 3 suites, 35 tests, passed, 0 failed | Resumed the finished sign-in reviewer after `0d73f38` was pushed. This worker did not write that commit. Both tombstone reads throwing keeps the body and blocks resend for that attempt and for another attempt id. Restart with the memory key cleared stays blocked. When the reads work again, a stored tombstone hides that attempt and a missing tombstone leaves the same body bytes. Company 8 and staff 5 stay readable. The in-flight race, mask prefix, legacy bytes, 2048-byte cap, and plaintext fallback expects remain. The SecureStore test double is a memory map. This is not the company app. |
+| [Retest sign-in 246c1b2](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) | `246c1b2d37e4d5fd5caf6e25fc4fd48a179f849c` | 3 suites, 44 tests, passed, 0 failed | Resumed after `246c1b2` was pushed. This worker did not write that commit. The Play sentence stays `mail_rate_limited`, does not open OTP, and still withholds another sign-in request. A genuine unconfirmed message still opens the code screen. The same address disables Sign in and offers an existing code without `loginUser` or `resend_otp`. A different address stays open. The sign-in screen has no nested `ScrollView`. The keyboard scroller still uses `keyboardShouldPersistTaps="handled"`. No assertion was weakened. Not a device or Play pass. |
 
 The server is not asked to register the hour.
 
@@ -129,14 +173,15 @@ A fresh checkout of `main` `de4eb2f7a7af8835700d20034fbe3fee6e43f0c9` at `/tmp/p
 
 ## Acceptance
 
-Status is Passed, Failed, Blocked, or NA. Passed means the named unit contract passed in the author run above. It does not mean a device, a hosted account, or a store build passed.
+Status is Passed, Failed, Blocked, or NA, plus the 22 October words User-confirmed and Console record. Passed means the named unit contract passed in the author run above. User-confirmed means Joshua confirmed the existing company iPhone release works. Console record means a Play Console inspection, not a mobile code pass. None of these means a new store build passed.
 
 | Journey | Role | Status | Reason |
 | --- | --- | --- | --- |
 | Sign-in stays on the form when the Play mail sentence is returned | Staff | Passed | Independent review of `0e6c9d4` confirmed the sentence is `mail_rate_limited`, does not open OTP, and sets `allowImmediateRetry` false. Jest on that parent: 20 passed, 0 failed. `c657dbe` also classifies a plain `Error` with that sentence. The reviewer did not re-run `c657dbe`. No `auth_login` was sent. |
+| Play mail sentence does not claim a verified limit, and Sign in is held for that address | Staff | Passed | [Retest sign-in 246c1b2](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `246c1b2`: 3 suites, 44 tests. The sentence still withholds another sign-in request. A genuine unconfirmed message still opens the code screen. The existing-code path does not call `resend_otp`. A different address stays open. The sign-in screen has no nested scroll view. Not a device pass. The hosted reviewer cause was not verified. |
 | One-hour block is per email, including a second address on the same device | Staff | Passed | Independent review of `0e6c9d4` found one AsyncStorage record, so saving a second address erased the first hour. Follow-up `de8516c` keeps one entry per normalized email. The reviewer did not re-run `de8516c`. Device storage and the server were not exercised. |
 | Nested or string error body still matches that sentence | Staff | Passed | Independent review of `0e6c9d4` found nested `response.message`, mixed-case `Message`, and a string body were not classified. Follow-up `de8516c` reads those. `c657dbe` covers a plain `Error`. The reviewer did not re-run those commits. |
-| Mail limit is enforced by the API | Staff | Blocked | Client cooldown only. API handoff: validate the password before sending mail and return a distinct limit code. `pmx_api_v2` was not readable. |
+| Mail limit is enforced by the API | Staff | Blocked | Client cooldown only. The local unconfirmed-email catch labels any mail exception as too many mails. Care OS should split that catch, validate the password before mail, and return a distinct limit code. This mobile branch did not edit the API. The hosted reviewer cause was not verified. `pmx_api_v2` was not readable. |
 | Shorter `Error sending mail.` without the hour sentence | Staff | Passed | The follow-up review of `c657dbe` found this phrase did not start the hour, including when it arrived as a plain `Error`. `07d266b` classifies it as `mail_rate_limited` before the network check, so the form stores the hour and does not call `auth_login` again for that address. [Retest sign-in bbd311d](https://cursor.com/agents/bc-6203ec83-dda9-5cc7-9079-99ed54257f86) retested `bbd311d`, which still includes that expect: 3 suites, 35 tests, passed. No `auth_login` was sent. |
 | Unconfirmed address stays off `auth_login` after a restart | Staff | Passed | [Retest sign-in ff08813](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `ff08813`: 3 suites, 41 tests. The repeat decision stays on the code screen. A retained intent blocks another send after a restart. No password is stored. Not a device pass. Not the company app. |
 | Mail hour survives a failed AsyncStorage write | Staff | Passed | Same review of `ff08813`. If no store can retain the intent, the request is withheld and can be tried again. A retained intent blocks a duplicate and an interrupted send until the hour ends. A finished sign-in can send again. If that release cannot be stored, the next attempt stays blocked until the hour ends. Not a device pass. |
@@ -161,16 +206,17 @@ Status is Passed, Failed, Blocked, or NA. Passed means the named unit contract p
 | Trip mileage refuses a missing, zero, or non-increasing odometer | Staff | Passed | Independent review of `cb70d3b` confirmed `mileageSubmitDecision` returns before `fill_mileage`, and the map distance stays an estimate. Jest on that commit: 9 passed, 0 failed. The API was not called. |
 | Notification tap opens a shift only with a positive shift id | Staff | Passed | Independent review of `cb70d3b` confirmed `pathForNotificationData`. No push was sent. Universal links and `google-services.json` are absent. |
 | Shift opened from a notification belongs to the signed-in staff member | Staff | Passed | [Retest profile 7ec97f1](https://cursor.com/agents/bc-d854589c-f749-59b9-a200-c4542b57e848) confirmed another staff id, another company, and missing or zero ids hide the shift actions. `GET /ShiftRosters/{id}` still ran before that check. `8c09eaa` requests the shift, and the create or edit report, only after the id is on this staff member's roster. The reviewer has not re-run `8c09eaa`. The shift API was not called. |
-| Android `1.1.0` build 4 and the historical APK hash | Staff | Blocked | Historical hash is not this source. No `adb` or emulator. Joshua has no Android device. |
-| iOS company-release build | Staff | Blocked | No Apple toolchain on this Linux host. A preserved checkout was reported on Joshua's Mac and was not read from here. The historical build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` does not prove the current App Store binary. The IPA is not on this host. |
+| Android `1.1.0` build 4 and the downloaded APK hash | Staff | Blocked | Downloaded build 4 SHA256 is `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f`. That file is not mapped to a commit. No `adb` or emulator. |
+| Existing company iPhone release | Staff | User-confirmed | Joshua confirmed on 22 October 2026 that the restored company iPhone app works. This is the existing release. It does not accept pull requests 9, 10, 11, or 12, and it does not map the binary to a commit. |
+| iOS company-release build for these pull requests | Staff | Blocked | No Apple toolchain on this Linux host. The reported Mac checkout was not read from here. Historical build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` does not prove the current App Store binary. The IPA is not on this host. The working iOS release stays in place. |
 | Server tenant and assignment enforcement | Staff | Blocked | Blocked until an isolated disposable API can run those tests. Client gates on pull request 11 are not that proof. `pmx_api_v2` was not readable. |
-| Play production rollout and the ten unsubmitted changes | Release | Blocked | Not submitted. Managed publishing was not changed. |
-| Health declaration | Staff | NA | Unresolved product decision. No screen was added. |
+| Play production rollout and the ten unsubmitted changes | Release | Blocked | Production 4 (`1.1.0`) Start full rollout is one of the ten unsubmitted changes. Managed publishing stays OFF. Do not submit all. A console browser timeout is not a product failure. |
+| Play health declaration | Release | Console record | Categories already inspected as Healthcare services and management, Medication and treatment management, and Other with a care-workforce explanation. No in-app health screen was added. Leave the console changes unsubmitted. |
 | Admin or other-role tools | Other roles | NA | Non-staff sign-in does not start a session. No admin UI was added. |
 
 ## Remaining work
 
-Passed unit rows stay in the acceptance table above. This list is the work still open after `0d73f38`. No finished worker was resumed for it. None of these rows is Ready to Update.
+Passed unit rows stay in the acceptance table above. This list is the work still open after the Play sign-in source fix `246c1b2`. [Retest sign-in 246c1b2](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested that commit. The rows below are not that unit pass. None of these rows is Ready to Update.
 
 | Workflow | Case | Class | Prerequisite | Next action |
 | --- | --- | --- | --- | --- |
@@ -193,15 +239,15 @@ Passed unit rows stay in the acceptance table above. This list is the work still
 | Downstream web | Surveys, policy-compliance admin, invoices | Out of scope | Those menus are company-admin or administrator. | Do not add admin access. |
 | Release | Company iPhone binary | Company tree | The reported Mac checkout stays in place, including its uncommitted Expo 54 / React Native 0.81.5 files. Current store mapping still needs the IPA for track `6810018262` version `1.1.0` and a manifest that matches that binary. Build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` is a historical link. | Leave the Mac checkout unchanged. Map the installed artifact separately. Do not copy, rebuild, or submit it from this host. |
 | Release | Server tenant and assignment | Isolated API | A disposable API that can reject another tenant and another assignment. `pmx_api_v2` was not readable. | Run those tests on that API. Client gates are not that proof. |
-| Release | Mail limit enforced by the API | Isolated API | The same disposable API, able to check the password before mail and return a distinct limit code. | Keep the client hour as the unit pass it already is. |
+| Release | Mail sentence from the unconfirmed-email catch | Isolated API | A disposable API owned by Care OS. The catch must stop labeling every mail exception as too many mails. Password check before mail, and a distinct limit code, stay that lead's edit. | Do not edit the API from this mobile branch. Do not send a login. Keep the client hour. |
 | Release | Draft confidentiality | User policy | A decision on whether the device mask key and plaintext SecureStore chunks stay so a draft can be restored. | Leave logout and unsent drafts unchanged. The mask and plaintext fallback stay unaccepted as protected storage. |
-| Release | Play, store, EAS, OTA | Publication | A chosen production destination and a binary that matches the company listing. | Do not submit, build, or publish. |
+| Release | Play review fixes on a company binary | Company tree, then publication | Reconcile `246c1b2` into the uncommitted Expo 54 checkout. Map build 4 SHA256 `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f` before calling that APK the candidate. | Leave the Mac checkout and the working iOS release unchanged. Do not rebuild Expo 53 over them. Submit only after a separate approval. |
 
 ## Parked decisions
 
 - Joshua authorised the Bun `1.4.3` frozen-lockfile install on team environment `d81efd47-cd22-11f1-bec7-b2318963e0b6`. The saved config is unchanged until he saves a tested draft. No `start` script. No Android SDK. No secrets. No new environment. The unlocked npm install is not the reproducible command.
 - Whether the API should reject mail before password checks.
-- Whether Remember me should persist, and whether health declaration belongs on mobile.
+- Whether Remember me should persist. The Play health categories are already set in the console and stay unsubmitted. An in-app health screen was not added.
 - Whether the Android package becomes `au.com.promaxsolutions.promaxcare`, and whether `1.0.0` / `1.1.0` / runtime / EAS remote versions are aligned.
 - Whether a staff device is available for the Android candidate. This record does not authorise that test.
 - Whether the device-wide draft mask key and the plaintext SecureStore chunks should stay so an unsent draft can be restored, or be removed to limit who can read it. `0d73f38` does not choose. Logout still keeps unsent drafts. A submitted attempt is removed only after its tombstone reads back. An unreadable tombstone keeps the draft and blocks send. The platform Keychain and Keystore behaviour is recorded separately in the ledger and is not this decision.

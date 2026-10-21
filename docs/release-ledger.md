@@ -4,14 +4,14 @@ Target: 22 October 2026, Australia/Sydney. Care OS is the go-live. This mobile l
 
 ## Live store lineage
 
-Checked 21 October 2026. No IPA or APK was on this host. No store, EAS, or OTA command was run. A preserved Expo 54 checkout was later reported on Joshua's Mac. This cloud host did not open, copy, rebuild, or submit it.
+Checked 21 October 2026, with the 22 October account clarification below. No IPA or APK was on this host. No store, EAS, or OTA command was run. A preserved Expo 54 checkout was later reported on Joshua's Mac. This cloud host did not open, copy, rebuild, or submit it. Joshua confirmed on 22 October 2026 that the restored company iPhone app works. That confirms the existing release. It does not accept these pull requests.
 
 | Listing | What the public record says | What this remote is |
 | --- | --- | --- |
-| Live company iPhone, [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262) | Apple lookup `bundleId=au.com.promaxsolutions.promaxcare`, country `au`. Version `1.1.0`. Seller PROMAX IT SOLUTIONS PTY LTD. Track `6810018262`. Released 2026-09-25. Current version 2026-09-25T20:34:03Z. Size 56,905,728 bytes. Minimum iOS 15.1. No release notes. | That bundle id is not in this git remote. A reported Mac checkout overrides legacy `app.json` ids to that bundle through `app.config.js`. Binary-to-commit lineage for the current store artifact stays Blocked. |
+| Live company iPhone, [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262) | Apple lookup `bundleId=au.com.promaxsolutions.promaxcare`, country `au`. Version `1.1.0`. Seller PROMAX IT SOLUTIONS PTY LTD. Track `6810018262`. Released 2026-09-25. Current version 2026-09-25T20:34:03Z. Size 56,905,728 bytes. Minimum iOS 15.1. No release notes. Joshua confirmed on 22 October 2026 that this restored app works on iPhone. | That bundle id is not in this git remote. A reported Mac checkout overrides legacy `app.json` ids to that bundle through `app.config.js`. Binary-to-commit lineage for the current store artifact stays Blocked. The confirmation is the existing release, not acceptance of these pull requests. |
 | Other live iPhone, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123) | Apple lookup `bundleId=com.promax-app`. Version `1.2.0`. Seller Aermeans Global Services Limited. Track `6748918123`. First release 2025-08-07. Current version 2025-09-11T18:46:32Z. Size 45,891,584 bytes. Notes mention multi-client reports and per-client kilometres. | `app.json` on `main` `de4eb2f` and on Care OS `981bea5` is version `1.1.0` with the same bundle. Neither commit is the live `1.2.0` binary. Care OS is not the company listing. |
 | Play `com.tobby95.pmaxapp` | `https://play.google.com/store/apps/details?id=com.tobby95.pmaxapp&hl=en&gl=au` returned HTTP 404. | This remote's package name. `app.json` version `1.1.0`. No APK. Not a public listing today. |
-| Play `au.com.promaxsolutions.promaxcare` | The same Play URL pattern returned HTTP 404. | Not a public listing today. |
+| Play `au.com.promaxsolutions.promaxcare` | The public Play URL pattern returned HTTP 404. Company console identity, from the reported checkpoints and not opened on this host: package `au.com.promaxsolutions.promaxcare`, Play app `4975822694822650269`, developer `7848143770069177658`. | Not a public listing from the 21 October GET. Review and rollout state is in the Play review section below. |
 
 AppBrain, a third-party page, records `com.tobby95.pmaxapp` at version `1.2.1`, last update 12 September 2025, and says the public Play listing was removed. That page is not the Play store and not a binary on this host. Its `1.2.1` is not this remote's `1.1.0`.
 
@@ -61,7 +61,7 @@ The same lockfile blob is on `main` and on pull requests 9, 10, and 11. An unloc
 
 ## Slice for 22 October
 
-The release target remains the company iPhone [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, App Store track `6810018262`, version `1.1.0`. These rows are Expo 53 source fixes. They do not complete that company app. None of these rows is a device, hosted, or store pass.
+The release target remains the company iPhone [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, App Store track `6810018262`, version `1.1.0`. Joshua confirmed that restored app works. Staff access from both stores is the priority, with the Play review first and the working iOS release left in place. Former distribution used Timi friend accounts. The company now owns the Apple and Google accounts. These rows are Expo 53 source fixes. They do not complete that company app. None of these rows is a new device, hosted, or store pass. Reconcile the company Expo 54 checkout before any release candidate. Do not rebuild this Expo 53 tree over that dirty checkout.
 
 ## Pending provenance checklist
 
@@ -74,6 +74,27 @@ Read-only discovery. This cloud host did not open the Mac path. No secret was co
 | Historical September release-status document | Links that tree to company app `6810018262` and build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5`. | Historical link. It does not prove the current App Store binary. |
 | Installed and store artifact mapping | Current track `6810018262` version `1.1.0` binary, its IPA, and the uncommitted checkout that produced it. | Blocked. |
 | Native and isolated-API acceptance | Device proof and a disposable API. | Blocked. |
+
+## Play review
+
+Reported checkpoints `google-play-recovery-2026-10-21.json` and `google-play-release-checkpoint-2026-10-04.txt` were not opened from this host. A console browser-control timeout is not a product failure. No credential was changed and no login was sent.
+
+| Check | Record | Status |
+| --- | --- | --- |
+| Rejection on 22 September | Unresponsive UI controls / broken functionality, and an inaccurate health declaration under Others. | Recorded. Causes stay separate below. |
+| Health categories on 21 October | Healthcare services and management; Medication and treatment management; Other, with a care-workforce explanation. | Already set in the console. Unsubmitted. No in-app screen was added. |
+| Unsubmitted changes | Ten, including Production 4 (`1.1.0`) Start full rollout. Managed publishing OFF. | Do not submit all. Publication needs a separate approval. |
+| Build 4 APK | SHA256 `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f`. | Downloaded hash recorded. Source mapping unresolved. |
+| Screenshot sentence | Same text as the local AccountController unconfirmed-email catch, which labels any mail exception as too many mails. | Match recorded. Hosted reviewer account and cause were not verified. |
+
+| Review issue | Fix | Next action |
+| --- | --- | --- |
+| App controls | `246c1b2` removes the nested sign-in `ScrollView`. | Android tester steps are in `docs/staff-journey-matrix.md`. Device run stays Blocked here. |
+| Reviewer account or mail delivery | `246c1b2` withholds another sign-in, disables Sign in for that address, and does not call `resend_otp` from the existing-code path. | Stop on that sentence. Hand the account to the Care OS lead. |
+| Declaration | Console categories above. | Leave them unsubmitted. |
+| API catch | No mobile edit. | Care OS splits the catch and returns a distinct limit code on a disposable API. |
+
+[Retest sign-in 246c1b2](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `246c1b2`: 3 suites, 44 tests, passed. That worker did not write the commit. No assertion was weakened.
 
 ## Prerequisites for the company app
 
@@ -88,7 +109,7 @@ The reported checkout is a source location. These acceptance items are still mis
 
 | Pull request | Latest commit | What it holds | Independent review |
 | --- | --- | --- | --- |
-| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `ff0881301a4de6e9a04cc4707708e62b124151e7` | A sign-in intent is reserved before `auth_login`. If no store retains it, the request is withheld and can be tried again. No password is stored | [Retest sign-in ff08813](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `ff08813`: 3 suites, 41 tests, passed. No assertion was weakened. All three writes failing withholds the send. A retained intent blocks a restart, a duplicate, and an interrupted send until the hour ends. This is not another storage fallback. |
+| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `246c1b2d37e4d5fd5caf6e25fc4fd48a179f849c` | The Play mail sentence still withholds `auth_login`. It does not claim a verified hourly limit. Sign in is disabled for that address, and an existing code does not call `resend_otp`. The sign-in screen no longer nests a scroll view. | [Retest sign-in 246c1b2](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `246c1b2`: 3 suites, 44 tests, passed. No assertion was weakened. `ff08813` remains the intent commit underneath. This is not a device or Play pass. |
 | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `0d73f38c11995d5510d70cdb90bf747c2a4d3bdf` | An unreadable tombstone keeps the draft and blocks send until the stores answer. The AsyncStorage prefix is a mask, not encryption. Plaintext and that mask are not protected-draft acceptance | [Retest unreadable draft status](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `0d73f38`: 3 suites, 35 tests, passed. Both reads throwing blocks resend and leaves the body. Restart stays blocked. Recovery of a stored tombstone hides that attempt. Another company and staff key stay. The Jest SecureStore double is a memory map. |
 | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` | Cancel, mileage, report, and notification requests wait for this sign-in's roster or message list | [Retest profile 8c09eaa](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) retested `bc3ec9b`: 2 suites, 12 tests, passed. The server was not asked to reject another tenant. |
 | [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only. Not a store update. |
@@ -117,16 +138,16 @@ This is this repository, not the platform module.
 
 ## Checkpoint
 
-After `0d73f38`, no further source change on this remote is authorised. Finished workers were left idle. Passed unit rows stay in `docs/staff-journey-matrix.md` and are not re-opened here. The app is not Ready to Update.
+`246c1b2` is the Play sign-in source fix. It is not a release candidate. Passed unit rows stay in `docs/staff-journey-matrix.md`. The app is not Ready to Update.
 
 | Still required | Class | Next action |
 | --- | --- | --- |
 | Current App Store artifact mapped to the reported Mac checkout, plus that IPA | Company tree | Leave `/Users/alukojoshfx/.codex/.chatgpt-projects/g-p-6937926449a88191b260dcf079c5ee33/engineering/promax-mobile-ios-company-release` and its uncommitted changes in place. Map track `6810018262` separately from historical build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5`. Do not copy, rebuild, or submit from this host. |
 | Emulator or staff device, location permission, and `google-services.json` for a push test | Native | Run the existing roster, clock, document, profile, and trip screens. Do not send a push or a production clock-in. |
 | Disposable API for tenant rejection, duplicate clock-in, document company, mileage, and the mail limit | Isolated API | Run those checks off production. Client gates are not that proof. |
-| Remember me, health declaration, and whether draft copies stay for recovery | User policy | Leave the current screens unchanged until a decision is recorded. |
+| Remember me, and whether draft copies stay for recovery | User policy | Leave the current screens unchanged until a decision is recorded. Play health categories are already set and stay unsubmitted. |
 | Web screens that this source does not have, care-plan branch `b773e1d`, and admin menus | Out of scope | Do not add them. |
-| Play, App Store, EAS, and OTA | Publication | Do not submit or publish. |
+| Play, App Store, EAS, and OTA | Publication | Do not submit or publish. Managed publishing stays OFF. The ten changes, including Production 4 Start full rollout, stay unsubmitted until a separate approval. |
 
 ## Still blocked
 
@@ -136,12 +157,12 @@ After `0d73f38`, no further source change on this remote is authorised. Finished
 | Hosted sign-in, clock-in, report save, and document read | No disposable API and no authorised account. No production request was sent. |
 | Remember me and logout deletion | Remember me is unchanged. Logout still keeps the draft. The AsyncStorage prefix on `0d73f38` is a mask, not encryption. SecureStore values are capped at 2048 bytes. A new draft whose secure key cannot be stored is plain text. Removal on logout was not added. The platform Keychain and Keystore notes above are not a protected-draft pass. Confidentiality versus retention stays parked. |
 | Server tenant and assignment enforcement | Blocked until an isolated disposable API can run those tests. Client gates on pull request 11 are not that proof. `pmx_api_v2` was not readable. |
-| Live company iPhone binary | Bundle `au.com.promaxsolutions.promaxcare` version `1.1.0` is on the App Store. The reported Mac checkout and historical build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` do not prove that binary. The IPA is not on this host. |
+| Live company iPhone binary | Joshua confirmed the restored company app works on iPhone. Bundle `au.com.promaxsolutions.promaxcare` version `1.1.0` is that existing release. The reported Mac checkout and historical build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` do not prove the binary's commit. The IPA is not on this host. New pull requests are not accepted by that confirmation. |
 | Live `com.promax-app` binary | Store version is `1.2.0` from Aermeans. This remote is `1.1.0`. |
-| Play listing | Public Play URLs for both packages returned HTTP 404. No APK. |
+| Play listing | Public Play URLs for both packages returned HTTP 404. Console identity is package `au.com.promaxsolutions.promaxcare`, app `4975822694822650269`, developer `7848143770069177658`. Build 4 SHA256 `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f` is not mapped to a commit. No APK is on this host. |
 | Store, EAS, and OTA | Not run. Managed publishing was not changed. |
 | Production destination | Not chosen. |
-| Company Expo 54 delta | Reported on Joshua's Mac with uncommitted changes. Absent from this remote and this cloud host. Not copied. Current store mapping stays Blocked. |
+| Company Expo 54 delta | Reported on Joshua's Mac with uncommitted changes. Absent from this remote and this cloud host. Not copied. Reconcile `246c1b2` there before any release candidate. Do not rebuild Expo 53 over that tree. Current store mapping stays Blocked. |
 
 ## Environment
 
