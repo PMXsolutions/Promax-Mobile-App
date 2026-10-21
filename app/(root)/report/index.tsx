@@ -7,24 +7,49 @@ import EditReportForm from "@/modules/report/edit-report-form";
 import { reportQuery } from "@/hooks/queries/report";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
+import useAuthStore from "@/store/use-auth-store";
+import { shiftQuery } from "@/hooks/queries/shift";
+import { shiftListedForSession } from "@/libs/staff-record";
+import { View } from "react-native";
+import Text from "@/components/shared/text";
 
 const ReportDetail = () => {
   const query = useLocalSearchParams();
+  const { user, staff } = useAuthStore();
 
   const reportId = query.reportId as unknown as string;
   const rosterId = query.rosterId as unknown as string;
+  const staffId = Number(staff?.staffId);
+  const rosterQuery = shiftQuery.useShiftRoster(
+    Number.isFinite(staffId) && staffId > 0 ? staffId : 0
+  );
+  const listed = shiftListedForSession(rosterQuery.data, Number(rosterId), {
+    staffId: staff?.staffId,
+    companyId: user?.companyId,
+  });
   const { data, isLoading } = reportQuery.useFetchReportInfo(
     Number(reportId),
-    Number(rosterId)
+    Number(rosterId),
+    listed
   );
-  // const load = true;
-  if (isLoading) {
+  if (rosterQuery.isLoading || (listed && isLoading)) {
     return (
       <Loader
         name="2-curves"
         color={THEME.colors.secondary}
         title="Loading Report.."
       />
+    );
+  }
+
+  if (!listed) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Edit Shift Report"} />
+        <View style={{ padding: 24 }}>
+          <Text>This shift is not assigned to your sign-in.</Text>
+        </View>
+      </ScreenWrapper>
     );
   }
 

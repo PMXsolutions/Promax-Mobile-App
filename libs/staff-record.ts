@@ -20,11 +20,9 @@ export function documentOwnedBySession(
 
   const companyId = Number(document.companyId);
   const sessionCompany = Number(session.companyId);
-  const documentHasCompany = Number.isFinite(companyId) && companyId > 0;
-  const sessionHasCompany = Number.isFinite(sessionCompany) && sessionCompany > 0;
-  if (documentHasCompany && (!sessionHasCompany || companyId !== sessionCompany)) {
-    return false;
-  }
+  if (!Number.isFinite(companyId) || companyId <= 0) return false;
+  if (!Number.isFinite(sessionCompany) || sessionCompany <= 0) return false;
+  if (companyId !== sessionCompany) return false;
 
   const owner = Number(document.userId);
   const staffId = Number(session.staffId);
@@ -33,7 +31,23 @@ export function documentOwnedBySession(
     return owner === staffId || (Number.isFinite(userId) && owner === userId);
   }
 
-  return documentHasCompany && sessionHasCompany;
+  return true;
+}
+
+export function shiftListedForSession(
+  roster:
+    | { shiftRosterId?: number | null; staffId?: number | null; companyID?: number | null }[]
+    | null
+    | undefined,
+  shiftId: number,
+  session: { staffId?: number | null; companyId?: number | null }
+): boolean {
+  const id = Number(shiftId);
+  if (!Number.isFinite(id) || id <= 0 || !Array.isArray(roster)) return false;
+  return roster.some(
+    (item) =>
+      Number(item.shiftRosterId) === id && shiftVisibleToSession(item, session)
+  );
 }
 
 export function shiftVisibleToSession(

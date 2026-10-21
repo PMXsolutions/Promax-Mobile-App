@@ -21,7 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomBackdrop from "@/components/ui/custom-backdrop";
 import MapPreviewBottomSheet from "@/components/shift/map-preview-modal";
 import Text from "@/components/shared/text";
-import { shiftVisibleToSession } from "@/libs/staff-record";
+import { shiftListedForSession, shiftVisibleToSession } from "@/libs/staff-record";
 
 const ShiftDetail = () => {
   const { user, staff } = useAuthStore();
@@ -29,7 +29,14 @@ const ShiftDetail = () => {
 
   const id = query.id as unknown as string;
   const clients = query.clients as unknown as string;
-  const { data: shift, isLoading } = shiftQuery.useShiftDetail(Number(id));
+  const session = { staffId: staff?.staffId, companyId: user?.companyId };
+  const staffId = Number(staff?.staffId);
+  const rosterQuery = shiftQuery.useShiftRoster(
+    Number.isFinite(staffId) && staffId > 0 ? staffId : 0
+  );
+  const shiftId = Number(id);
+  const listed = shiftListedForSession(rosterQuery.data, shiftId, session);
+  const { data: shift, isLoading } = shiftQuery.useShiftDetail(shiftId, listed);
 
   const {
     clockInPending,
@@ -85,7 +92,7 @@ const ShiftDetail = () => {
   }, []);
 
   // const load = true;
-  if (isLoading) {
+  if (rosterQuery.isLoading || (listed && isLoading)) {
     return (
       <Loader
         name="2-curves"
@@ -96,11 +103,8 @@ const ShiftDetail = () => {
   }
 
   if (
-    shift &&
-    !shiftVisibleToSession(shift, {
-      staffId: staff?.staffId,
-      companyId: user?.companyId,
-    })
+    !listed ||
+    (shift && !shiftVisibleToSession(shift, session))
   ) {
     return (
       <ScreenWrapper barStyle="dark-content">

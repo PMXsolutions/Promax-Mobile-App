@@ -4,6 +4,7 @@ import { pathForNotificationData } from "@/libs/notification-route";
 import {
   documentOwnedBySession,
   isOwnStaffRecord,
+  shiftListedForSession,
   shiftVisibleToSession,
 } from "@/libs/staff-record";
 import { mileageSubmitDecision } from "@/libs/trip-mileage";
@@ -56,6 +57,21 @@ describe("documents and profile ownership", () => {
     ).toBe(false);
     expect(shiftVisibleToSession({ companyID: 9 }, session)).toBe(false);
     expect(shiftVisibleToSession({ staffId: 4 }, session)).toBe(false);
+    expect(
+      shiftListedForSession(
+        [{ shiftRosterId: 18, staffId: 4, companyID: 9 }],
+        18,
+        session
+      )
+    ).toBe(true);
+    expect(
+      shiftListedForSession(
+        [{ shiftRosterId: 18, staffId: 5, companyID: 8 }],
+        18,
+        session
+      )
+    ).toBe(false);
+    expect(shiftListedForSession([], 18, session)).toBe(false);
   });
 
   it("denies a document from another company or another user", () => {
@@ -73,6 +89,10 @@ describe("documents and profile ownership", () => {
       false
     );
     expect(documentOwnedBySession({ companyId: 9 }, session)).toBe(true);
+    expect(documentOwnedBySession({ userId: 4 }, session)).toBe(false);
+    expect(
+      documentOwnedBySession({ userId: 4 }, { ...session, companyId: 8 })
+    ).toBe(false);
     expect(documentOwnedBySession({}, session)).toBe(false);
     expect(
       documentOwnedBySession({ companyId: 9, userId: 4 }, { staffId: 4, userId: "15" })
