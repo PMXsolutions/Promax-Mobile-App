@@ -19,8 +19,9 @@ import {
   commitSubmittedDraft,
   readDraftClaim,
   readReportDraft,
-  readSubmittedAttempt,
+  readSubmissionStatus,
   removeDraftClaim,
+  resendDecision,
   writeDraftClaim,
   writeReportDraft,
 } from "@/libs/report-draft-store";
@@ -180,6 +181,16 @@ export function useReportDraft<T extends object>(options: {
     }
     const current = draftRef.current;
     if (!current) return;
+    if (key) {
+      const status = await readSubmissionStatus(key);
+      if (resendDecision(status, current.attemptId) === "blocked_unreadable") {
+        setNeedsAcknowledge(true);
+        setNotice(
+          "This report was not sent. This device could not check whether it was already sent."
+        );
+        return;
+      }
+    }
     const next = acknowledgeUncertainSubmit(current, new Date());
     draftRef.current = next;
     setNeedsAcknowledge(false);
@@ -205,7 +216,16 @@ export function useReportDraft<T extends object>(options: {
     const current =
       draftRef.current ??
       createDraft(rosterId, form, new Date(), attemptRef.current);
-    if (await readSubmittedAttempt(key) === current.attemptId) {
+    const status = await readSubmissionStatus(key);
+    const decision = resendDecision(status, current.attemptId);
+    if (decision === "blocked_unreadable") {
+      setNeedsAcknowledge(true);
+      setNotice(
+        "This report was not sent. This device could not check whether it was already sent."
+      );
+      return false;
+    }
+    if (decision === "blocked_submitted") {
       setNotice("This report was already sent from this device. It was not sent again.");
       return false;
     }

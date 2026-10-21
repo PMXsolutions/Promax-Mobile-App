@@ -6,7 +6,9 @@ import {
   commitSubmittedDraft,
   readDraftClaim,
   readReportDraft,
+  readSubmissionStatus,
   readSubmittedAttempt,
+  resendDecision,
   resetDraftKeyMemoryForTests,
   writeDraftClaim,
   writeReportDraft,
@@ -19,10 +21,12 @@ jest.mock("@react-native-async-storage/async-storage", () => {
     setThrows: false,
     removeThrows: false,
     submittedGetThrows: false,
+    throwKeys: new Set<string>(),
   };
   let hold: Promise<void> | null = null;
   return {
     getItem: async (key: string) => {
+      if (state.throwKeys.has(key)) throw new Error("async get");
       if (state.submittedGetThrows && key.endsWith(".submitted")) {
         throw new Error("async tombstone get");
       }
@@ -55,9 +59,11 @@ jest.mock("expo-secure-store", () => {
     setThrows: false,
     deleteThrows: false,
     submittedGetThrows: false,
+    throwKeys: new Set<string>(),
   };
   return {
     getItemAsync: async (key: string) => {
+      if (state.throwKeys.has(key)) throw new Error("secure get");
       if (state.submittedGetThrows && key.endsWith(".submitted")) {
         throw new Error("secure tombstone get");
       }
@@ -242,6 +248,7 @@ type StorageState = {
   setThrows: boolean;
   removeThrows: boolean;
   submittedGetThrows: boolean;
+  throwKeys: Set<string>;
 };
 
 type SecureState = {
@@ -249,6 +256,7 @@ type SecureState = {
   setThrows: boolean;
   deleteThrows: boolean;
   submittedGetThrows: boolean;
+  throwKeys: Set<string>;
 };
 
 function asyncState(): StorageState {
@@ -286,11 +294,13 @@ describe("submitted draft tombstone", () => {
     asyncFlags.setThrows = false;
     asyncFlags.removeThrows = false;
     asyncFlags.submittedGetThrows = false;
+    asyncFlags.throwKeys.clear();
     const secureFlags = secureState();
     secureFlags.getThrows = false;
     secureFlags.setThrows = false;
     secureFlags.deleteThrows = false;
     secureFlags.submittedGetThrows = false;
+    secureFlags.throwKeys.clear();
     removedKeys().length = 0;
   });
 
@@ -467,7 +477,7 @@ describe("submitted draft tombstone", () => {
     });
   });
 
-  it("shows the draft again when a stored tombstone cannot be read", async () => {
+  it("keeps the draft and blocks resend when both tombstone reads throw", async () => {
     const key = "promaxcare.report-draft.c9.s4.create.unreadable";
     const draft = inFlightDraft("attempt-unreadable", "visible again");
     expect(await writeReportDraft(key, draft)).toBe(true);
@@ -478,15 +488,170 @@ describe("submitted draft tombstone", () => {
       cleared: false,
     });
     const raw = await AsyncStorage.getItem(key);
+    const beforeRemoves = removedKeys().length;
 
     asyncState().submittedGetThrows = true;
+    expect(await readSubmissionStatus(key)).toEqual({
+      state: "submitted",
+      attemptId: "attempt-unreadable",
+    });
+    expect(resendDecision(await readSubmissionStatus(key), draft.attemptId)).toBe(
+      "blocked_submitted"
+    );
+
     secureState().submittedGetThrows = true;
+    resetDraftKeyMemoryForTests();
+    const status = await readSubmissionStatus(key);
+    expect(status).toEqual({ state: "unreadable" });
+    expect(resendDecision(status, draft.attemptId)).toBe("blocked_unreadable");
+    expect(resendDecision(status, "attempt-other")).toBe("blocked_unreadable");
     expect(await readSubmittedAttempt(key)).toBeNull();
     expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
       goal_Progress: "visible again",
     });
+    expect(await writeReportDraft(key, draft)).toBe(false);
     expect(await AsyncStorage.getItem(key)).toBe(raw);
-    expect(removedKeys().filter((name) => name === key)).toEqual([key]);
+    expect(removedKeys().length).toBe(beforeRemoves);
+
+    asyncState().submittedGetThrows = false;
+    secureState().submittedGetThrows = false;
+    resetDraftKeyMemoryForTests();
+    expect(await readSubmissionStatus(key)).toEqual({
+      state: "submitted",
+      attemptId: "attempt-unreadable",
+    });
+    expect(await readReportDraft(key)).toBeNull();
+    expect(await writeReportDraft(key, draft)).toBe(false);
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+  });
+
+  it("blocks resend while one tombstone read throws, then opens when both reads are absent", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.recover-none";
+    const draft = inFlightDraft("attempt-recover", "still on device");
+    expect(await writeReportDraft(key, draft)).toBe(true);
+    const raw = await AsyncStorage.getItem(key);
+    const tombstone = `${key}.submitted`;
+
+    asyncState().throwKeys.add(tombstone);
+    let status = await readSubmissionStatus(key);
+    expect(status.state).toBe("unreadable");
+    expect(resendDecision(status, draft.attemptId)).toBe("blocked_unreadable");
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+
+    asyncState().throwKeys.clear();
+    secureState().throwKeys.add(tombstone);
+    status = await readSubmissionStatus(key);
+    expect(status.state).toBe("unreadable");
+    expect(await writeReportDraft(key, draft)).toBe(false);
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+
+    secureState().throwKeys.clear();
+    resetDraftKeyMemoryForTests();
+    status = await readSubmissionStatus(key);
+    expect(status).toEqual({ state: "none" });
+    expect(resendDecision(status, draft.attemptId)).toBe("open");
+    expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
+      goal_Progress: "still on device",
+    });
+    expect(await AsyncStorage.getItem(key)).toBe(raw);
+  });
+
+  it("does not block another company or staff key when one tombstone cannot be read", async () => {
+    const blockedKey = "promaxcare.report-draft.c9.s4.create.status";
+    const otherCompany = "promaxcare.report-draft.c8.s4.create.status";
+    const otherStaff = "promaxcare.report-draft.c9.s5.create.status";
+    const blocked = inFlightDraft("attempt-blocked", "company nine");
+    const companyDraft = createDraft(
+      "12",
+      { goal_Progress: "company eight" },
+      now,
+      "attempt-company"
+    );
+    const staffDraft = createDraft(
+      "12",
+      { goal_Progress: "staff five" },
+      now,
+      "attempt-staff"
+    );
+    expect(await writeReportDraft(blockedKey, blocked)).toBe(true);
+    expect(await writeReportDraft(otherCompany, companyDraft)).toBe(true);
+    expect(await writeReportDraft(otherStaff, staffDraft)).toBe(true);
+    const blockedRaw = await AsyncStorage.getItem(blockedKey);
+    const companyRaw = await AsyncStorage.getItem(otherCompany);
+    const staffRaw = await AsyncStorage.getItem(otherStaff);
+    asyncState().removeThrows = true;
+    secureState().deleteThrows = true;
+    expect(await commitSubmittedDraft(blockedKey, blocked.attemptId)).toEqual({
+      submitted: true,
+      cleared: false,
+    });
+
+    const tombstone = `${blockedKey}.submitted`;
+    asyncState().throwKeys.add(tombstone);
+    secureState().throwKeys.add(tombstone);
+    resetDraftKeyMemoryForTests();
+    const blockedStatus = await readSubmissionStatus(blockedKey);
+    expect(blockedStatus).toEqual({ state: "unreadable" });
+    expect(resendDecision(blockedStatus, blocked.attemptId)).toBe(
+      "blocked_unreadable"
+    );
+    expect(await readSubmissionStatus(otherCompany)).toEqual({ state: "none" });
+    expect(await readSubmissionStatus(otherStaff)).toEqual({ state: "none" });
+    expect(resendDecision(await readSubmissionStatus(otherCompany), "attempt-company")).toBe(
+      "open"
+    );
+    expect((await readReportDraft<typeof blocked.form>(blockedKey))?.form).toEqual({
+      goal_Progress: "company nine",
+    });
+    expect(
+      (await readReportDraft<typeof companyDraft.form>(otherCompany))?.form
+    ).toEqual({ goal_Progress: "company eight" });
+    expect(
+      (await readReportDraft<typeof staffDraft.form>(otherStaff))?.form
+    ).toEqual({ goal_Progress: "staff five" });
+    expect(await AsyncStorage.getItem(blockedKey)).toBe(blockedRaw);
+    expect(await AsyncStorage.getItem(otherCompany)).toBe(companyRaw);
+    expect(await AsyncStorage.getItem(otherStaff)).toBe(staffRaw);
+    expect(await writeReportDraft(otherCompany, companyDraft)).toBe(true);
+
+    asyncState().throwKeys.clear();
+    secureState().throwKeys.clear();
+    expect(await readSubmissionStatus(blockedKey)).toEqual({
+      state: "submitted",
+      attemptId: "attempt-blocked",
+    });
+    expect(await readReportDraft(blockedKey)).toBeNull();
+    expect(
+      (await readReportDraft<typeof companyDraft.form>(otherCompany))?.form
+    ).toEqual({ goal_Progress: "company eight" });
+
+    const hook = readFileSync("hooks/use-report-draft.ts", "utf8");
+    const acknowledge = hook.slice(
+      hook.indexOf("const acknowledge"),
+      hook.indexOf("const prepareSubmit")
+    );
+    const prepare = hook.slice(
+      hook.indexOf("const prepareSubmit"),
+      hook.indexOf("const markSaved")
+    );
+    expect(acknowledge.indexOf("blocked_unreadable")).toBeLessThan(
+      acknowledge.indexOf("acknowledgeUncertainSubmit")
+    );
+    expect(acknowledge.indexOf("blocked_unreadable")).toBeLessThan(
+      acknowledge.indexOf("removeDraftClaim")
+    );
+    expect(acknowledge).not.toContain("removeReportDraft");
+    expect(prepare).toContain(
+      "This report was not sent. This device could not check whether it was already sent."
+    );
+    expect(prepare).not.toContain("removeReportDraft");
+    const store = readFileSync("libs/report-draft-store.ts", "utf8");
+    expect(store).toContain(
+      "plain` is the report JSON. Device encryption is expo-secure-store, not this function."
+    );
+    expect(readFileSync("libs/report-draft.ts", "utf8")).toContain(
+      "This is not encryption."
+    );
   });
 
   it("blocks the same attempt after restart and still accepts a new one", async () => {
@@ -525,7 +690,10 @@ describe("submitted draft tombstone", () => {
       hook.indexOf("const markSaved"),
       hook.indexOf("const markFailed")
     );
-    expect(prepare.indexOf("readSubmittedAttempt")).toBeLessThan(
+    expect(prepare.indexOf("readSubmissionStatus")).toBeLessThan(
+      prepare.indexOf("claimDraftSend")
+    );
+    expect(prepare.indexOf("blocked_unreadable")).toBeLessThan(
       prepare.indexOf("claimDraftSend")
     );
     expect(prepare).toContain(

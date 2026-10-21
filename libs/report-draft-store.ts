@@ -102,6 +102,7 @@ async function readSecureBody(draftKey: string): Promise<string | null> {
   }
 }
 
+/** `plain` is the report JSON. Device encryption is expo-secure-store, not this function. */
 async function writeSecureBody(draftKey: string, plain: string): Promise<boolean> {
   const chunks = splitForSecureStore(plain);
   if (!chunks || chunks.length === 0) return false;
@@ -136,20 +137,66 @@ function attemptFromTombstone(raw: string | null): string | null {
   }
 }
 
-/** Null means no readable tombstone. An unreadable tombstone does not hide a draft. */
-export async function readSubmittedAttempt(key: string): Promise<string | null> {
+export type SubmissionStatus =
+  | { state: "none" }
+  | { state: "submitted"; attemptId: string }
+  | { state: "unreadable" };
+
+type TombstoneRead =
+  | { state: "absent" }
+  | { state: "submitted"; attemptId: string }
+  | { state: "failed" };
+
+async function readTombstoneStore(
+  read: () => Promise<string | null>
+): Promise<TombstoneRead> {
+  try {
+    const raw = await read();
+    if (raw == null) return { state: "absent" };
+    const attemptId = attemptFromTombstone(raw);
+    return attemptId
+      ? { state: "submitted", attemptId }
+      : { state: "failed" };
+  } catch {
+    return { state: "failed" };
+  }
+}
+
+/**
+ * `none` is two successful reads with no tombstone. A throw or a value that is
+ * not a tombstone is `unreadable`: the body stays, and that attempt must not send.
+ */
+export async function readSubmissionStatus(
+  key: string
+): Promise<SubmissionStatus> {
   const name = tombstoneStorageKey(key);
-  try {
-    const fromAsync = attemptFromTombstone(await AsyncStorage.getItem(name));
-    if (fromAsync) return fromAsync;
-  } catch {
-    // The secure copy can still name the submitted attempt.
+  const fromAsync = await readTombstoneStore(() => AsyncStorage.getItem(name));
+  if (fromAsync.state === "submitted") return fromAsync;
+  const fromSecure = await readTombstoneStore(() =>
+    SecureStore.getItemAsync(name)
+  );
+  if (fromSecure.state === "submitted") return fromSecure;
+  if (fromAsync.state === "failed" || fromSecure.state === "failed") {
+    return { state: "unreadable" };
   }
-  try {
-    return attemptFromTombstone(await SecureStore.getItemAsync(name));
-  } catch {
-    return null;
+  return { state: "none" };
+}
+
+export function resendDecision(
+  status: SubmissionStatus,
+  attemptId: string
+): "blocked_unreadable" | "blocked_submitted" | "open" {
+  if (status.state === "unreadable") return "blocked_unreadable";
+  if (status.state === "submitted" && status.attemptId === attemptId) {
+    return "blocked_submitted";
   }
+  return "open";
+}
+
+/** Attempt id when this key is known submitted. Unreadable and absent are null. */
+export async function readSubmittedAttempt(key: string): Promise<string | null> {
+  const status = await readSubmissionStatus(key);
+  return status.state === "submitted" ? status.attemptId : null;
 }
 
 async function writeSubmittedTombstone(
@@ -168,7 +215,8 @@ async function writeSubmittedTombstone(
   } catch {
     // AsyncStorage can still retain the tombstone.
   }
-  return (await readSubmittedAttempt(key)) === attemptId;
+  const status = await readSubmissionStatus(key);
+  return status.state === "submitted" && status.attemptId === attemptId;
 }
 
 function attemptIdOf(plain: string | null): string | null {
@@ -274,7 +322,9 @@ function hideSubmitted<T>(
 export async function readReportDraft<T>(
   key: string
 ): Promise<ReportDraft<T> | null> {
-  const submittedAttempt = await readSubmittedAttempt(key);
+  const status = await readSubmissionStatus(key);
+  const submittedAttempt =
+    status.state === "submitted" ? status.attemptId : null;
   const secure = hideSubmitted(
     parseReportDraft<T>(await readSecureBody(key)),
     submittedAttempt
@@ -303,7 +353,14 @@ export async function writeReportDraft<T>(
   key: string,
   draft: ReportDraft<T>
 ): Promise<boolean> {
-  if ((await readSubmittedAttempt(key)) === draft.attemptId) return false;
+  const status = await readSubmissionStatus(key);
+  if (status.state === "submitted" && status.attemptId === draft.attemptId) {
+    return false;
+  }
+  if (status.state === "unreadable") {
+    const alreadyStored = await readStoredRaw(key);
+    if (alreadyStored !== "missing" || (await readSecureBody(key))) return false;
+  }
   const existingRaw = await readStoredRaw(key);
   if (existingRaw === "unreadable") return false;
   const keyMaterial = await draftKey();
