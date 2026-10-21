@@ -83,6 +83,8 @@ const EditReportForm = ({
   const draft = useReportDraft({
     kind: "edit",
     rosterId,
+    ownerStaffId: staff?.staffId,
+    ownerCompanyId: user?.companyId,
     form,
     setForm,
     serverForm,

@@ -97,13 +97,24 @@ describe("report drafts", () => {
     expect(parseReportDraft(JSON.stringify({ rosterId: "1" }))).toBeNull();
   });
 
-  it("scopes create and edit drafts to the roster id", () => {
-    expect(reportDraftStorageKey("create", "12")).not.toBe(
-      reportDraftStorageKey("edit", "12")
+  it("scopes drafts to company, staff, and roster", () => {
+    const owner = { staffId: 4, companyId: 9 };
+    expect(reportDraftStorageKey("create", "12", owner)).toBe(
+      "promaxcare.report-draft.c9.s4.create.12"
     );
-    expect(reportDraftStorageKey("create", "../12")).toBe(
-      "promaxcare.report-draft.create.12"
+    expect(reportDraftStorageKey("create", "12", owner)).not.toBe(
+      reportDraftStorageKey("edit", "12", owner)
     );
+    expect(reportDraftStorageKey("create", "12", owner)).not.toBe(
+      reportDraftStorageKey("create", "12", { staffId: 5, companyId: 9 })
+    );
+    expect(reportDraftStorageKey("create", "12", owner)).not.toBe(
+      reportDraftStorageKey("create", "12", { staffId: 4, companyId: 8 })
+    );
+    expect(reportDraftStorageKey("create", "../12", owner)).toBe(
+      "promaxcare.report-draft.c9.s4.create.12"
+    );
+    expect(reportDraftStorageKey("create", "12", { staffId: 0 })).toBeNull();
   });
 });
 

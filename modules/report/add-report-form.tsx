@@ -53,6 +53,8 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   const draft = useReportDraft({
     kind: "create",
     rosterId,
+    ownerStaffId: staff?.staffId,
+    ownerCompanyId: user?.companyId,
     form,
     setForm,
     hasLocalEdits,

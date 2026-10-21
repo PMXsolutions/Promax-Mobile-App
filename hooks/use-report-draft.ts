@@ -22,6 +22,8 @@ function newAttemptId(): string {
 export function useReportDraft<T extends object>(options: {
   kind: "create" | "edit";
   rosterId: string;
+  ownerStaffId?: number | null;
+  ownerCompanyId?: number | null;
   form: T;
   setForm: (form: T) => void;
   serverForm?: T | null;
@@ -30,12 +32,17 @@ export function useReportDraft<T extends object>(options: {
   const {
     kind,
     rosterId,
+    ownerStaffId,
+    ownerCompanyId,
     form,
     setForm,
     serverForm = null,
     hasLocalEdits,
   } = options;
-  const key = reportDraftStorageKey(kind, rosterId);
+  const key = reportDraftStorageKey(kind, rosterId, {
+    staffId: ownerStaffId,
+    companyId: ownerCompanyId,
+  });
   const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [needsAcknowledge, setNeedsAcknowledge] = useState(false);
@@ -47,6 +54,23 @@ export function useReportDraft<T extends object>(options: {
   formRef.current = form;
 
   useEffect(() => {
+    if (!key) {
+      hydratedKey.current = null;
+      if (kind === "edit" && !serverForm) return;
+      if (serverForm && !hasLocalEdits?.current) {
+        setForm(serverForm);
+      }
+      draftRef.current = createDraft(
+        rosterId,
+        serverForm && !hasLocalEdits?.current ? serverForm : formRef.current,
+        new Date(),
+        attemptRef.current
+      );
+      readyRef.current = true;
+      setReady(true);
+      return;
+    }
+
     if (hydratedKey.current === key) return;
     if (kind === "edit" && !serverForm) return;
 
@@ -93,6 +117,7 @@ export function useReportDraft<T extends object>(options: {
   }, [key, kind, rosterId, serverForm, setForm]);
 
   useEffect(() => {
+    if (!key) return;
     if (!readyRef.current) return;
     if (
       !hasLocalEdits?.current &&
@@ -124,7 +149,7 @@ export function useReportDraft<T extends object>(options: {
     setNotice(
       "Send again only if this report is not already in your report list."
     );
-    await writeReportDraft(key, next);
+    if (key) await writeReportDraft(key, next);
   };
 
   const prepareSubmit = async (): Promise<boolean> => {
@@ -145,7 +170,7 @@ export function useReportDraft<T extends object>(options: {
     }
 
     draftRef.current = begun.draft;
-    await writeReportDraft(key, begun.draft);
+    if (key) await writeReportDraft(key, begun.draft);
     return true;
   };
 
@@ -155,14 +180,14 @@ export function useReportDraft<T extends object>(options: {
     const next = failDraftSubmit(current, new Date());
     draftRef.current = next;
     setNeedsAcknowledge(false);
-    await writeReportDraft(key, next);
+    if (key) await writeReportDraft(key, next);
   };
 
   const markSaved = async () => {
     draftRef.current = null;
     setNotice(null);
     setNeedsAcknowledge(false);
-    await removeReportDraft(key);
+    if (key) await removeReportDraft(key);
   };
 
   return {

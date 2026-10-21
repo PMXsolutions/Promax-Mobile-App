@@ -2,7 +2,9 @@
 
 Date: 21 October 2026.
 
-This branch continues the matrix from pull request 9 (`cursor/mobile-signin-session-states-65b8`, commit `0e6c9d4`). Sign-in, font startup, and session expiry are implemented there and are not repeated here. This branch is roster, clock, and report drafts only. It is based on `main` at `de4eb2f`.
+This branch continues pull request 9 (`cursor/mobile-signin-session-states-65b8`, commit `0e6c9d4`). The single acceptance matrix is `docs/staff-journey-matrix.md` on `cursor/mobile-acceptance-matrix-65b8`. This branch is roster, clock, and report drafts only. It is based on `main` at `de4eb2f`.
+
+Follow-up on this branch: a report draft key is `promaxcare.report-draft.c{companyId}.s{staffId}.{create|edit}.{rosterId}`. A missing staff id does not read or write a draft. Logout does not delete drafts, so the same staff member can restore their own text. Another staff id or company id does not open that key. Storage remains plaintext AsyncStorage.
 
 Care OS branches were not edited. No production login, email, clock-in, report, Play submission, or EAS build was run. Unit tests are not device acceptance.
 
