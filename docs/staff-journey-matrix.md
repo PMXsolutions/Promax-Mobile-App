@@ -63,6 +63,19 @@ Missing: `bun`, `ANDROID_HOME`, Android SDK, `adb`, `emulator`, `sdkmanager`, `x
 
 Safe GET only, 21 October 2026: `https://api.promaxcare.com.au/api` 404, `/swagger/index.html` 200, `/swagger/v1/swagger.json` 404, `/health` 404, `/api/health` 404. There is no isolated disposable API. Unit tests do not need the two public variables. Maps and push still need `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` and `google-services.json`, which were not added.
 
+## Clean install qualification
+
+Both installs used a new directory under `/tmp`. The saved team environment and its access settings were not changed. No production request was sent.
+
+| Install | Directory | Result |
+| --- | --- | --- |
+| `npm install --no-package-lock --ignore-scripts --legacy-peer-deps --no-audit --no-fund` with only `package.json` | `/tmp/promax-clean-npm` | Exit 0. 1046 packages. No lockfile written. Expo `53.0.27`, Jest `29.7.0`, TypeScript `5.9.3`. |
+| That npm tree running `login-failure` and `startup-session` from commit `c657dbe` | `/tmp/promax-jest-auth` | 2 suites, 24 tests, passed. |
+| Bun `1.4.3` from `/tmp/bun-qual`, then `bun install --frozen-lockfile` with `package.json` and `bun.lockb` | `/tmp/promax-clean-bun` | Exit 0. 996 packages. Expo `53.0.20`, TypeScript `5.8.3`. |
+| That Bun tree running the same two suites from `c657dbe` | `/tmp/promax-jest-bun` | 2 suites, 24 tests, passed. |
+
+`bun` is not on the image PATH. The frozen lockfile is the reproducible install. The npm command resolves the version ranges, so Expo landed on `53.0.27` instead of the locked `53.0.20`. Neither command was written into the team environment. Native Android and iOS builds remain blocked on this host.
+
 ## Acceptance
 
 Status is Passed, Failed, Blocked, or NA. Passed means the named unit contract passed in the author run above. It does not mean a device, a hosted account, or a store build passed.
