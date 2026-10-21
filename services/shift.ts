@@ -1,4 +1,5 @@
 import axiosInstance from "@/libs/axiosInstance";
+import { isAxiosError } from "axios";
 
 const fetchStaffShift = async (uid: number) => {
   try {
@@ -13,6 +14,11 @@ const fetchStaffShift = async (uid: number) => {
 
     return data?.shiftRoster;
   } catch (error) {
+    if (isAxiosError(error) && !error.response) {
+      throw new Error(
+        "You appear to be offline. Assigned shifts will load when the connection returns."
+      );
+    }
     throw new Error("Unable to fetch roster");
   }
 };
@@ -25,6 +31,11 @@ const fetchShiftDetails = async (shiftId: number) => {
     });
     return response.data;
   } catch (error) {
+    if (isAxiosError(error) && !error.response) {
+      throw new Error(
+        "You appear to be offline. This shift will load when the connection returns."
+      );
+    }
     throw new Error("Unable to fetch shift details");
   }
 };

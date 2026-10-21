@@ -1,5 +1,5 @@
 import { Image, ScrollView, StyleSheet, Switch, View } from "react-native";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { THEME } from "@/constants/theme";
 import ReportFormHeader from "@/components/shift/report/report-header";
 import TextInput from "@/components/shared/input";
@@ -16,6 +16,10 @@ import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import MiniLoader from "@/components/shared/mini-loader";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import { reportSaveNeedsAcknowledge } from "@/libs/report-draft";
+import { validateReportForm } from "@/libs/report-validation";
+import { useReportDraft } from "@/hooks/use-report-draft";
+import InlineNotice from "@/components/shared/inline-notice";
 
 const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   const { user, staff } = useAuthStore();
@@ -45,10 +49,23 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
     details_ifIsBehaviourConcerned: "",
   });
 
+  const [formError, setFormError] = useState<string | null>(null);
+  const hasLocalEdits = useRef(false);
+  const draft = useReportDraft({
+    kind: "create",
+    rosterId,
+    ownerStaffId: staff?.staffId,
+    ownerCompanyId: user?.companyId,
+    form,
+    setForm,
+    hasLocalEdits,
+  });
+
   const handleInputChange = <K extends keyof ReportFormState>(
     name: K,
     value: ReportFormState[K]
   ) => {
+    hasLocalEdits.current = true;
     setForm((prevState) => ({
       ...prevState,
       [name]: value,
@@ -67,7 +84,8 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
         reqBody
       );
     },
-    onSuccess: ({ data }) => {
+    onSuccess: async ({ data }) => {
+      await draft.markSaved();
       showMessage({
         message: data.message,
         type: "success",
@@ -81,41 +99,36 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
       ]);
     },
 
-    onError: (error: any) => {
-      showMessage({
-        message: error.response?.data?.message || "Unable to submit report.",
-        type: "danger",
-      });
+    onError: async (error: unknown) => {
+      await draft.markFailed(reportSaveNeedsAcknowledge(error));
+      const message = (
+        error as { response?: { data?: { message?: string } } }
+      ).response?.data?.message;
+      setFormError(
+        message ||
+          "Unable to submit report. Your text is still on this screen."
+      );
     },
   });
 
-  const handleFormSubmit = () => {
-    const cleanedGoalProgress = form.goal_Progress.replace(/\s/g, "");
-
-    if (!form.goal_Progress || cleanedGoalProgress.length < 100) {
-      showMessage({
-        message:
-          "Please provide at least 100 characters for 'Support plan progress and activities'.",
-        type: "danger",
-      });
+  const handleFormSubmit = async () => {
+    const validation = validateReportForm(form);
+    if (!validation.ok) {
+      setFormError(validation.message);
       return;
     }
 
-    if (form.isIncident && !form.details_IfIsIncipient.trim()) {
-      showMessage({
-        message: "Please provide incident details before submitting.",
-        type: "danger",
-      });
-      return;
-    }
-
-    onSubmit(); // Call mutation only if valid
+    setFormError(null);
+    const allowed = await draft.prepareSubmit();
+    if (!allowed) return;
+    onSubmit();
   };
 
   return (
     <KeyboardAwareWrapper>
       <ScrollView
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <MiniLoader visible={isLoading} title="Loading Report.." />
@@ -400,10 +413,33 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
               )}
             </View>
             <View style={{ marginBottom: 16 }}>
+              {draft.notice ? (
+                <InlineNotice
+                  title="Report draft"
+                  message={draft.notice}
+                  testID="report-draft-notice"
+                />
+              ) : null}
+              {formError ? (
+                <InlineNotice message={formError} testID="report-form-error" />
+              ) : null}
+              {draft.needsAcknowledge ? (
+                <CustomButton
+                  title="I checked my reports"
+                  bgVariant="light"
+                  textVariant="primary"
+                  onPress={() => {
+                    void draft.acknowledge();
+                  }}
+                />
+              ) : null}
               <CustomButton
                 title={"Submit"}
-                onPress={() => handleFormSubmit()}
+                onPress={() => {
+                  void handleFormSubmit();
+                }}
                 loading={isPending}
+                disabled={isPending || draft.needsAcknowledge || !draft.ready}
               />
             </View>
           </View>

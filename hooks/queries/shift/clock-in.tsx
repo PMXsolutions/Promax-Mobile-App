@@ -5,7 +5,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Alert } from "react-native";
 import { ShiftRosterService } from "@/services/shift";
 import { showMessage } from "react-native-flash-message";
-import { isAxiosError } from "axios";
+import { attendanceErrorMessage } from "@/libs/attendance-error";
+import { CLOCK_IN_RADIUS_METERS, canStartClockAttempt, geofenceDecision, hasClientCoordinates } from "@/libs/geofence";
 
 type ClockInCheckResult =
   | { success: true; distance: number }
@@ -36,15 +37,18 @@ const useClockIn = (
     null
   );
   const [lastDistance, setLastDistance] = useState<number | null>(null);
+  const [blockerMessage, setBlockerMessage] = useState<string | null>(null);
 
   const getCurrentLocation = async (): Promise<StaffLocationProps | null> => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
+        const message =
+          "Location access was denied. Clock-in stays blocked until location is allowed. The 1000 metre check was not skipped.";
+        setBlockerMessage(message);
         showMessage({
           message: "Location Access Denied",
-          description:
-            "We need location access to clock you in. Please enable it in settings.",
+          description: message,
           type: "danger",
         });
         return null;
@@ -56,9 +60,12 @@ const useClockIn = (
         longitude: location.coords.longitude,
       };
     } catch (error) {
+      const message =
+        "Your location could not be read. Clock-in stays blocked. Enable GPS and try again.";
+      setBlockerMessage(message);
       showMessage({
         message: "Unable to fetch location",
-        description: "Please ensure your GPS is enabled.",
+        description: message,
         type: "danger",
       });
       return null;
@@ -67,9 +74,9 @@ const useClockIn = (
 
   const canClockIn = (
     staffLocation: StaffLocationProps,
-    thresholdDistance = 1000
+    thresholdDistance = CLOCK_IN_RADIUS_METERS
   ): ClockInCheckResult => {
-    if (!clientLat || !clientLng || clientLat === 0 || clientLng === 0) {
+    if (!hasClientCoordinates(clientLat, clientLng)) {
       return {
         success: false,
         errorType: "NO_CLIENT_LOCATION",
@@ -83,7 +90,7 @@ const useClockIn = (
       { latitude: clientLat, longitude: clientLng }
     );
 
-    if (distance > thresholdDistance) {
+    if (geofenceDecision(distance, thresholdDistance) === "outside") {
       return {
         success: false,
         errorType: "OUT_OF_RANGE",
@@ -109,19 +116,28 @@ const useClockIn = (
       return queryClient.invalidateQueries({ queryKey: ["shifts"] });
     },
     onError: (error) => {
-      if (isAxiosError(error)) {
-        showMessage({
-          message: error.response?.data?.message || "An error occurred",
-          description: error.response?.data?.title,
-          type: "danger",
-        });
-      }
+      const message = attendanceErrorMessage(error, "clock in");
+      setBlockerMessage(message);
+      showMessage({
+        message,
+        type: "danger",
+      });
     },
   });
 
   const handleClock = async () => {
+    if (
+      !canStartClockAttempt({
+        pending: clockInPending,
+        checking: distanceCheckLoading,
+      })
+    ) {
+      return;
+    }
+
     setDistanceCheckLoading(true);
 
+    setBlockerMessage(null);
     const location = await getCurrentLocation();
     if (!location) {
       setDistanceCheckLoading(false);
@@ -148,9 +164,9 @@ const useClockIn = (
       return;
     }
 
-    // All checks passed
-    clockIn(location);
-    setDistanceCheckLoading(false);
+    clockIn(location, {
+      onSettled: () => setDistanceCheckLoading(false),
+    });
   };
 
   return {
@@ -163,6 +179,7 @@ const useClockIn = (
     setShowMapModal,
     staffLocation,
     lastDistance,
+    blockerMessage,
   };
 };
 

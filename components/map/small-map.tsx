@@ -6,17 +6,23 @@ import { THEME } from "@/constants/theme";
 import { mapStyle } from "@/constants/map-style";
 
 const SmallMap = ({ shiftInfo }: { shiftInfo: ShiftRosterType }) => {
+  if (!shiftInfo?.profile) {
+    return (
+      <View style={styles.missing}>
+        <Text>Client location is not available on this shift.</Text>
+      </View>
+    );
+  }
+
   const region =
-    shiftInfo &&
-    shiftInfo.profile.latitude !== 0 &&
-    shiftInfo.profile.longitude !== 0
+    shiftInfo.profile.latitude !== 0 && shiftInfo.profile.longitude !== 0
       ? {
           latitude: shiftInfo.profile.latitude,
           longitude: shiftInfo.profile.longitude,
           latitudeDelta: 0.012,
           longitudeDelta: 0.012,
         }
-      : undefined; // Use `undefined` instead of `null`
+      : undefined;
 
   return (
     <MapView
@@ -36,8 +42,7 @@ const SmallMap = ({ shiftInfo }: { shiftInfo: ShiftRosterType }) => {
       customMapStyle={mapStyle}
       region={region} // Use the computed `region` value
     >
-      {shiftInfo &&
-        shiftInfo.profile.latitude !== 0 &&
+      {shiftInfo.profile.latitude !== 0 &&
         shiftInfo.profile.longitude !== 0 && (
           <Marker
             coordinate={{
@@ -55,6 +60,14 @@ const SmallMap = ({ shiftInfo }: { shiftInfo: ShiftRosterType }) => {
 export default SmallMap;
 
 const styles = StyleSheet.create({
+  missing: {
+    width: "100%",
+    minHeight: 80,
+    marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
   map: {
     width: "100%",
     height: 200, // Adjust the height to ensure the map displays properly

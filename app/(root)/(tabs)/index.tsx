@@ -17,7 +17,8 @@ const Activity = () => {
   const {
     data,
     isLoading,
-    isError: error,
+    isError,
+    error: rosterError,
     refetch,
     isRefetching,
   } = shiftQuery.useShiftRoster(staff?.staffId!);
@@ -60,10 +61,10 @@ const Activity = () => {
   const agendaShifts: AgendaProps[] = useMemo(() => {
     return (shiftData || []).map((shift) => ({
       shiftRosterId: shift.shiftRosterId,
-      staff: shift.staff.fullName,
-      staffFirstName: shift.staff.firstName,
-      staffLastName: shift.staff.middleName ?? "",
-      staffImage: shift.staff.imageUrl ?? "",
+      staff: shift.staff?.fullName ?? "",
+      staffFirstName: shift.staff?.firstName ?? "",
+      staffLastName: shift.staff?.middleName ?? "",
+      staffImage: shift.staff?.imageUrl ?? "",
       client: shift.clients,
       activities: shift.activities,
       dateFrom: new Date(shift.dateFrom),
@@ -101,13 +102,24 @@ const Activity = () => {
         <PendingShift num={filteredShifts.length} />
       )}
       <View style={styles.container}>
-        {error && (
+        {!staff?.staffId ? (
           <ErrorState
-            message="Unable to load shift."
+            message="Your staff profile is not available, so assigned shifts cannot load."
             onRetry={onRefresh}
-            icon="file-alert-outline" // Or any icon you want
+            icon="account-alert-outline"
           />
-        )}
+        ) : null}
+        {isError ? (
+          <ErrorState
+            message={
+              rosterError instanceof Error
+                ? rosterError.message
+                : "Unable to load shift."
+            }
+            onRetry={onRefresh}
+            icon="file-alert-outline"
+          />
+        ) : null}
         <BeautifulCalendarAgenda
           shiftData={agendaShifts}
           isRefetching={isRefetching}
