@@ -20,22 +20,20 @@ export function documentOwnedBySession(
 
   const companyId = Number(document.companyId);
   const sessionCompany = Number(session.companyId);
-  if (
-    Number.isFinite(companyId) &&
-    companyId > 0 &&
-    Number.isFinite(sessionCompany) &&
-    sessionCompany > 0 &&
-    companyId !== sessionCompany
-  ) {
+  const documentHasCompany = Number.isFinite(companyId) && companyId > 0;
+  const sessionHasCompany = Number.isFinite(sessionCompany) && sessionCompany > 0;
+  if (documentHasCompany && (!sessionHasCompany || companyId !== sessionCompany)) {
     return false;
   }
 
   const owner = Number(document.userId);
-  if (!Number.isFinite(owner) || owner <= 0) return true;
-
   const staffId = Number(session.staffId);
   const userId = Number(session.userId);
-  return owner === staffId || (Number.isFinite(userId) && owner === userId);
+  if (Number.isFinite(owner) && owner > 0) {
+    return owner === staffId || (Number.isFinite(userId) && owner === userId);
+  }
+
+  return documentHasCompany && sessionHasCompany;
 }
 
 export function shiftVisibleToSession(
@@ -46,21 +44,12 @@ export function shiftVisibleToSession(
 
   const staffId = Number(shift.staffId);
   const sessionStaff = Number(session.staffId);
-  if (Number.isFinite(staffId) && staffId > 0) {
-    if (!Number.isFinite(sessionStaff) || staffId !== sessionStaff) return false;
-  }
+  if (!Number.isFinite(staffId) || staffId <= 0) return false;
+  if (!Number.isFinite(sessionStaff) || staffId !== sessionStaff) return false;
 
   const companyId = Number(shift.companyID);
   const sessionCompany = Number(session.companyId);
-  if (
-    Number.isFinite(companyId) &&
-    companyId > 0 &&
-    Number.isFinite(sessionCompany) &&
-    sessionCompany > 0 &&
-    companyId !== sessionCompany
-  ) {
-    return false;
-  }
-
-  return true;
+  if (!Number.isFinite(companyId) || companyId <= 0) return false;
+  if (!Number.isFinite(sessionCompany) || sessionCompany <= 0) return false;
+  return companyId === sessionCompany;
 }

@@ -26,12 +26,12 @@ const useFetchStaffDocument = (staffId: number) => {
     enabled: !!staffId, // Only run the query if staffId is defined
   });
 };
-const useFetchStaffDocumentDetail = (docId: number) => {
+const useFetchStaffDocumentDetail = (docId: number, enabled = true) => {
   return useQuery<DocumentData>({
     queryKey: ["staffDocument", "edit", { id: docId }],
     queryFn: () => reportService.fetchStaffDocumentDetail(docId),
     refetchOnWindowFocus: false,
-    enabled: !!docId, // Only run the query if staffId is defined
+    enabled: !!docId && enabled,
   });
 };
 

@@ -4,7 +4,7 @@ Date: 21 October 2026. Follow-up after the read-only reviews of `main` at `de4eb
 
 Sign-in and session work is pull request 9. Roster, clock, and report drafts are pull request 10, including the later clock-in tap guard. The single acceptance matrix is `docs/staff-journey-matrix.md` on `cursor/mobile-acceptance-matrix-65b8`. This branch is profile, documents, trip mileage, and notification taps. Care OS branches were not edited. No mileage, document, email, push, or store submission was sent.
 
-Follow-up on this branch: emergency and other-info edits use the same signed-in staff check as personal profile. A document whose company id or user id does not match the session is not shown for edit. A document payload with no owner id is still only company-checked. A shift whose staff id or company id belongs to someone else is not shown, including a shift opened from a notification. A shift payload with no staff id is still shown. Hosted denial was not run.
+Follow-up on this branch: emergency and other-info edits use the same signed-in staff check as personal profile. A document detail is requested only after that document id is in the signed-in staff member's document list, and a payload still needs a matching user id or a matching company id. A shift is shown only when both its staff id and company id match the session, so a shift with either id missing cannot be clocked. Hosted denial was not run.
 
 ## Inspector evidence now covered here
 

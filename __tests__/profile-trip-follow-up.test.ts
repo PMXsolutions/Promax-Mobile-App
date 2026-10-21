@@ -54,7 +54,8 @@ describe("documents and profile ownership", () => {
     expect(
       shiftVisibleToSession({ staffId: 4, companyID: 8 }, session)
     ).toBe(false);
-    expect(shiftVisibleToSession({ companyID: 9 }, session)).toBe(true);
+    expect(shiftVisibleToSession({ companyID: 9 }, session)).toBe(false);
+    expect(shiftVisibleToSession({ staffId: 4 }, session)).toBe(false);
   });
 
   it("denies a document from another company or another user", () => {
@@ -71,6 +72,11 @@ describe("documents and profile ownership", () => {
     expect(documentOwnedBySession({ companyId: 9, userId: 99 }, session)).toBe(
       false
     );
+    expect(documentOwnedBySession({ companyId: 9 }, session)).toBe(true);
+    expect(documentOwnedBySession({}, session)).toBe(false);
+    expect(
+      documentOwnedBySession({ companyId: 9, userId: 4 }, { staffId: 4, userId: "15" })
+    ).toBe(false);
   });
 
   it("leaves a missing date blank instead of formatting an invalid date", () => {

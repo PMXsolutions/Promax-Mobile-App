@@ -16,9 +16,37 @@ const EditDocument = () => {
   const { user, staff } = useAuthStore();
   const query = useLocalSearchParams();
 
-  const id = query.id as unknown as string;
+  const docId = Number(query.id);
+  const staffId = Number(staff?.staffId);
+  const listQuery = reportQuery.useFetchStaffDocument(
+    Number.isFinite(staffId) && staffId > 0 ? staffId : 0
+  );
+  const listed = (listQuery.data ?? []).some(
+    (item) => item.documentId === docId
+  );
   const { data, isLoading, isError, refetch } =
-    reportQuery.useFetchStaffDocumentDetail(Number(id));
+    reportQuery.useFetchStaffDocumentDetail(docId, listed);
+
+  if (listQuery.isLoading) {
+    return (
+      <Loader
+        name="2-curves"
+        color={THEME.colors.secondary}
+        title="Loading Document.."
+      />
+    );
+  }
+
+  if (!listed) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Edit Document"} />
+        <View style={{ padding: 24 }}>
+          <Text>This document is not assigned to your sign-in.</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -66,7 +94,7 @@ const EditDocument = () => {
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={"Edit Document"} />
       {/* <KeyboardWrapper> */}
-      <EditForm id={id} />
+      <EditForm id={String(query.id)} />
       {/* <AddForm /> */}
       {/* </KeyboardWrapper> */}
     </ScreenWrapper>
