@@ -8,10 +8,16 @@ import {
 import {
   acknowledgeUncertainSubmit,
   beginDraftSubmit,
+  claimDraftSend,
   createDraft,
   draftAfterEdit,
+  draftSendBlocksAcknowledge,
+  draftWriteAfterDelay,
+  orphanDraftSend,
   parseReportDraft,
+  releaseDraftSend,
   reportDraftStorageKey,
+  reportSaveNeedsAcknowledge,
   restoredDraftNotice,
 } from "@/libs/report-draft";
 import { validateReportForm } from "@/libs/report-validation";
@@ -111,13 +117,54 @@ describe("report drafts", () => {
     expect(reportDraftStorageKey("create", "12", owner)).not.toBe(
       reportDraftStorageKey("create", "12", { staffId: 4, companyId: 8 })
     );
-    expect(reportDraftStorageKey("create", "../12", owner)).toBe(
-      "promaxcare.report-draft.c9.s4.create.12"
-    );
+    expect(reportDraftStorageKey("create", "../12", owner)).toBeNull();
+    expect(
+      reportDraftStorageKey("create", "12", { staffId: 4.8, companyId: 9.2 })
+    ).toBeNull();
+    expect(
+      reportDraftStorageKey("create", "12", { staffId: 0.4, companyId: 9 })
+    ).toBeNull();
     expect(reportDraftStorageKey("create", "12", { staffId: 0 })).toBeNull();
     expect(
       reportDraftStorageKey("create", "12", { staffId: 4, companyId: 0 })
     ).toBeNull();
+  });
+
+  it("keeps one in-flight send until that claim is released", () => {
+    const key = "promaxcare.report-draft.c9.s4.create.claim";
+    releaseDraftSend(key);
+    expect(claimDraftSend(key)).toBe(true);
+    expect(claimDraftSend(key)).toBe(false);
+    expect(draftSendBlocksAcknowledge(key, false)).toBe(true);
+    expect(draftSendBlocksAcknowledge(key, true)).toBe(false);
+    orphanDraftSend(key);
+    expect(claimDraftSend(key)).toBe(false);
+    expect(draftSendBlocksAcknowledge(key, false)).toBe(false);
+    releaseDraftSend(key);
+    expect(claimDraftSend(key)).toBe(true);
+    releaseDraftSend(key);
+  });
+
+  it("does not let a delayed write replace an in-flight draft", () => {
+    const editing = createDraft("44", { goal_Progress: "kept" }, now, "a1");
+    const inFlight = { ...editing, submitState: "in_flight" as const };
+
+    expect(draftWriteAfterDelay(null)).toBeNull();
+    expect(draftWriteAfterDelay(inFlight)).toBeNull();
+    expect(draftWriteAfterDelay(editing)).toBe(editing);
+  });
+
+  it("holds a save with no response until the staff member checks", () => {
+    expect(reportSaveNeedsAcknowledge({ message: "Network Error" })).toBe(
+      true
+    );
+    expect(reportSaveNeedsAcknowledge(new Error("Network Error"))).toBe(true);
+    expect(
+      reportSaveNeedsAcknowledge({
+        message: "Check the form",
+        response: { status: 400 },
+      })
+    ).toBe(false);
   });
 });
 

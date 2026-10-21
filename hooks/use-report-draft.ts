@@ -3,9 +3,15 @@ import {
   ReportDraft,
   acknowledgeUncertainSubmit,
   beginDraftSubmit,
+  claimDraftSend,
   createDraft,
   draftAfterEdit,
+  draftSendBlocksAcknowledge,
+  draftSendIsClaimed,
+  draftWriteAfterDelay,
   failDraftSubmit,
+  orphanDraftSend,
+  releaseDraftSend,
   reportDraftStorageKey,
   restoredDraftNotice,
 } from "@/libs/report-draft";
@@ -51,7 +57,17 @@ export function useReportDraft<T extends object>(options: {
   const hydratedKey = useRef<string | null>(null);
   const attemptRef = useRef(newAttemptId());
   const formRef = useRef(form);
+  const ownsClaim = useRef(false);
   formRef.current = form;
+
+  useEffect(() => {
+    return () => {
+      if (ownsClaim.current && key) {
+        orphanDraftSend(key);
+        ownsClaim.current = false;
+      }
+    };
+  }, [key]);
 
   useEffect(() => {
     if (!key) {
@@ -88,7 +104,9 @@ export function useReportDraft<T extends object>(options: {
           : stored;
         draftRef.current = restored;
         setNotice(restoredDraftNotice(stored));
-        setNeedsAcknowledge(stored.submitState === "in_flight");
+        setNeedsAcknowledge(
+          stored.submitState === "in_flight" || draftSendIsClaimed(key)
+        );
       } else if (serverForm) {
         setForm(serverForm);
         draftRef.current = createDraft(
@@ -135,12 +153,20 @@ export function useReportDraft<T extends object>(options: {
     );
     draftRef.current = next;
     const timer = setTimeout(() => {
-      void writeReportDraft(key, next);
+      const latest = draftWriteAfterDelay(draftRef.current);
+      if (latest) void writeReportDraft(key, latest);
     }, 250);
     return () => clearTimeout(timer);
   }, [form, key, rosterId]);
 
   const acknowledge = async () => {
+    if (key && draftSendBlocksAcknowledge(key, ownsClaim.current)) {
+      setNeedsAcknowledge(true);
+      setNotice(
+        "Another send for this report is still in progress on this device."
+      );
+      return;
+    }
     const current = draftRef.current;
     if (!current) return;
     const next = acknowledgeUncertainSubmit(current, new Date());
@@ -149,7 +175,11 @@ export function useReportDraft<T extends object>(options: {
     setNotice(
       "Send again only if this report is not already in your report list."
     );
-    if (key) await writeReportDraft(key, next);
+    if (key) {
+      await writeReportDraft(key, next);
+      releaseDraftSend(key);
+      ownsClaim.current = false;
+    }
   };
 
   const prepareSubmit = async (): Promise<boolean> => {
@@ -163,12 +193,17 @@ export function useReportDraft<T extends object>(options: {
     const current =
       draftRef.current ??
       createDraft(rosterId, form, new Date(), attemptRef.current);
-    if (needsAcknowledge || current.submitState === "in_flight") {
+    if (
+      needsAcknowledge ||
+      current.submitState === "in_flight" ||
+      !claimDraftSend(key)
+    ) {
       setNotice(restoredDraftNotice({ ...current, submitState: "in_flight" }));
       setNeedsAcknowledge(true);
       return false;
     }
 
+    ownsClaim.current = true;
     const begun = beginDraftSubmit(current, new Date(), attemptRef.current);
     if (!begun.ok) {
       setNeedsAcknowledge(true);
@@ -186,20 +221,40 @@ export function useReportDraft<T extends object>(options: {
     return true;
   };
 
-  const markFailed = async () => {
-    const current = draftRef.current;
-    if (!current) return;
-    const next = failDraftSubmit(current, new Date());
-    draftRef.current = next;
-    setNeedsAcknowledge(false);
-    if (key) await writeReportDraft(key, next);
-  };
-
   const markSaved = async () => {
     draftRef.current = null;
     setNotice(null);
     setNeedsAcknowledge(false);
-    if (key) await removeReportDraft(key);
+    if (key) {
+      releaseDraftSend(key);
+      ownsClaim.current = false;
+      await removeReportDraft(key);
+    }
+  };
+
+  const markFailed = async (uncertain = false) => {
+    const current = draftRef.current;
+    if (!current) return;
+    if (uncertain) {
+      const next = {
+        ...current,
+        submitState: "in_flight" as const,
+        updatedAt: new Date().toISOString(),
+      };
+      draftRef.current = next;
+      setNeedsAcknowledge(true);
+      setNotice(restoredDraftNotice(next));
+      if (key) await writeReportDraft(key, next);
+      return;
+    }
+    const next = failDraftSubmit(current, new Date());
+    draftRef.current = next;
+    setNeedsAcknowledge(false);
+    if (key) {
+      releaseDraftSend(key);
+      ownsClaim.current = false;
+      await writeReportDraft(key, next);
+    }
   };
 
   return {

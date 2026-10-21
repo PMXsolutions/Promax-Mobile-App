@@ -16,6 +16,7 @@ import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import MiniLoader from "@/components/shared/mini-loader";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import { reportSaveNeedsAcknowledge } from "@/libs/report-draft";
 import { validateReportForm } from "@/libs/report-validation";
 import { useReportDraft } from "@/hooks/use-report-draft";
 import InlineNotice from "@/components/shared/inline-notice";
@@ -98,10 +99,13 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
       ]);
     },
 
-    onError: async (error: any) => {
-      await draft.markFailed();
+    onError: async (error: unknown) => {
+      await draft.markFailed(reportSaveNeedsAcknowledge(error));
+      const message = (
+        error as { response?: { data?: { message?: string } } }
+      ).response?.data?.message;
       setFormError(
-        error.response?.data?.message ||
+        message ||
           "Unable to submit report. Your text is still on this screen."
       );
     },

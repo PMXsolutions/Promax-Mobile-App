@@ -14,18 +14,69 @@ const SUBMIT_STATES = new Set<DraftSubmitState>([
   "in_flight",
 ]);
 
+function positiveInteger(value: unknown): number | null {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
+type DraftClaim = { orphaned: boolean };
+
+const draftSends = new Map<string, DraftClaim>();
+
+export function claimDraftSend(key: string): boolean {
+  if (draftSends.has(key)) return false;
+  draftSends.set(key, { orphaned: false });
+  return true;
+}
+
+export function releaseDraftSend(key: string): void {
+  draftSends.delete(key);
+}
+
+export function orphanDraftSend(key: string): void {
+  const claim = draftSends.get(key);
+  if (claim) claim.orphaned = true;
+}
+
+export function draftSendIsClaimed(key: string): boolean {
+  return draftSends.has(key);
+}
+
+export function draftSendBlocksAcknowledge(
+  key: string,
+  ownsClaim: boolean
+): boolean {
+  const claim = draftSends.get(key);
+  if (!claim || ownsClaim) return false;
+  return !claim.orphaned;
+}
+
+export function reportSaveNeedsAcknowledge(error: unknown): boolean {
+  if (!error || typeof error !== "object") return true;
+  return (error as { response?: unknown }).response == null;
+}
+
+export function draftWriteAfterDelay<T>(
+  current: ReportDraft<T> | null
+): ReportDraft<T> | null {
+  if (!current || current.submitState === "in_flight") return null;
+  return current;
+}
+
 export function reportDraftStorageKey(
   kind: "create" | "edit",
   rosterId: string,
   owner: { staffId?: number | null; companyId?: number | null }
 ): string | null {
-  const staffId = Number(owner.staffId);
-  const companyId = Number(owner.companyId);
-  if (!Number.isFinite(staffId) || staffId <= 0) return null;
-  if (!Number.isFinite(companyId) || companyId <= 0) return null;
+  const staffId = positiveInteger(owner.staffId);
+  const companyId = positiveInteger(owner.companyId);
+  if (staffId == null || companyId == null) return null;
+  if (!rosterId || rosterId !== rosterId.replace(/[^a-zA-Z0-9_-]/g, "")) {
+    return null;
+  }
 
-  const safeRosterId = rosterId.replace(/[^a-zA-Z0-9_-]/g, "");
-  return `promaxcare.report-draft.c${Math.trunc(companyId)}.s${Math.trunc(staffId)}.${kind}.${safeRosterId}`;
+  return `promaxcare.report-draft.c${companyId}.s${staffId}.${kind}.${rosterId}`;
 }
 
 export function parseReportDraft<T>(raw: string | null): ReportDraft<T> | null {
