@@ -9,13 +9,23 @@ import { WebView } from "react-native-webview";
 import Text from "@/components/shared/text";
 import { queryClient } from "@/libs/query";
 import Loader from "@/components/shared/loader";
+import useAuthStore from "@/store/use-auth-store";
+import {
+  notificationCompanyMatches,
+  notificationListedForSession,
+} from "@/libs/staff-record";
 
 const NotificationDetail = () => {
   const query = useLocalSearchParams();
+  const { user } = useAuthStore();
 
   const id = query.id as unknown as string;
+  const listQuery = notificationQuery.useNotification(
+    user?.userId ? String(user.userId) : ""
+  );
+  const listed = notificationListedForSession(listQuery.data, Number(id));
   const { data: messageData, isLoading } =
-    notificationQuery.useNotificationDetail(Number(id));
+    notificationQuery.useNotificationDetail(Number(id), listed);
 
   React.useEffect(() => {
     invalidation();
@@ -27,13 +37,27 @@ const NotificationDetail = () => {
     });
   };
 
-  if (isLoading) {
+  if (listQuery.isLoading || (listed && isLoading)) {
     return (
       <Loader
         name="2-curves"
         color={THEME.colors.secondary}
         title="Opening Notification.."
       />
+    );
+  }
+
+  if (
+    !listed ||
+    (messageData && !notificationCompanyMatches(messageData, user?.companyId))
+  ) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Notification"} />
+        <View style={{ padding: 24 }}>
+          <Text>This notification is not assigned to your sign-in.</Text>
+        </View>
+      </ScreenWrapper>
     );
   }
 

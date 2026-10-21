@@ -4,6 +4,9 @@ import { pathForNotificationData } from "@/libs/notification-route";
 import {
   documentOwnedBySession,
   isOwnStaffRecord,
+  notificationCompanyMatches,
+  notificationListedForSession,
+  reportListedForSession,
   shiftListedForSession,
   shiftVisibleToSession,
 } from "@/libs/staff-record";
@@ -72,6 +75,17 @@ describe("documents and profile ownership", () => {
       )
     ).toBe(false);
     expect(shiftListedForSession([], 18, session)).toBe(false);
+  });
+
+  it("requests a report or notification only when that id is on this sign-in", () => {
+    const session = { staffId: 4, companyId: 9 };
+    const roster = [{ shiftRosterId: 18, reportId: 7, staffId: 4, companyID: 9 }];
+    expect(reportListedForSession(roster, 18, 7, session)).toBe(true);
+    expect(reportListedForSession(roster, 18, 8, session)).toBe(false);
+    expect(notificationListedForSession([{ messageId: 3 }], 3)).toBe(true);
+    expect(notificationListedForSession([{ messageId: 3 }], 4)).toBe(false);
+    expect(notificationCompanyMatches({ companyId: "9" }, 9)).toBe(true);
+    expect(notificationCompanyMatches({ companyId: "8" }, 9)).toBe(false);
   });
 
   it("denies a document from another company or another user", () => {

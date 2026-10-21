@@ -34,6 +34,54 @@ export function documentOwnedBySession(
   return true;
 }
 
+export function reportListedForSession(
+  roster:
+    | {
+        shiftRosterId?: number | null;
+        reportId?: number | null;
+        staffId?: number | null;
+        companyID?: number | null;
+      }[]
+    | null
+    | undefined,
+  shiftId: number,
+  reportId: number,
+  session: { staffId?: number | null; companyId?: number | null }
+): boolean {
+  if (!shiftListedForSession(roster, shiftId, session) || !Array.isArray(roster)) {
+    return false;
+  }
+  const requested = Number(reportId);
+  if (!Number.isFinite(requested) || requested <= 0) return false;
+  return roster.some(
+    (item) =>
+      Number(item.shiftRosterId) === Number(shiftId) &&
+      Number(item.reportId) === requested &&
+      shiftVisibleToSession(item, session)
+  );
+}
+
+export function notificationListedForSession(
+  messages: { messageId?: number | null }[] | null | undefined,
+  messageId: number
+): boolean {
+  const id = Number(messageId);
+  if (!Number.isFinite(id) || id <= 0 || !Array.isArray(messages)) return false;
+  return messages.some((item) => Number(item.messageId) === id);
+}
+
+export function notificationCompanyMatches(
+  message: { companyId?: string | number | null } | null | undefined,
+  sessionCompanyId: number | null | undefined
+): boolean {
+  if (!message) return false;
+  const companyId = Number(message.companyId);
+  const sessionCompany = Number(sessionCompanyId);
+  if (!Number.isFinite(companyId) || companyId <= 0) return true;
+  if (!Number.isFinite(sessionCompany) || sessionCompany <= 0) return false;
+  return companyId === sessionCompany;
+}
+
 export function shiftListedForSession(
   roster:
     | { shiftRosterId?: number | null; staffId?: number | null; companyID?: number | null }[]

@@ -13,9 +13,17 @@ import { showMessage } from "react-native-flash-message";
 import { useLocalSearchParams } from "expo-router";
 import ActionSheetModal from "@/components/shared/action-sheet-modal";
 import { mileageSubmitDecision } from "@/libs/trip-mileage";
+import useAuthStore from "@/store/use-auth-store";
+import { shiftQuery } from "@/hooks/queries/shift";
+import { shiftListedForSession } from "@/libs/staff-record";
 
 export default function TripScreen() {
   const query = useLocalSearchParams();
+  const { user, staff } = useAuthStore();
+  const staffId = Number(staff?.staffId);
+  const rosterQuery = shiftQuery.useShiftRoster(
+    Number.isFinite(staffId) && staffId > 0 ? staffId : 0
+  );
 
   const {
     tripState,
@@ -170,6 +178,18 @@ export default function TripScreen() {
       Alert.alert(
         "Mileage not saved",
         "This trip is not attached to a shift, so mileage was not sent.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+    const assigned = shiftListedForSession(rosterQuery.data, Number(id), {
+      staffId: staff?.staffId,
+      companyId: user?.companyId,
+    });
+    if (!assigned) {
+      Alert.alert(
+        "Mileage not saved",
+        "This shift is not assigned to your sign-in, so mileage was not sent.",
         [{ text: "OK" }]
       );
       return;

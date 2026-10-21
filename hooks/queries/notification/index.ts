@@ -14,15 +14,13 @@ const useNotification = (user: string) => {
     enabled: !!user, // Only run the query if staffId is defined
   });
 };
-const useNotificationDetail = (messageId: number) => {
+const useNotificationDetail = (messageId: number, enabled = true) => {
   const notifyOnChangeProps = useFocusNotifyOnChangeProps();
   return useQuery<NotificationType>({
     queryKey: ["notification", { id: messageId }],
     queryFn: () => notificationService.fetchNotificationDetail(messageId),
     notifyOnChangeProps,
-    // refetchOnWindowFocus: false,
-    // staleTime: 300000, // 5 minutes
-    enabled: !!messageId, // Only run the query if staffId is defined
+    enabled: Number.isFinite(messageId) && messageId > 0 && enabled,
   });
 };
 

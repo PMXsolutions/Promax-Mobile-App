@@ -9,7 +9,7 @@ import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
 import useAuthStore from "@/store/use-auth-store";
 import { shiftQuery } from "@/hooks/queries/shift";
-import { shiftListedForSession } from "@/libs/staff-record";
+import { reportListedForSession } from "@/libs/staff-record";
 import { View } from "react-native";
 import Text from "@/components/shared/text";
 
@@ -23,10 +23,15 @@ const ReportDetail = () => {
   const rosterQuery = shiftQuery.useShiftRoster(
     Number.isFinite(staffId) && staffId > 0 ? staffId : 0
   );
-  const listed = shiftListedForSession(rosterQuery.data, Number(rosterId), {
-    staffId: staff?.staffId,
-    companyId: user?.companyId,
-  });
+  const listed = reportListedForSession(
+    rosterQuery.data,
+    Number(rosterId),
+    Number(reportId),
+    {
+      staffId: staff?.staffId,
+      companyId: user?.companyId,
+    }
+  );
   const { data, isLoading } = reportQuery.useFetchReportInfo(
     Number(reportId),
     Number(rosterId),
