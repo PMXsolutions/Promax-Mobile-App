@@ -4,7 +4,7 @@ Date: 21 October 2026. This is the single acceptance record for the current staf
 
 Care OS was not edited. `origin/cursor/care-os-mobile-test-target-466d` is `981bea5ca495dc8a091590e3fe4d004f9571d6f5`. Its `app.json` is still `com.promax-app` version `1.1.0`. No production login, email, SMS, push, invite, clock-in, report, document write, store publish, or access change was performed.
 
-Live company iPhone, checked 21 October 2026 through Apple's lookup: [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, version `1.1.0`, seller PROMAX IT SOLUTIONS PTY LTD, released 2026-09-25. That bundle is not in this remote. The Expo 54 tree was not recreated. A second listing, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123), is bundle `com.promax-app` version `1.2.0`, seller Aermeans Global Services Limited, current version 2025-09-11. This remote's `app.json` is `1.1.0`. Play returned HTTP 404 for `com.tobby95.pmaxapp` and for `au.com.promaxsolutions.promaxcare`. These pull requests are not a pushed update.
+Live company iPhone, checked 21 October 2026 through Apple's lookup: [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, version `1.1.0`, seller PROMAX IT SOLUTIONS PTY LTD, released 2026-09-25. That bundle is not in this remote. A preserved Expo 54 checkout was reported on Joshua's Mac and was not opened, copied, or rebuilt from this cloud host. A second listing, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123), is bundle `com.promax-app` version `1.2.0`, seller Aermeans Global Services Limited, current version 2025-09-11. This remote's `app.json` is `1.1.0`. Play returned HTTP 404 for `com.tobby95.pmaxapp` and for `au.com.promaxsolutions.promaxcare`. These pull requests are not a pushed update.
 
 ## Provenance
 
@@ -12,8 +12,8 @@ Live company iPhone, checked 21 October 2026 through Apple's lookup: [PromaxCare
 | --- | --- |
 | Repository | `PMXsolutions/Promax-Mobile-App` |
 | GitHub `main` | `de4eb2f` Merge PR #7: prod API, login fix, DeviceTokens |
-| Company-release delta | `engineering/promax-mobile-ios-company-release` and `codex/ios-company-release` are absent from this remote. The local Expo 54 / React 19.1 / React Native 0.81.5 tree was not recreated. |
-| Intended company id | `au.com.promaxsolutions.promaxcare` is not in any remote. It was not applied. |
+| Company-release delta | Absent from this git remote. Reported on Joshua's Mac at `/Users/alukojoshfx/.codex/.chatgpt-projects/g-p-6937926449a88191b260dcf079c5ee33/engineering/promax-mobile-ios-company-release`, branch `codex/ios-company-release`, with uncommitted Expo 54 / React Native 0.81.5 changes. This cloud host did not read that path. The uncommitted files stay where they are. |
+| Intended company id | On that reported checkout, `app.config.js` overrides the legacy `app.json` ids for profiles `ios-company-release` and `android-company-release`: bundle `au.com.promaxsolutions.promaxcare`, scheme `promaxcare-company`, EAS project `d922d001-8858-4020-aa0d-b6f17f9139ad`. This remote's committed `app.json` is still `com.promax-app` / `com.tobby95.pmaxapp`, scheme `myapp`, EAS project `70d0de46-7142-4d9a-a7b5-a089e9ea2879`. The override was not applied here. |
 | Android package on these commits | `com.tobby95.pmaxapp` |
 | iOS bundle on these commits | `com.promax-app` |
 | Versions | `package.json` `1.0.0`. `app.json` `1.1.0`. Root `runtimeVersion` `1.0.0`. iOS runtime policy `appVersion`. `eas.json` `appVersionSource` `remote`. |
@@ -26,6 +26,18 @@ Live company iPhone, checked 21 October 2026 through Apple's lookup: [PromaxCare
 | Roster and drafts PR | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) `16e05534293409d51f288f29d494d749d6c305be`, `a883fdd3443db8f656a707e765be3544da3b26d6`, `1095c75e654f00067e2d04db1d1073587b324738`, `0d73f38c11995d5510d70cdb90bf747c2a4d3bdf` |
 | Profile, documents, trip, notifications PR | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f`, `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` |
 | Web display | Public `app.promaxcare.com.au` meta `app-release=quality-surveys-2026-09-09`. Literal `2.14.19` was not in that shell. `Promax-Web-FRONTEND` and `pmx_api_v2` were not readable with this credential. |
+
+## Pending provenance checklist
+
+Read-only discovery recorded on 21 October 2026. It is not released-build proof. This cloud host has no access to Joshua's Mac. No secret was copied. The checkout was not uploaded, published, rebuilt, submitted, or overwritten. This record does not authorise porting features from that tree or changing the production API.
+
+| Check | Record | Status |
+| --- | --- | --- |
+| Source location | Joshua's Mac, `/Users/alukojoshfx/.codex/.chatgpt-projects/g-p-6937926449a88191b260dcf079c5ee33/engineering/promax-mobile-ios-company-release`, branch `codex/ios-company-release`. Uncommitted Expo 54 / React Native 0.81.5 changes. | Reported. Leave the checkout and those uncommitted changes in place. |
+| Override versus legacy ids | `app.config.js` applies `au.com.promaxsolutions.promaxcare`, scheme `promaxcare-company`, and EAS project `d922d001-8858-4020-aa0d-b6f17f9139ad` through profiles `ios-company-release` and `android-company-release`. Legacy `app.json` ids remain the committed identity of this remote. | Distinction recorded. The override is not the identity of pull requests 9, 10, or 11. |
+| Historical September release-status document | Links that tree to company app `6810018262` and build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5`. | Historical link. Current App Store binary provenance stays unproven. |
+| Installed and store artifact mapping | Current App Store binary of track `6810018262` version `1.1.0` to that checkout, including its uncommitted files, plus the IPA. | Blocked. No IPA is on this host. |
+| Native and API acceptance | Device runs and an isolated disposable API. | Blocked. |
 
 ## Author unit runs on the follow-up commits
 
@@ -150,7 +162,7 @@ Status is Passed, Failed, Blocked, or NA. Passed means the named unit contract p
 | Notification tap opens a shift only with a positive shift id | Staff | Passed | Independent review of `cb70d3b` confirmed `pathForNotificationData`. No push was sent. Universal links and `google-services.json` are absent. |
 | Shift opened from a notification belongs to the signed-in staff member | Staff | Passed | [Retest profile 7ec97f1](https://cursor.com/agents/bc-d854589c-f749-59b9-a200-c4542b57e848) confirmed another staff id, another company, and missing or zero ids hide the shift actions. `GET /ShiftRosters/{id}` still ran before that check. `8c09eaa` requests the shift, and the create or edit report, only after the id is on this staff member's roster. The reviewer has not re-run `8c09eaa`. The shift API was not called. |
 | Android `1.1.0` build 4 and the historical APK hash | Staff | Blocked | Historical hash is not this source. No `adb` or emulator. Joshua has no Android device. |
-| iOS company-release build | Staff | Blocked | No Apple toolchain on this Linux host. The local company tree for `au.com.promaxsolutions.promaxcare`, the build manifest for App Store track `6810018262`, and that IPA are not on this host and were not recreated. |
+| iOS company-release build | Staff | Blocked | No Apple toolchain on this Linux host. A preserved checkout was reported on Joshua's Mac and was not read from here. The historical build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` does not prove the current App Store binary. The IPA is not on this host. |
 | Server tenant and assignment enforcement | Staff | Blocked | Blocked until an isolated disposable API can run those tests. Client gates on pull request 11 are not that proof. `pmx_api_v2` was not readable. |
 | Play production rollout and the ten unsubmitted changes | Release | Blocked | Not submitted. Managed publishing was not changed. |
 | Health declaration | Staff | NA | Unresolved product decision. No screen was added. |
@@ -179,7 +191,7 @@ Passed unit rows stay in the acceptance table above. This list is the work still
 | Downstream web | Attendance history, progress note, daily report, incident, timesheet, PBS, training, tickets, SIMA | Out of scope | An explicit decision to add each existing web staff screen. | Leave them unbuilt. |
 | Downstream web | Care plan, handover, and policies | Out of scope | `origin/codex/care-plan-intelligence-r1` at `b773e1d` was not merged. Acknowledge and clarification are writes. | Leave that branch unmerged. |
 | Downstream web | Surveys, policy-compliance admin, invoices | Out of scope | Those menus are company-admin or administrator. | Do not add admin access. |
-| Release | Company iPhone binary | Company tree | The Expo 54 / React 19.1 / React Native 0.81.5 tree, the build manifest for track `6810018262` version `1.1.0`, and that IPA. | Hand over those three artifacts. Do not recreate the tree. |
+| Release | Company iPhone binary | Company tree | The reported Mac checkout stays in place, including its uncommitted Expo 54 / React Native 0.81.5 files. Current store mapping still needs the IPA for track `6810018262` version `1.1.0` and a manifest that matches that binary. Build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` is a historical link. | Leave the Mac checkout unchanged. Map the installed artifact separately. Do not copy, rebuild, or submit it from this host. |
 | Release | Server tenant and assignment | Isolated API | A disposable API that can reject another tenant and another assignment. `pmx_api_v2` was not readable. | Run those tests on that API. Client gates are not that proof. |
 | Release | Mail limit enforced by the API | Isolated API | The same disposable API, able to check the password before mail and return a distinct limit code. | Keep the client hour as the unit pass it already is. |
 | Release | Draft confidentiality | User policy | A decision on whether the device mask key and plaintext SecureStore chunks stay so a draft can be restored. | Leave logout and unsent drafts unchanged. The mask and plaintext fallback stay unaccepted as protected storage. |

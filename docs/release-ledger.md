@@ -4,11 +4,11 @@ Target: 22 October 2026, Australia/Sydney. Care OS is the go-live. This mobile l
 
 ## Live store lineage
 
-Checked 21 October 2026. No IPA or APK was on this host. No store, EAS, or OTA command was run. The local Expo 54 company tree was not on this host and was not recreated.
+Checked 21 October 2026. No IPA or APK was on this host. No store, EAS, or OTA command was run. A preserved Expo 54 checkout was later reported on Joshua's Mac. This cloud host did not open, copy, rebuild, or submit it.
 
 | Listing | What the public record says | What this remote is |
 | --- | --- | --- |
-| Live company iPhone, [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262) | Apple lookup `bundleId=au.com.promaxsolutions.promaxcare`, country `au`. Version `1.1.0`. Seller PROMAX IT SOLUTIONS PTY LTD. Track `6810018262`. Released 2026-09-25. Current version 2026-09-25T20:34:03Z. Size 56,905,728 bytes. Minimum iOS 15.1. No release notes. | That bundle id is not in this git remote. Binary-to-commit lineage is Blocked. |
+| Live company iPhone, [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262) | Apple lookup `bundleId=au.com.promaxsolutions.promaxcare`, country `au`. Version `1.1.0`. Seller PROMAX IT SOLUTIONS PTY LTD. Track `6810018262`. Released 2026-09-25. Current version 2026-09-25T20:34:03Z. Size 56,905,728 bytes. Minimum iOS 15.1. No release notes. | That bundle id is not in this git remote. A reported Mac checkout overrides legacy `app.json` ids to that bundle through `app.config.js`. Binary-to-commit lineage for the current store artifact stays Blocked. |
 | Other live iPhone, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123) | Apple lookup `bundleId=com.promax-app`. Version `1.2.0`. Seller Aermeans Global Services Limited. Track `6748918123`. First release 2025-08-07. Current version 2025-09-11T18:46:32Z. Size 45,891,584 bytes. Notes mention multi-client reports and per-client kilometres. | `app.json` on `main` `de4eb2f` and on Care OS `981bea5` is version `1.1.0` with the same bundle. Neither commit is the live `1.2.0` binary. Care OS is not the company listing. |
 | Play `com.tobby95.pmaxapp` | `https://play.google.com/store/apps/details?id=com.tobby95.pmaxapp&hl=en&gl=au` returned HTTP 404. | This remote's package name. `app.json` version `1.1.0`. No APK. Not a public listing today. |
 | Play `au.com.promaxsolutions.promaxcare` | The same Play URL pattern returned HTTP 404. | Not a public listing today. |
@@ -38,7 +38,7 @@ The deployed web shell at `https://app.promaxcare.com.au/` returned HTTP 200 on 
 | Android package | `com.tobby95.pmaxapp` |
 | Remote app | Expo `53.0.20`, React `19.0.0`, React Native `0.79.5` |
 | Lockfile | `bun.lockb` `799331d86a1ff0795f2302f5e64b76691564ab6f` |
-| Company Expo 54 tree | Not on this remote and not recreated. The live company iPhone bundle `au.com.promaxsolutions.promaxcare` was not applied to these commits. |
+| Company Expo 54 tree | Reported on Joshua's Mac at `/Users/alukojoshfx/.codex/.chatgpt-projects/g-p-6937926449a88191b260dcf079c5ee33/engineering/promax-mobile-ios-company-release`, branch `codex/ios-company-release`, with uncommitted Expo 54 / React Native 0.81.5 changes. Absent from this git remote and this cloud host. Not copied. |
 
 ## Reproducible install
 
@@ -63,15 +63,27 @@ The same lockfile blob is on `main` and on pull requests 9, 10, and 11. An unloc
 
 The release target remains the company iPhone [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, App Store track `6810018262`, version `1.1.0`. These rows are Expo 53 source fixes. They do not complete that company app. None of these rows is a device, hosted, or store pass.
 
+## Pending provenance checklist
+
+Read-only discovery. This cloud host did not open the Mac path. No secret was copied. The checkout was not uploaded, published, rebuilt, submitted, or overwritten. Feature ports and production API changes stay unauthorised.
+
+| Check | Record | Status |
+| --- | --- | --- |
+| Source location | `/Users/alukojoshfx/.codex/.chatgpt-projects/g-p-6937926449a88191b260dcf079c5ee33/engineering/promax-mobile-ios-company-release` on Joshua's Mac. Branch `codex/ios-company-release`. Uncommitted Expo 54 / React Native 0.81.5 changes. | Reported. Leave those local changes in place. |
+| Override versus legacy ids | `app.config.js` with profiles `ios-company-release` and `android-company-release` sets `au.com.promaxsolutions.promaxcare`, scheme `promaxcare-company`, and EAS project `d922d001-8858-4020-aa0d-b6f17f9139ad`. Legacy `app.json` on this remote stays `com.promax-app`, `com.tobby95.pmaxapp`, scheme `myapp`, EAS project `70d0de46-7142-4d9a-a7b5-a089e9ea2879`. | Distinction recorded. The override was not applied to these pull requests. |
+| Historical September release-status document | Links that tree to company app `6810018262` and build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5`. | Historical link. It does not prove the current App Store binary. |
+| Installed and store artifact mapping | Current track `6810018262` version `1.1.0` binary, its IPA, and the uncommitted checkout that produced it. | Blocked. |
+| Native and isolated-API acceptance | Device proof and a disposable API. | Blocked. |
+
 ## Prerequisites for the company app
 
-These items are missing. They were not recreated from this remote.
+The reported checkout is a source location. These acceptance items are still missing. They were not recreated from this remote.
 
 | Needed | Why |
 | --- | --- |
-| The local company source tree that built `au.com.promaxsolutions.promaxcare` | It is not on this host or this git remote. Expo 54 / React 19.1 / React Native 0.81.5 must stay that tree. |
-| The build manifest for App Store version `1.1.0`, track `6810018262` | Need the commit, SDK, and build id that produced the live binary. `main` and Care OS are `com.promax-app` `1.1.0` and are not that manifest. |
-| The IPA for that build | No IPA is on this host, so binary lineage stays Blocked. |
+| Exact mapping from the current App Store binary to the reported Mac checkout, including its uncommitted files | The path and the `app.config.js` override identify a source tree. They do not identify the installed artifact. |
+| The build manifest for the current App Store version `1.1.0`, track `6810018262` | Build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` is a historical September link. `main` and Care OS remain `com.promax-app` `1.1.0`. |
+| The IPA for that current binary | No IPA is on this host, so binary lineage stays Blocked. |
 | An isolated disposable API | Server tenant and assignment checks stay Blocked until tests can run there. Client gates are not that proof. |
 
 | Pull request | Latest commit | What it holds | Independent review |
@@ -109,7 +121,7 @@ After `0d73f38`, no further source change on this remote is authorised. Finished
 
 | Still required | Class | Next action |
 | --- | --- | --- |
-| Company tree, build manifest for track `6810018262` version `1.1.0`, and that IPA | Company tree | Supply the existing artifacts. Do not recreate them. |
+| Current App Store artifact mapped to the reported Mac checkout, plus that IPA | Company tree | Leave `/Users/alukojoshfx/.codex/.chatgpt-projects/g-p-6937926449a88191b260dcf079c5ee33/engineering/promax-mobile-ios-company-release` and its uncommitted changes in place. Map track `6810018262` separately from historical build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5`. Do not copy, rebuild, or submit from this host. |
 | Emulator or staff device, location permission, and `google-services.json` for a push test | Native | Run the existing roster, clock, document, profile, and trip screens. Do not send a push or a production clock-in. |
 | Disposable API for tenant rejection, duplicate clock-in, document company, mileage, and the mail limit | Isolated API | Run those checks off production. Client gates are not that proof. |
 | Remember me, health declaration, and whether draft copies stay for recovery | User policy | Leave the current screens unchanged until a decision is recorded. |
@@ -124,12 +136,12 @@ After `0d73f38`, no further source change on this remote is authorised. Finished
 | Hosted sign-in, clock-in, report save, and document read | No disposable API and no authorised account. No production request was sent. |
 | Remember me and logout deletion | Remember me is unchanged. Logout still keeps the draft. The AsyncStorage prefix on `0d73f38` is a mask, not encryption. SecureStore values are capped at 2048 bytes. A new draft whose secure key cannot be stored is plain text. Removal on logout was not added. The platform Keychain and Keystore notes above are not a protected-draft pass. Confidentiality versus retention stays parked. |
 | Server tenant and assignment enforcement | Blocked until an isolated disposable API can run those tests. Client gates on pull request 11 are not that proof. `pmx_api_v2` was not readable. |
-| Live company iPhone binary | Bundle `au.com.promaxsolutions.promaxcare` version `1.1.0` is on the App Store. Its source tree and IPA are not on this host. |
+| Live company iPhone binary | Bundle `au.com.promaxsolutions.promaxcare` version `1.1.0` is on the App Store. The reported Mac checkout and historical build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` do not prove that binary. The IPA is not on this host. |
 | Live `com.promax-app` binary | Store version is `1.2.0` from Aermeans. This remote is `1.1.0`. |
 | Play listing | Public Play URLs for both packages returned HTTP 404. No APK. |
 | Store, EAS, and OTA | Not run. Managed publishing was not changed. |
 | Production destination | Not chosen. |
-| Company Expo 54 delta | Not on this remote. |
+| Company Expo 54 delta | Reported on Joshua's Mac with uncommitted changes. Absent from this remote and this cloud host. Not copied. Current store mapping stays Blocked. |
 
 ## Environment
 
