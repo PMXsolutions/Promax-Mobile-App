@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, TextInput } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { notifyManager } from "@tanstack/query-core";
 
@@ -115,7 +115,7 @@ jest.mock("@/components/shared/input", () => {
 
 jest.mock("@/components/shared/custom-button", () => {
   const React = require("react");
-  const { Pressable, Text } = require("react-native");
+  const { Text, TouchableOpacity } = require("react-native");
   return {
     __esModule: true,
     default: ({
@@ -125,9 +125,9 @@ jest.mock("@/components/shared/custom-button", () => {
       title: string;
       onPress?: () => void;
     }) => (
-      <Pressable accessibilityLabel={title} onPress={onPress}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={title} onPress={onPress}>
         <Text>{title}</Text>
-      </Pressable>
+      </TouchableOpacity>
     ),
   };
 });
@@ -151,6 +151,35 @@ function firstTapReachesPress(
     node = node.parent;
   }
   return false;
+}
+
+/**
+ * The app button is TouchableOpacity. A test that asks only for Pressable
+ * reports "No instances found with node type: Pressable" on a tree that
+ * rendered the real button, and can also miss Pressable when React Native
+ * 0.81 wraps that export. The save control is the node labelled Save Changes
+ * that has onPress. The keyboard rule below is unchanged.
+ */
+function findSavePress(root: ReactTestInstance): ReactTestInstance {
+  const labelled = root.findAll(
+    (node) =>
+      node.props?.accessibilityLabel === "Save Changes" &&
+      typeof node.props?.onPress === "function"
+  );
+  if (labelled.length === 1) return labelled[0];
+  const texts = root.findAll((node) =>
+    node.children.some((child) => child === "Save Changes")
+  );
+  for (const text of texts) {
+    let node: ReactTestInstance | null = text.parent;
+    while (node) {
+      if (typeof node.props?.onPress === "function") return node;
+      node = node.parent;
+    }
+  }
+  throw new Error(
+    `expected one Save Changes press, found ${labelled.length} labelled controls`
+  );
 }
 
 function field(
@@ -182,6 +211,32 @@ function renderForm() {
   return { renderer: renderer!, client };
 }
 
+describe("keyboard first-tap rule", () => {
+  it("reaches a labelled Save inside the scroll view and misses one outside it", () => {
+    let inside: TestRenderer.ReactTestRenderer;
+    let outside: TestRenderer.ReactTestRenderer;
+    act(() => {
+      inside = TestRenderer.create(
+        <ScrollView keyboardShouldPersistTaps="handled">
+          <TouchableOpacity accessibilityLabel="Save Changes" onPress={() => undefined}>
+            <Text>Save Changes</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      );
+      outside = TestRenderer.create(
+        <View>
+          <ScrollView keyboardShouldPersistTaps="handled" />
+          <Pressable accessibilityLabel="Save Changes" onPress={() => undefined}>
+            <Text>Save Changes</Text>
+          </Pressable>
+        </View>
+      );
+    });
+    expect(firstTapReachesPress(findSavePress(inside!.root), true)).toBe(true);
+    expect(firstTapReachesPress(findSavePress(outside!.root), true)).toBe(false);
+  });
+});
+
 describe("other-info Save while the keyboard is open", () => {
   beforeEach(() => {
     mockEditProfile.mockReset();
@@ -202,7 +257,7 @@ describe("other-info Save while the keyboard is open", () => {
     });
     expect(field(renderer, "Instagram").props.value).toBe("kept-handle");
 
-    const save = renderer.root.findByType(Pressable);
+    const save = findSavePress(renderer.root);
     expect(save.props.accessibilityLabel).toBe("Save Changes");
     expect(firstTapReachesPress(save, true)).toBe(true);
 
@@ -227,7 +282,7 @@ describe("other-info Save while the keyboard is open", () => {
       response: { data: { message: "Could not save" } },
     });
     await act(async () => {
-      renderer.root.findByType(Pressable).props.onPress();
+      findSavePress(renderer.root).props.onPress();
       await Promise.resolve();
       await Promise.resolve();
     });
