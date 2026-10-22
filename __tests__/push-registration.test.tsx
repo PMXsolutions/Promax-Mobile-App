@@ -7,6 +7,7 @@ import usePushNotifications from "@/hooks/usePushNotification";
 import {
   PUSH_TOKEN_STORAGE_KEY,
   deviceTokenForPlatform,
+  fcmTokenForAndroid,
   parseScopedPushRegistration,
 } from "@/libs/push-registration";
 
@@ -279,6 +280,10 @@ describe("scoped push registration", () => {
     expect(deviceTokenForPlatform("android", { type: "ios", data: "apns" })).toBeNull();
     expect(deviceTokenForPlatform("ios", { type: "ios", data: "apns" })).toBe("apns");
     expect(deviceTokenForPlatform("ios", { type: "android", data: "fcm" })).toBeNull();
+    expect(fcmTokenForAndroid("android", { type: "android", data: "fcm" })).toBe("fcm");
+    expect(fcmTokenForAndroid("android", { type: "ios", data: "apns" })).toBeNull();
+    expect(fcmTokenForAndroid("ios", { type: "ios", data: "apns" })).toBeNull();
+    expect(fcmTokenForAndroid("ios", { type: "android", data: "fcm" })).toBeNull();
 
     (Platform as { OS: string }).OS = "ios";
     getDeviceToken.mockResolvedValue({ type: "ios", data: "apns-token" });

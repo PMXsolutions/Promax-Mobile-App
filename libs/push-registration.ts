@@ -73,3 +73,19 @@ export function deviceTokenForPlatform(
   if (platform === "ios" && device.type === "ios") return device.data;
   return null;
 }
+
+/**
+ * Company-safe extractor. Android FCM only.
+ * The preserved company tree can use this with the scoped registration record.
+ * It must not be replaced by `deviceTokenForPlatform`, which also returns an APNs token.
+ */
+export function fcmTokenForAndroid(
+  platform: string,
+  device: { type?: string; data?: unknown } | null | undefined
+): string | null {
+  if (platform !== "android") return null;
+  if (!device || device.type !== "android" || typeof device.data !== "string" || !device.data) {
+    return null;
+  }
+  return device.data;
+}
