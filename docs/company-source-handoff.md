@@ -75,7 +75,7 @@ No secret values.
 
 Milestone A is an integrated reliability build for the existing private Play route `https://play.google.com/apps/internaltest/4700932305942754285` and a TestFlight build on the existing company iOS app `6810018262`. It does not include attendance writes, progress notes, daily reports, incident writes, timesheet generation, PBS, training completion, ticket creation, knowledge-base editing, or SIMA chat. Those gaps must be written on the test notes. Milestone A is not full parity, and it is not complete until the mocked suites pass on the company copy and a later device run is recorded against the artifact hash.
 
-Milestone B is the remaining staff alignment and polish. The first slice is remote commit `ff174a6` on `cursor/mobile-staff-read-workflows-65b8`: read-only My Attendance, My Progress Note, My Timesheet, Training, My Tickets, Knowledge Base, and My Incident Report, scoped to the signed-in staff member. Author Jest was 6 passed. Independent reviewer `bc-da4e9ddd-23d0-5a05-9155-cd0145b0d3ad` reran those 6 on that commit and changed nothing. That is not a device pass and not Milestone B complete.
+Milestone B is the remaining staff alignment and polish. The current slice is `5fc62eb` on `cursor/mobile-staff-read-workflows-65b8`: the same read-only staff lists, with reads exposed as buttons and daily report, PBS, SIMA, and policies exposed as unavailable text. Author Jest passed 7 tests. Reviewer `bc-11a32a46-27bb-5fe3-b5e3-09b313b7e90d` reran those 7 and changed nothing. Missing write contracts stay blocked. That is not a device pass and not Milestone B complete.
 
 Neither milestone authorises a production write, a hosted database change, a password change, a purchase, an external notification, or a store publication.
 
