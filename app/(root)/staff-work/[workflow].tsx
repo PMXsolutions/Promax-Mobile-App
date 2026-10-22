@@ -13,6 +13,7 @@ import {
   StaffWorkflowRow,
 } from "@/libs/staff-workflow-contract";
 import { loadStaffWorkflow } from "@/services/staff-workflows";
+import { staffRowAccessibility } from "@/libs/staff-work-a11y";
 
 const LABELS = STAFF_READ_LABELS as Record<string, string>;
 
@@ -60,7 +61,11 @@ export default function StaffWorkflowList() {
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={name} />
       {loading ? (
-        <ActivityIndicator color={THEME.colors.primary} style={styles.loader} />
+        <ActivityIndicator
+          color={THEME.colors.primary}
+          style={styles.loader}
+          accessibilityLabel="Loading staff list"
+        />
       ) : error ? (
         <ErrorState message={error} onRetry={() => void load()} />
       ) : (
@@ -69,10 +74,12 @@ export default function StaffWorkflowList() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.page}
           ListEmptyComponent={
-            <Text style={styles.empty}>No records for this signed-in staff member.</Text>
+            <Text style={styles.empty} accessibilityRole="text">
+              No records for this signed-in staff member.
+            </Text>
           }
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <View style={styles.row} {...staffRowAccessibility(item)}>
               <Text weight="semiBold">{item.title}</Text>
               {item.detail ? (
                 <Text size="sm" style={styles.detail}>

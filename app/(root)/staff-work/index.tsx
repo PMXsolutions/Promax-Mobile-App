@@ -6,9 +6,12 @@ import Text from "@/components/shared/text";
 import { THEME } from "@/constants/theme";
 import {
   STAFF_READ_LABELS,
-  STAFF_WORKFLOW_QUESTIONS,
   StaffReadWorkflow,
 } from "@/libs/staff-workflow-contract";
+import {
+  blockedStaffWorkflows,
+  staffReadAccessibility,
+} from "@/libs/staff-work-a11y";
 
 const READS = Object.keys(STAFF_READ_LABELS) as StaffReadWorkflow[];
 
@@ -23,25 +26,35 @@ export default function StaffWork() {
           report, PBS, SIMA chat, and policies stay closed until their web
           request is confirmed. This is not the installed store build.
         </Text>
-        {READS.map((workflow) => (
-          <Pressable
-            key={workflow}
-            accessibilityRole="button"
-            accessibilityLabel={STAFF_READ_LABELS[workflow]}
-            onPress={() => router.push(`/(root)/staff-work/${workflow}`)}
-            style={styles.row}
-          >
-            <Text weight="semiBold">{STAFF_READ_LABELS[workflow]}</Text>
-            <Text size="sm" style={styles.meta}>
-              Read only
-            </Text>
-          </Pressable>
-        ))}
-        <Text weight="semiBold" style={styles.heading}>
+        {READS.map((workflow) => {
+          const access = staffReadAccessibility(workflow);
+          return (
+            <Pressable
+              key={workflow}
+              accessibilityRole={access.accessibilityRole}
+              accessibilityLabel={access.accessibilityLabel}
+              accessibilityHint={access.accessibilityHint}
+              onPress={() => router.push(`/(root)/staff-work/${workflow}`)}
+              style={styles.row}
+            >
+              <Text weight="semiBold">{STAFF_READ_LABELS[workflow]}</Text>
+              <Text size="sm" style={styles.meta}>
+                Read only
+              </Text>
+            </Pressable>
+          );
+        })}
+        <Text weight="semiBold" style={styles.heading} accessibilityRole="header">
           Waiting on the signed-in web request
         </Text>
-        {STAFF_WORKFLOW_QUESTIONS.map((item) => (
-          <View key={item.workflow} style={styles.blocked}>
+        {blockedStaffWorkflows().map((item) => (
+          <View
+            key={item.workflow}
+            accessible
+            accessibilityRole={item.accessibilityRole}
+            accessibilityLabel={item.accessibilityLabel}
+            style={styles.blocked}
+          >
             <Text weight="semiBold">{item.workflow}</Text>
             <Text size="sm" style={styles.meta}>
               {item.question}

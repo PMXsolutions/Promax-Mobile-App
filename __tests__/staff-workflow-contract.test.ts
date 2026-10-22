@@ -12,6 +12,11 @@ import {
   staffReadRequest,
   STAFF_WORKFLOW_QUESTIONS,
 } from "@/libs/staff-workflow-contract";
+import {
+  blockedStaffWorkflows,
+  staffReadAccessibility,
+  staffRowAccessibility,
+} from "@/libs/staff-work-a11y";
 
 const session = {
   staffId: 9,
@@ -161,5 +166,34 @@ describe("PromaxCare mobile staff read contract", () => {
       workflow: "knowledge-base",
     });
     expect(offline).toHaveBeenCalledWith("/Tickets/get_knowledgebase");
+  });
+});
+
+describe("staff work accessibility", () => {
+  it("exposes reads as buttons and leaves blocked workflows as text", () => {
+    expect(staffReadAccessibility("attendance")).toEqual({
+      accessibilityRole: "button",
+      accessibilityLabel: "My Attendance",
+      accessibilityHint: "Opens a read-only list. Nothing is saved from this screen.",
+    });
+    const blocked = blockedStaffWorkflows();
+    expect(blocked.map((item) => item.workflow)).toEqual([
+      "daily-report",
+      "pbs",
+      "sima",
+      "policies",
+    ]);
+    for (const item of blocked) {
+      expect(item.accessibilityRole).toBe("text");
+      expect(item.accessibilityLabel.toLowerCase()).toContain("unavailable");
+      expect(staffReadRequest(item.workflow, session).ok).toBe(false);
+    }
+    expect(
+      staffRowAccessibility({ id: "1", title: "Shift", detail: "Submitted" })
+    ).toEqual({
+      accessible: true,
+      accessibilityRole: "text",
+      accessibilityLabel: "Shift. Submitted",
+    });
   });
 });
