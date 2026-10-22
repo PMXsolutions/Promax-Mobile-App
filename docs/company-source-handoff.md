@@ -49,9 +49,9 @@ Compare. Do not apply a remote patch because the file names match. For each mark
 | Session and single-flight sign-in | `2fa074d` | `libs/session-status.ts`, `libs/single-flight.ts`, `libs/auth-hydration.ts`, `libs/startup-fonts.ts`, `libs/login-mail-guard.ts` exist and are used by sign-in. |
 | Report keyboard contract | `926d28d` on pull request 10 | Report forms keep the first tap. `libs/report-validation.ts` and `libs/attendance-error.ts` exist. |
 | Profile, document, and mileage gates | `8c1e1cb` on pull request 11 | `libs/staff-record.ts` `isOwnStaffRecord`, `libs/trip-mileage.ts` `mileageSubmitDecision`, `libs/document-name.ts`, `libs/notification-route.ts`. |
-| Protected draft, no plaintext fallback | `4daa0f0` on pull request 13. This supersedes `113442f` for pointer order and supersedes the draft store in `926d28d`. | Writes for one key are serialized. A generation slot is committed before `sec.current` moves. A stale writer does not point `sec.current` back at an older stamp. `SECURE_DRAFT_SAVE_FAILURE` is visible. The XOR prefix is still not encryption. |
-| Other-info Save inside the keyboard scroll | `d925a1a` on pull request 14 | In `modules/profile/edit-otherinfo-form.tsx`, Save Changes is inside the `ScrollView` whose `keyboardShouldPersistTaps` is `handled`. |
-| User and company device token | `2b3f43f` on pull request 15. Behavior from `1eaf047`, comments from `775b8d7`. | Stored registration is JSON `{token, userId, companyId}`. A legacy bare string does not count as registered. A failed post does not write storage. Company reconciliation uses `fcmTokenForAndroid`. |
+| Protected draft, no plaintext fallback | `4daa0f0` on pull request 13. Joshua reports this marker is absent from the current integrated draft implementation. | Copy the four files listed in the Mac checklist from `4daa0f0`. Writes for one key are serialized. `sec.current` moves only after the new generation reads back. A stale writer does not point `sec.current` at an older stamp. |
+| Other-info Save inside the keyboard scroll | Layout seen on the Mac copy. Rendered test at `d925a1a` failed there. Portable test is `571576e`. | Save Changes is inside the `ScrollView` with `keyboardShouldPersistTaps="handled"`. The old test searched for the `Pressable` type. The app button is `TouchableOpacity`, so that search reports no `Pressable`. `571576e` finds the control labelled Save Changes and still requires the scroll ancestor. A Save outside that scroll fails. |
+| User and company device token | `db49319` on pull request 15. Joshua reports this reconciliation is pending. The Android-only FCM guard stays. | Copy `libs/push-registration.ts` and `__tests__/fcm-token-for-android.test.ts` from `db49319`. Wire the company hook to `fcmTokenForAndroid`. Do not replace the company guard with `deviceTokenForPlatform`. |
 | Company FCM-only guard | Already present on the integration copy. | `fcmTokenForAndroid` returns null for iOS, including an APNs device token. `deviceTokenForPlatform` still returns that APNs token for this public remote hook. Do not copy that iOS return onto the company guard. |
 
 Keep `au.com.promaxsolutions.promaxcare`. Do not rebuild the Expo 53 remote over the Expo 54 tree.
@@ -78,6 +78,79 @@ Milestone A is an integrated reliability build for the existing private Play rou
 Milestone B is the remaining staff alignment and polish. The current slice is `5fc62eb` on `cursor/mobile-staff-read-workflows-65b8`: the same read-only staff lists, with reads exposed as buttons and daily report, PBS, SIMA, and policies exposed as unavailable text. Author Jest passed 7 tests. Reviewer `bc-11a32a46-27bb-5fe3-b5e3-09b313b7e90d` reran those 7 and changed nothing. Missing write contracts stay blocked. That is not a device pass and not Milestone B complete.
 
 Neither milestone authorises a production write, a hosted database change, a password change, a purchase, an external notification, or a store publication.
+
+## Mac checklist for the existing integration copy
+
+This host has not run `engineering/promax-mobile-company-integration-20261022`. A remote reviewer must not claim that run. Joshua fetched the public pull-request heads onto the Mac and did not upload company source. The repository stays public. Do not convert it and do not create another repository. Do not push the company tree.
+
+Run these commands inside the existing integration copy only. Paste the Jest counts and the grep lines back. Leave secrets out. Reviewers on this host reran the public files only: `bc-30617101-4611-51cc-b077-4d34b2d80590` passed 2 tests at `571576e`, `bc-daa29958-4b19-5481-b123-04d72d23f74a` passed 2 tests at `db49319`, and `bc-257aef1b-301e-5bf0-b469-e0cb14fccf8e` passed 7 tests at `1e48d37`. None of them ran the Mac copy. `bc-d9a774a5-988d-549d-9394-4f52b41b33f9` reviews the pasted Mac counts when they arrive.
+
+### Pull request 13, commit `4daa0f0`
+
+`4daa0f0` itself changes only:
+
+- `__tests__/report-draft-store.test.ts`
+- `libs/report-draft-store.ts`
+
+`sec.current` is absent from the integrated draft store, so the two-file delta is not enough. Copy these four files from `4daa0f0`:
+
+- `libs/report-draft-store.ts`
+- `libs/report-draft.ts`
+- `hooks/use-report-draft.ts`
+- `__tests__/report-draft-store.test.ts`
+
+```bash
+npx jest __tests__/report-draft-store.test.ts --watchAll=false --watchman=false
+```
+
+The public-remote run of that file was 32 passed. On the Mac, record the count you actually get. Then:
+
+```bash
+rg -n "sec\\.current|draftWrites|SECURE_DRAFT_SAVE_FAILURE|This is not encryption" libs/report-draft-store.ts libs/report-draft.ts
+```
+
+A pass is not Keychain, Keystore, or device acceptance.
+
+### Pull request 14, commit `571576e`
+
+The Mac layout already has Save Changes inside the ScrollView in `modules/profile/edit-otherinfo-form.tsx`. The imported `d925a1a` test failed with `No instances found with node type: Pressable`. That search does not match `TouchableOpacity`, which is what `components/shared/custom-button.tsx` renders. It can also miss a wrapped Pressable export on React Native 0.81.
+
+Copy from `571576e`:
+
+- `__tests__/other-info-save-tap.test.tsx`
+- `components/shared/custom-button.tsx`
+
+Keep the form's Save inside the ScrollView. The test finds the control by the label Save Changes and `onPress`. `firstTapReachesPress` is unchanged: the first tap counts only when an ancestor has `keyboardShouldPersistTaps` of `handled` or `always`. The fixture test expects that result to be false when Save sits outside the scroll view. Do not delete that expect.
+
+```bash
+npx jest __tests__/other-info-save-tap.test.tsx --watchAll=false --watchman=false
+```
+
+Use the renderer already selected in the test file: Jest Expo's React 19 renderer when the top-level `react-test-renderer` is 18. A pass is not a device keyboard pass. Until this command passes on the Mac copy, pull request 14 stays failed.
+
+### Pull request 15, commit `db49319`
+
+`2b3f43f` changed:
+
+- `libs/push-registration.ts`
+- `__tests__/push-registration.test.tsx`
+
+`db49319` adds the portable file `__tests__/fcm-token-for-android.test.ts`. Copy these two files from `db49319`:
+
+- `libs/push-registration.ts`
+- `__tests__/fcm-token-for-android.test.ts`
+
+Do not copy `hooks/usePushNotification/index.ts` over the company hook. In the company hook, pass the device token through `fcmTokenForAndroid(Platform.OS, device)` before `DeviceTokens/add_token`. Leave the existing Android-only FCM guard in place.
+
+```bash
+npx jest __tests__/fcm-token-for-android.test.ts --watchAll=false --watchman=false
+```
+
+Expect the Android FCM string to be returned and every Apple token to be null. Do not post a token. The rendered `__tests__/push-registration.test.tsx` file checks the public remote hook, including its iOS post. That file is not the company acceptance test.
+
+### Milestone A without the open staff writes
+
+Milestone A can be prepared from this copy before daily report, PBS, SIMA, and policy writes exist. Its test note must list those workflows as absent. The route stays `https://play.google.com/apps/internaltest/4700932305942754285` for Android and the existing company iOS app `6810018262` for TestFlight. No upload is included in this checklist. After the three commands above pass on the Mac, the next missing records are still the company commit, version code or build number, artifact checksum, and API hostname.
 
 ## Staff questions that stay open
 
