@@ -163,6 +163,21 @@ This is this repository, not the platform module.
 | Country availability | Later planning | iOS and Android availability across countries comes after staff workflows and polish. It is not permission to publish, expand access, or write to production. No worldwide release is claimed. |
 | Company FCM-only registration | Company tree | Keep the preserved company refusal to send APNs to the FCM-only endpoint. Do not replace it with pull request 15's iOS post. |
 
+## Completed PromaxCare mobile fixes
+
+These commits are on this PromaxCare mobile remote. They are not established inside the installed Android version name `1.1.0`, and they are not established inside the working iOS release.
+
+| Pull request | Commit | What the lab showed | Integrated company result |
+| --- | --- | --- | --- |
+| [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) | `2fa074d` | Session retry and the mail sentence. Lab only. | Not merged into the Expo 54 tree. |
+| [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `926d28d` | Report keyboard contract. | Not merged into the Expo 54 tree. |
+| [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `8c1e1cb` | Profile and document keyboard contract. Save was still outside the scroll view on this commit. | Not merged into the Expo 54 tree. |
+| [#13](https://github.com/PMXsolutions/Promax-Mobile-App/pull/13) | `113442f` | 31 draft-store tests passed after two failures on `749406a`. | Not merged into the Expo 54 tree. |
+| [#14](https://github.com/PMXsolutions/Promax-Mobile-App/pull/14) | `d925a1a` | 3 suites, 11 tests. Save is inside the scroll view. | Not merged into the Expo 54 tree. |
+| [#15](https://github.com/PMXsolutions/Promax-Mobile-App/pull/15) | `775b8d7` | Scoped token lab on `1eaf047` passed 6 tests. The company FCM-only guard is not in this commit. | Not merged. Do not copy the iOS APNs post over that guard. |
+
+The next PromaxCare mobile test build is not identified. The installed version name `1.1.0` stays on the phone and is not that build. The next build has to come from the preserved company Expo 54 tree after the merge and an independent mocked run, with its commit, version code, SHA256, and baked API URL recorded. No such artifact was produced. The iOS release and the private Play route were not changed.
+
 ## Still blocked
 
 | Item | Why it stays blocked |

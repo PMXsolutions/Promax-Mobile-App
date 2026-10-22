@@ -142,7 +142,18 @@ PromaxCare mobile workflow order, aligned to existing PromaxCare web staff menus
 2. Polish of those same PromaxCare mobile screens.
 3. iOS and Android availability in more countries, as later PromaxCare mobile planning only. That sentence is not permission to publish, expand tester access, or write to production.
 
-Achievable next test milestone, without a store upload: on Joshua's Mac, merge those three source fixes into the preserved Expo 54 tree, keep the FCM-only guard, and have a different reviewer run the mocked suites. The next observation on the phone, still without reinstall or clear-data, is to open one staff screen that does not depend on an unknown 22 October shift, such as profile or documents, and record only that it opened.
+Completed PromaxCare mobile source fixes, and the build they are not yet in:
+
+| Fix | Commit | Independent PromaxCare mobile test | Installed phone |
+| --- | --- | --- | --- |
+| Sign-in session, mail sentence, keyboard | `246c1b2` and `2fa074d` on pull request 9 | Retested on those commits. Lab only. | Not shown to be this binary. |
+| Report keyboard taps and later draft storage | `926d28d` on pull request 10, then `113442f` on pull request 13 | Draft retest: 31 passed after `749406a` failed twice. | Not shown to be this binary. |
+| Profile and document ownership, then other-info Save | `8c1e1cb` on pull request 11, then `d925a1a` on pull request 14 | Pull request 14: 3 suites, 11 tests. | Not shown to be this binary. |
+| Device token scoped to user and company | `1eaf047`, comments at `775b8d7`, pull request 15 | 6 mocked tests on `1eaf047`. The company tree still refuses an APNs post. | Not shown to be this binary. |
+
+The Honor X9d 5G install is PromaxCare mobile version name `1.1.0` from the existing private Play link. Login reached the roster. That observation stays. It is not evidence of the fixes above, because the version code, SHA256, source commit, and API host are still unidentified. A public read of the company Expo project page asked for a login, so no build list was opened. No EAS, Play, or production call was added.
+
+The next test build is not identified. It is the first `au.com.promaxsolutions.promaxcare` artifact built from the preserved Expo 54 tree after pull requests 13, 14, and the token scope from 15 are merged there, the company FCM-only registration is kept, and a different reviewer has run the mocked suites. This host does not have that tree, so that merge, that review, and that build were not done. The working iOS release and the installed private-track app stay as they are. No store publication was made.
 
 Steps to put a matched artifact on this same route, after those gates are closed by a separate approval:
 
