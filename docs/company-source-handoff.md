@@ -60,13 +60,13 @@ Keep `au.com.promaxsolutions.promaxcare`. Do not rebuild the Expo 53 remote over
 
 No secret values.
 
-1. Original `git status --porcelain=v1`, `git rev-parse HEAD`, `git log -15 --oneline`, `git diff --stat`, and `git diff --name-only`.
-2. The copy's branch name and commit.
+1. Original checkout. Recorded at 8:19pm Australia/Sydney on 22 October 2026: the dirty company checkout was retained, and only a public ref fetch was performed there. No reset, clean, or replacement. Do not request that status again.
+2. Integration copy identity. The directory is not a Git repository. Do not invent a branch name or commit. The recorded identity is the four `4daa0f0` content hashes in the file-identity table.
 3. The marker table.
 4. The function that decides an iOS push post, with secrets removed.
 5. `package.json` version and the `expo`, `react`, and `react-native` versions.
 6. Redacted bundle id, version name, Android version code, iOS build number, and API hostname.
-7. Jest command names and pass counts on the copy. Supplied at 6:26pm Australia/Sydney on 22 October 2026 and not requested again: Jest `--runInBand --watchAll=false --watchman=false`, 17 suites and 186 tests passed; `tsc --noEmit` passed; `node --test scripts/company-android-config.test.cjs scripts/company-ios-config.test.cjs`, 20 passed. An initial 180-test pass had TypeScript test-annotation failures, corrected before the final run. State that the run was mocked. The copy's commit from item 2 is still missing.
+7. Jest command names and pass counts on the copy. Supplied at 6:26pm Australia/Sydney on 22 October 2026 and not requested again: Jest `--runInBand --watchAll=false --watchman=false`, 17 suites and 186 tests passed; `tsc --noEmit` passed; `node --test scripts/company-android-config.test.cjs scripts/company-ios-config.test.cjs`, 20 passed. An initial 180-test pass had TypeScript test-annotation failures, corrected before the final run. State that the run was mocked. The copy is not a Git repository, so those results are not tied to a commit.
 8. Play Console internal-testing version code and SHA256 for package `au.com.promaxsolutions.promaxcare`, compared with `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f`. Do not read a hash from the phone's App info screen.
 9. The names of the ten unsubmitted Play changes, and the current text of the unresponsive-controls item and the health declaration. Leave them unsubmitted. Managed publishing stays off. Do not create a tester link, change testers, or notify anyone.
 10. App Store Connect build number currently live on track `6810018262`. Do not upload a replacement.
@@ -150,45 +150,117 @@ Expect the Android FCM string to be returned and every Apple token to be null. D
 
 ### Milestone A without the open staff writes
 
-Milestone A can be prepared from this copy before daily report, PBS, SIMA, and policy writes exist. Its test note must list those workflows as absent. The route stays `https://play.google.com/apps/internaltest/4700932305942754285` for Android and the existing company iOS app `6810018262` for TestFlight. No upload is included in this checklist. Joshua's full-suite lab results are recorded above. The evidence review of those results is recorded. The next missing records are the integration-copy commit, a Mac diff for the three reconciliation risks, the isolated test profile below, and then version code or build number, artifact checksum, and fixture API hostname.
+Milestone A can be prepared from this copy before daily report, PBS, SIMA, and policy writes exist. Its test note must list those workflows as absent. The route stays `https://play.google.com/apps/internaltest/4700932305942754285` for Android and the existing company iOS app `6810018262` for TestFlight. No upload is included in this checklist. The integration directory is a working copy, not a Git repository, so the source identity is the four file hashes below rather than a commit.
+
+## File identities recorded at 8:19pm Australia/Sydney on 22 October 2026
+
+`engineering/promax-mobile-company-integration-20261022` is not a Git repository. No integration commit will be invented, and this tree will not be pushed to the public repository. [Mac lab evidence review](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) hashed the raw public blobs and matched Joshua's read-only git-show comparison. The reviewer did not run the Mac tree.
+
+| Path equal to `4daa0f0` | Content SHA256 |
+| --- | --- |
+| `libs/report-draft-store.ts` | `0f331cd3a58457fd1ed2a239cc33bb7a7e5a70a64da209dee0f6748642107377` |
+| `libs/report-draft.ts` | `15d9b9bb3b8715c0c6e537f090d7ab4d7078bf3890e99f0e09d0a6cfefff6eff` |
+| `hooks/use-report-draft.ts` | `13fed590df22733bd6d0e5b0c9c3119c81075dd7f31a52dbdea9a17fda024700` |
+| `__tests__/report-draft-store.test.ts` | `2c89eb437eb0454b3f733b36ce18cc7f0a7edd53950944eb175cc274c866482a` |
+
+Public baselines, for a later comparison of the working copy. These Mac files were not hashed here.
+
+| Public file | Commit | Content SHA256 |
+| --- | --- | --- |
+| `__tests__/other-info-save-tap.test.tsx` | `571576e` | `2c029e4888ee87af9794eddc6317a41f161c5777381fa4911a96ed787302606d` |
+| `components/shared/custom-button.tsx` | `571576e` | `24bb08e20d2c7c56dd795f547e364aa5edb53cd54b285e384ae821ed02a89c75` |
+| `__tests__/push-registration.test.tsx` | `2b3f43f` | `ae6433512c9d8ebc4129f8d79dde9a0b768a70e868655828f69b99c99ffc6132` |
+| `libs/push-registration.ts` | `db49319` | `500a1ac1bed9824388e9150183cbeab450bd4359ba75ce5f4c63e969d5951495` |
+| `__tests__/fcm-token-for-android.test.ts` | `db49319` | `ba5e56e947e532425b21e4d8b733ea4c14d0e8e845def507784281c9e5c7068b` |
+
+The public Save test has exactly three `TestRenderer.ReactTestRenderer` annotations: the `renderer` binding, the `inside` binding, and the `outside` binding. Joshua says the Mac test adds `type ReactTestRenderer = import("react-test-renderer").ReactTestRenderer` and replaces those three annotations. Expectations and `firstTapReachesPress` stay as they are. The Mac test hash will differ from `2c029e48…` because of that alias. That difference is the recorded type-only edit.
+
+The company rendered registration file is `scoped-push-registration.test.tsx`. Joshua says it was copied from `2b3f43f`, the existing company suite was preserved, and the only platform expectation changed denies the iOS post. The public expectation to deny is inside `it("keeps Android FCM and iOS APNs on their own platforms")`: `post` called with `/DeviceTokens/add_token`, `Device_Token` `apns-token`, `UserId` `user-1`, and `CompanyId` `9`. The following expects, that the Android channel helpers were not called, stay. The later `fcm-on-ios` case already expects no post. The company file was not read here.
+
+Joshua says the original dirty checkout was retained and only a public ref fetch was performed there. No reset, clean, or replacement. The 17 suites, 186 tests, TypeScript pass, and 20 config checks stay his lab results and are not requested again.
 
 ## Remaining Milestone A build prerequisites
 
-The evidence review is recorded. [Mac lab evidence review](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) compared the pasted results with public `4daa0f0`, `571576e`, and `db49319`. That reviewer did not execute the Mac tree. The 17 suites, 186 tests, TypeScript pass, and 20 config checks are not requested again. What follows is still required before a test build is identified. Nothing in this list authorises signing, EAS, an upload, a store submission, a tester change, or a production write.
+Nothing in this list authorises signing, EAS, an upload, a store submission, a tester change, a production write, or a production push. An integration commit is not one of these items. The installed Honor X9d 5G / MTN-NX1 app stays as it is.
 
-1. Integration-copy commit. Run `git rev-parse HEAD` and `git status --porcelain=v1` inside `engineering/promax-mobile-company-integration-20261022` and paste the SHA and the status. That SHA was not supplied.
-2. Draft-file identity. Show that the four pull request 13 files match `4daa0f0` for `sec.current`, `draftWrites`, a `stillCurrent` path that does not write an older stamp into `sec.current`, `SECURE_DRAFT_SAVE_FAILURE`, and the comment "This is not encryption." A company-only draft behavior present before the copy and absent from `4daa0f0` falsifies a clean replace. The evidence review did not see this diff.
-3. Save-test annotation. Show that the local TypeScript edit is the type `import("react-test-renderer").ReactTestRenderer` and that no `expect()` and no `firstTapReachesPress` changed. The outside-scroll case must still expect false. Save Changes stays inside the `ScrollView` with `keyboardShouldPersistTaps="handled"`.
-4. Company registration file. Show that the distinct rendered test differs from `2b3f43f` only by forbidding the iOS post. The company hook calls `fcmTokenForAndroid`, keeps the Android-only early return, does not post an iOS token, keeps `setNotificationChannelAsync("default")` Android-only, and still uses the notification routes. Banner, list, and redacted logging must leave those routes in place.
-5. Original checkout status. `git status --porcelain=v1` on `promax-mobile-ios-company-release` showing a working tree whose edits are the pre-existing dirty Expo 54 tree. Fetched public refs may update remote-tracking names. Do not reset, clean, or stash that tree, and do not copy it again.
-6. Isolated test profile, specified in the next section. Development, preview, and production stay pointed at production. They are not safe UAT. Do not test writes against production. Do not retarget those three profiles.
-7. Toolchain and signing approval, given separately. This host has no Android SDK, `adb`, emulator, or Apple toolchain. Do not send a signing key, token, or `.env` into chat.
-8. One `au.com.promaxsolutions.promaxcare` artifact from the integration copy after items 1 to 6. Record the commit, package id, version name, Android version code, iOS build number, SHA256, and baked API hostname. A write-capable test build uses the fixture hostname. Do not build it from the production API profile.
-9. A separate publication approval that names that artifact, the existing Play internal-test track `https://play.google.com/apps/internaltest/4700932305942754285`, TestFlight on existing app `6810018262`, the change list, and rollback. Rollback leaves the current phone install and the working iOS release in place until the store artifact hash matches the recorded candidate. Do not submit the ten Play changes. Do not create a tester link. Do not start the Production 4 full rollout. Managed publishing stays off.
-10. Installed version name `1.1.0` still needs its version code and SHA256 from the Play Console internal-testing release or the downloaded artifact. Compare any hash with build 4 SHA256 `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f`. App info does not show that hash. Leave the Honor X9d 5G / MTN-NX1 install in place.
-11. Device cases after a lab pass: a keyboard tap on device, a secure-store restart, an account or company switch that registers without a production push, and a failed save that keeps the typed text on device. Jest is not that pass.
-12. Milestone A test notes list the absent workflows: attendance writes, progress notes, daily reports, incident writes, timesheet generation, PBS, training completion, ticket creation, knowledge-base editing, and SIMA chat.
+1. Isolated test profile, specified in the next section. `development`, `preview`, and `production` stay on production. They are not safe UAT. A write-capable test build uses the fixture host.
+2. Toolchain and signing approval, given separately. This host has no Android SDK, `adb`, emulator, or Apple toolchain. Do not send a signing key, token, or `.env` into chat.
+3. One `au.com.promaxsolutions.promaxcare` artifact from the working copy after the profile exists. Record package id, version name, Android version code, iOS build number, artifact SHA256, and baked API hostname. The source identity is the working copy plus the four matched draft-file hashes. Do not invent a source commit. Do not build the artifact from the production API profile.
+4. A separate publication approval that names that artifact, the existing Play internal-test track `https://play.google.com/apps/internaltest/4700932305942754285`, TestFlight on existing app `6810018262`, the change list, and rollback. Rollback leaves the current phone install and the working iOS release in place until the store artifact hash matches the recorded candidate. Do not submit the ten Play changes. Do not create a tester link. Do not start the Production 4 full rollout. Managed publishing stays off.
+5. Installed version name `1.1.0` still needs its version code and SHA256 from the Play Console internal-testing release or the downloaded artifact. Compare any hash with build 4 SHA256 `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f`. App info does not show that hash.
+6. Device cases after a lab pass: a keyboard tap on device, a secure-store restart, an account or company switch that registers without a production push, and a failed save that keeps the typed text on device. Jest is not that pass.
+7. Milestone A test notes list the absent workflows: attendance writes beyond clock-in and clock-out, progress notes, daily reports, incident writes, timesheet generation, PBS, training completion, ticket creation, knowledge-base editing, and SIMA chat.
+
+The one further file identity that would close the Save-test byte claim is the content SHA256 of the working copy's `__tests__/other-info-save-tap.test.tsx`. It is not a commit, and it is not required before the profile proposal. The company hook file has no public blob to match. Its recorded contract is the Android-only early return, `fcmTokenForAndroid`, and no iOS post.
 
 ## Isolated test-profile proposal
 
-This profile is a proposal. It has not been created. Do not write it into the company tree from this host. Do not add it to the public repository as a production change.
+This profile is a proposal for the working copy. It has not been created. It is not in the public `eas.json`. It does not require a Git commit. Creating it locally, building it, and uploading it are not authorised by this record. The existing Play route and the public repository stay as they are. The current phone install stays as it is.
 
-On the public remote, `eas.json` sets `EXPO_PUBLIC_API_BASEURL` to `https://api.promaxcare.com.au/api` for `development`, `preview`, and `production`. The production Android submit track in that file is `internal`. `app.config.js` and `libs/axiosInstance.ts` on that public remote fall back to the same host when the variable is unset. Joshua states that the existing company configuration is production-only and cannot be treated as safe UAT. The company Expo 54 `app.config.js` was not opened on this host, so its baked URL is Joshua's report, not a file read here.
+On the public remote, `eas.json` sets `EXPO_PUBLIC_API_BASEURL` to `https://api.promaxcare.com.au/api` for `development`, `preview`, and `production`. The production Android submit track in that file is `internal`. Public `app.config.js` and `libs/axiosInstance.ts` fall back to that same host when the variable is unset. Joshua states that the existing company configuration is production-only and cannot be treated as safe UAT. The company Expo 54 `app.config.js` was not opened on this host.
 
-- Name the profile something other than `development`, `preview`, or `production`. `company-isolated` is a name only. Leave the three existing profiles on the production host.
-- Set `EXPO_PUBLIC_API_BASEURL` to a disposable fixture base the company controls. Do not put `https://api.promaxcare.com.au/api` in this profile. Do not put a token, password, key, or account secret in the profile file.
-- Fixture rows: one fictional staff id, one fictional user id, one fictional company id, one fictional shift, and one fictional document. No real participant names. No production mail. No live push. No production `add_token`, sign-in, clock-in, or save.
-- The profile has to be able to show these cases before Milestone A write testing: the `email not confirmed` sentence classified before a generic HTTP 401; a roster read; a clock accepted only on the fixture; a local secure draft save and a failed secure save that keeps the previous draft and shows the visible notice; an other-info save failure that keeps the typed text; a push registration that posts only to the fixture and only an Android FCM token; a tenant or role denial; a duplicate submit blocked by the tombstone; an offline read that shows unavailable and stores nothing.
-- Building or uploading this profile is not authorised. The existing Play route and the public repository stay as they are.
+Add a fourth profile beside the three production profiles. Leave those three on the production host. The example host below is `fixture.invalid`, which cannot receive a request. Replace it with the company-controlled fixture host only inside `company-isolated`, and only when that host exists. Refuse the profile when the host is `api.promaxcare.com.au` or the variable is empty, because an empty value falls back to production.
+
+```json
+{
+  "build": {
+    "company-isolated": {
+      "channel": "company-isolated",
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASEURL": "https://fixture.invalid/api"
+      }
+    }
+  }
+}
+```
+
+No token, password, key, or account secret goes in this profile. No production sign-in, clock-in, save, mail, or `add_token` is sent while it is prepared.
+
+Reusable fictional session, not an account that has been created:
+
+| Field | Value |
+| --- | --- |
+| Email | `fixture.staff@example.invalid` |
+| User id | `fixture-user` |
+| Staff id | `900001` |
+| Company id | `900001` |
+| Shift id | `900001` |
+| Report id | `900001` |
+| Document id | `900001` |
+| Message id | `900001` |
+
+These paths are the public client contract in `services/auth.ts`, `services/shift.ts`, `services/report.ts`, `services/profile.ts`, `services/notification.ts`, and `hooks/usePushNotification/index.ts`. The company service files were not hashed. Where the working copy uses these paths, the fixture answers them. A company-only path that differs stays on the working copy's spelling. The availability path uses the public client's spelling `StaffAvailibilities`.
+
+| Call | Fixture behaviour |
+| --- | --- |
+| `POST /Account/auth_login?medium=Mobile` | One response has HTTP 401 and a message that is `email not confirmed` or starts with `email not confirmed.`. A later success returns the fictional user, staff, and company. A generic 401 does not use that sentence. |
+| `GET /Account/forgot_password` and `POST /Account/reset_password` | Answer locally. Send no mail. |
+| `GET /ShiftRosters/get_shifts_by_user` and `GET /ShiftRosters/900001` | Return the fictional shift, or an empty list. Never return another company's shift. |
+| `POST /Attendances/clock_in` and `POST /Attendances/clock_out` | Accept only `fixture-user` and shift `900001`. A second clock-in of that shift is rejected. |
+| `GET /ShiftReports/get_staff_shiftreports` and `GET /ShiftReports/get_shiftreport_details` | Return the fictional report for staff `900001`. |
+| `POST /ShiftReports/add_shiftreport` and `POST /ShiftReports/edit/900001` | Accept one save. A duplicate after the local tombstone is rejected. |
+| `POST /ShiftRosters/fill_mileage` | Accept only an end reading greater than the start, and reject a missing or zero start. |
+| `GET /Documents/get_all_staff_documents` and `GET /Documents/get_document/900001` | Return the fictional document for staff `900001`. |
+| `POST /Documents/add_document`, `POST /Documents/edit/900001`, `POST /Documents/delete/900001` | Accept only that fictional document. |
+| `GET /Staffs/900001` and `GET /Companies/get_company/900001` | Return the fictional staff and company. |
+| `POST /Staffs/edit/900001` | The failure case keeps the typed text on the device. A success case accepts only this staff id. |
+| `GET /StaffAvailibilities/get_staff_availabilities` and the add, edit, and delete posts | Accept only staff `900001` and company `900001`. |
+| `GET /Messages/inbox` and `GET /Messages/900001` | Return one fictional message for `fixture-user`. |
+| `POST /DeviceTokens/add_token` | Accept one Android FCM token for `fixture-user` and company `900001`. Store no iOS token. Send no push. |
+| Any other company id or staff id | HTTP 403. |
+| Daily report, progress note, incident write, timesheet generation, PBS, training completion, ticket creation, knowledge-base editing, SIMA, policy acknowledge | No success response. These workflows are absent from Milestone A. |
+
+Secure draft save and the visible secure-save failure notice stay on the device. They do not call this fixture. An offline read stores nothing and shows the list as unavailable.
 
 ## Falsifiers for the Mac lab report
 
-1. A Mac copy of one of the four draft files differs from `4daa0f0` in `sec.current`, `draftWrites`, a `stillCurrent` path that writes an older stamp into `sec.current`, `SECURE_DRAFT_SAVE_FAILURE`, or the "This is not encryption." comment. Also falsified if a company-only draft behavior present before the copy is gone afterward and is absent from `4daa0f0`.
-2. The local TypeScript edit changes an `expect()` or `firstTapReachesPress`.
-3. The distinct registration file differs from `2b3f43f` in any expectation other than the iOS post being forbidden. Also falsified if the company early return skips listener setup or retry, if a valid Android FCM token is rejected by the combined gates, or if banner, list, or logging edits change a notification route. Replacing the company guard with public `deviceTokenForPlatform` would falsify the company contract.
+1. Closed for the current bytes. The four draft files match the `4daa0f0` content hashes above. A later edit to those files reopens this item.
+2. The Mac Save test changes an `expect()` or `firstTapReachesPress`, or replaces something other than the three `TestRenderer.ReactTestRenderer` annotations plus the one type alias.
+3. `scoped-push-registration.test.tsx` differs from `2b3f43f` in any expectation other than denying the `apns-token` post. Also falsified if the company early return skips listener setup or retry, if a valid Android FCM token is rejected by the combined gates, or if banner, list, or logging edits change a notification route. Replacing the company guard with public `deviceTokenForPlatform` would falsify the company contract.
 4. A test list showing the 180-to-186 increase is not those six rendered tests, or a diff showing the annotation edit changed an assertion.
 5. A log, proxy capture, or binary trace showing a live API or push during that Jest run.
-6. A status or diff of the original checkout showing working-tree edits beyond fetched remote-tracking refs.
+6. Closed as Joshua's report at 8:19pm Australia/Sydney: the original checkout had a public ref fetch only, with no reset, clean, or replacement. A later working-tree edit beyond that fetch reopens this item. The status was not displayed on this host.
 
 ## Staff questions that stay open
 
@@ -205,4 +277,4 @@ Admin surveys, policy administration, and invoices stay out of the staff app.
 
 ## Next testable build
 
-No company-package artifact is identified. The installed Android version name `1.1.0` and the working iPhone release stay as they are. Joshua reports the marker table is applied on `engineering/promax-mobile-company-integration-20261022`, and the evidence review of that report did not run the Mac tree. The next device build is the first `au.com.promaxsolutions.promaxcare` artifact from that copy after the remaining prerequisites in this file are recorded, including the integration-copy commit, the isolated fixture profile, the version code or build number, the checksum, and the baked API hostname. Do not install it over the current phone until that checksum is the one Play or TestFlight shows. Do not build that artifact from the production API profile for write testing.
+No company-package artifact is identified. The installed Android version name `1.1.0` and the working iPhone release stay as they are. The integration directory is a working copy, not a Git repository. The four draft-file hashes match `4daa0f0`. The next device build is the first `au.com.promaxsolutions.promaxcare` artifact from that copy after the isolated fixture profile is in use and the version code or build number, checksum, and baked API hostname are written down. Do not invent a source commit. Do not install the artifact over the current phone until that checksum is the one Play or TestFlight shows. Do not build that artifact from the production API profile for write testing.
