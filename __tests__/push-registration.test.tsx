@@ -271,6 +271,8 @@ describe("scoped push registration", () => {
   });
 
   it("keeps Android FCM and iOS APNs on their own platforms", async () => {
+    // Remote behavior only. The company tree forbids an APNs post to the FCM-only endpoint.
+    // This expectation must not be copied over that guard.
     expect(deviceTokenForPlatform("android", { type: "android", data: "fcm" })).toBe(
       "fcm"
     );

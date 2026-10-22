@@ -58,8 +58,11 @@ export function samePushRegistration(
 
 /**
  * Android device tokens are FCM (`type: "android"`).
- * iOS device tokens are APNs (`type: "ios"`).
- * A token from the other platform is not registered.
+ * This remote hook also returns an iOS device token (`type: "ios"`), which is APNs,
+ * and the caller posts that value to DeviceTokens/add_token.
+ * The preserved company implementation forbids sending APNs to the existing FCM-only endpoint.
+ * This function is the remote behavior. It is not the company guard, and the iOS branch
+ * must not be copied over that guard.
  */
 export function deviceTokenForPlatform(
   platform: string,

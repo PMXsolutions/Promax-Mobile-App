@@ -231,7 +231,11 @@ async function rememberPushRegistration(
   await run;
 }
 
-/** Android returns the FCM token. iOS returns the APNs token. The other type is ignored. */
+/**
+ * Android returns the FCM token. This remote hook returns the APNs token on iOS.
+ * The preserved company implementation does not send APNs to the FCM-only endpoint.
+ * Do not copy this iOS return over that company guard.
+ */
 async function readPlatformDeviceToken(): Promise<string | null> {
   try {
     const device = await Notifications.getDevicePushTokenAsync();
