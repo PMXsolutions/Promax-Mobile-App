@@ -226,6 +226,47 @@ function signInAs(staffId: number) {
   });
 }
 
+const openClients: QueryClient[] = [];
+let openRenderer: ReactTestRenderer | null = null;
+
+function fixtureQueryClient() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: 0 },
+      mutations: { retry: false, gcTime: 0 },
+    },
+  });
+  openClients.push(queryClient);
+  return queryClient;
+}
+
+async function mount(node: React.ReactElement, queryClient?: QueryClient) {
+  let renderer: ReactTestRenderer;
+  await act(async () => {
+    renderer = TestRenderer.create(hosted(node, queryClient));
+  });
+  openRenderer = renderer!;
+  return renderer!;
+}
+
+async function releaseMounted() {
+  const renderer = openRenderer;
+  openRenderer = null;
+  if (renderer) {
+    await act(async () => {
+      renderer.unmount();
+    });
+  }
+  for (const queryClient of openClients.splice(0)) {
+    queryClient.getQueryCache().getAll().forEach((query) => query.destroy());
+    queryClient
+      .getMutationCache()
+      .getAll()
+      .forEach((mutation) => mutation.destroy());
+    queryClient.clear();
+  }
+}
+
 describe("PromaxCare mobile fixture rendered client", () => {
   beforeEach(() => {
     resetFixtureBridge();
@@ -243,11 +284,12 @@ describe("PromaxCare mobile fixture rendered client", () => {
     });
   });
 
+  afterEach(async () => {
+    await releaseMounted();
+  });
+
   it("opens the code screen for an unconfirmed email and then signs the fixture staff in", async () => {
-    let renderer: ReactTestRenderer;
-    await act(async () => {
-      renderer = TestRenderer.create(hosted(<SignInForm />));
-    });
+    const renderer = await mount(<SignInForm />);
     fillPlaceholder(renderer!.root, "Enter your email", "fixture.staff@example.invalid");
     fillPlaceholder(renderer!.root, "Enter your password", "unconfirmed");
     pressLabel(renderer!.root, "Sign In");
@@ -269,16 +311,10 @@ describe("PromaxCare mobile fixture rendered client", () => {
     expect(mockReplace).toHaveBeenCalledWith("/(root)/(tabs)");
     expect(useAuthStore.getState().token).toBe("fixture-token");
     expect(useAuthStore.getState().staff?.staffId).toBe(900001);
-    await act(async () => {
-      renderer!.unmount();
-    });
   });
 
   it("keeps a generic sign-in failure off the code screen", async () => {
-    let renderer: ReactTestRenderer;
-    await act(async () => {
-      renderer = TestRenderer.create(hosted(<SignInForm />));
-    });
+    const renderer = await mount(<SignInForm />);
     fillPlaceholder(renderer!.root, "Enter your email", "fixture.staff@example.invalid");
     fillPlaceholder(renderer!.root, "Enter your password", "wrong");
     pressLabel(renderer!.root, "Sign In");
@@ -291,42 +327,22 @@ describe("PromaxCare mobile fixture rendered client", () => {
       type: "danger",
     });
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
-    await act(async () => {
-      renderer!.unmount();
-    });
   });
 
   it("shows the fixture shift on the roster screen", async () => {
     signInAs(900001);
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false, gcTime: 0 } },
-    });
-    let renderer: ReactTestRenderer;
-    await act(async () => {
-      renderer = TestRenderer.create(
-        hosted(<Activity />, queryClient)
-      );
-    });
+    const queryClient = fixtureQueryClient();
+    const renderer = await mount(<Activity />, queryClient);
     await flush();
     const text = renderer!.root.findAll((node) => node.props?.children === "900001");
     expect(text.length).toBeGreaterThan(0);
     expect(fixtureCalls().some((call) => call.path.startsWith("/ShiftRosters/get_shifts_by_user?client=&staff=900001"))).toBe(true);
-    await act(async () => {
-      renderer!.unmount();
-    });
   });
 
   it("shows the roster error when the fixture denies the staff id", async () => {
     signInAs(4);
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false, gcTime: 0 } },
-    });
-    let renderer: ReactTestRenderer;
-    await act(async () => {
-      renderer = TestRenderer.create(
-        hosted(<Activity />, queryClient)
-      );
-    });
+    const queryClient = fixtureQueryClient();
+    const renderer = await mount(<Activity />, queryClient);
     await flush();
     const denied = renderer!.root.findAll(
       (node) => node.props?.children === "Unable to load shift."
@@ -335,22 +351,12 @@ describe("PromaxCare mobile fixture rendered client", () => {
     expect(
       fixtureCalls().some((call) => call.path.includes("staff=4"))
     ).toBe(true);
-    await act(async () => {
-      renderer!.unmount();
-    });
   });
 
   it("keeps typed other-info text when the fixture refuses the save", async () => {
     signInAs(900001);
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false, gcTime: 0 } },
-    });
-    let renderer: ReactTestRenderer;
-    await act(async () => {
-      renderer = TestRenderer.create(
-        hosted(<EditInfoForm id="900001" />, queryClient)
-      );
-    });
+    const queryClient = fixtureQueryClient();
+    const renderer = await mount(<EditInfoForm id="900001" />, queryClient);
     await flush();
     const instagram = fields(renderer!.root)[0];
     expect(instagram.props.value).toBe("fixture-handle");
@@ -368,22 +374,12 @@ describe("PromaxCare mobile fixture rendered client", () => {
       message: "Could not save",
       type: "danger",
     });
-    await act(async () => {
-      renderer!.unmount();
-    });
   });
 
   it("renders the other-info denial and does not request another staff record", async () => {
     signInAs(900001);
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false, gcTime: 0 } },
-    });
-    let renderer: ReactTestRenderer;
-    await act(async () => {
-      renderer = TestRenderer.create(
-        hosted(<EditInfoForm id="4" />, queryClient)
-      );
-    });
+    const queryClient = fixtureQueryClient();
+    const renderer = await mount(<EditInfoForm id="4" />, queryClient);
     await flush();
     const denied = renderer!.root.findAll(
       (node) => node.props?.children === "This profile is not assigned to your sign-in."
@@ -391,8 +387,5 @@ describe("PromaxCare mobile fixture rendered client", () => {
     expect(denied.length).toBeGreaterThan(0);
     expect(fixtureCalls().some((call) => call.path.includes("/Staffs/4"))).toBe(false);
     expect(fixtureCalls().some((call) => call.path.includes("/Staffs/edit/"))).toBe(false);
-    await act(async () => {
-      renderer!.unmount();
-    });
   });
 });
