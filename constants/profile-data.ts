@@ -45,6 +45,12 @@ export const labelArr: labelArrProps = [
     url: "/(root)/profile/other-info",
     edit: true,
   },
+  {
+    title: "Staff work",
+    iconName: "clipboard-text-outline",
+    url: "/(root)/staff-work",
+    edit: false,
+  },
 ];
 
 export const documentNames = [
