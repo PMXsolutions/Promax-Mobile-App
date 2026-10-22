@@ -14,11 +14,15 @@ export function staffReadAccessibility(workflow: StaffReadWorkflow) {
   };
 }
 
-export function staffBlockedAccessibility(workflow: string, question: string) {
+export function staffBlockedAccessibility(
+  workflow: string,
+  question: string,
+  recommendation: string
+) {
   return {
     accessible: true,
     accessibilityRole: "text" as const,
-    accessibilityLabel: `${workflow} is unavailable. ${question}`,
+    accessibilityLabel: `${workflow} is unavailable. ${question} ${recommendation}`,
   };
 }
 
@@ -34,6 +38,6 @@ export function staffRowAccessibility(row: StaffWorkflowRow) {
 export function blockedStaffWorkflows() {
   return STAFF_WORKFLOW_QUESTIONS.map((item) => ({
     ...item,
-    ...staffBlockedAccessibility(item.workflow, item.question),
+    ...staffBlockedAccessibility(item.workflow, item.question, item.recommendation),
   }));
 }

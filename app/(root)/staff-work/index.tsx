@@ -59,6 +59,9 @@ export default function StaffWork() {
             <Text size="sm" style={styles.meta}>
               {item.question}
             </Text>
+            <Text size="sm" style={styles.meta}>
+              {item.recommendation}
+            </Text>
           </View>
         ))}
       </ScrollView>

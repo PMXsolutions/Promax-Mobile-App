@@ -186,6 +186,8 @@ describe("staff work accessibility", () => {
     for (const item of blocked) {
       expect(item.accessibilityRole).toBe("text");
       expect(item.accessibilityLabel.toLowerCase()).toContain("unavailable");
+      expect(item.accessibilityLabel).toContain(item.recommendation);
+      expect(item.recommendation.length).toBeGreaterThan(0);
       expect(staffReadRequest(item.workflow, session).ok).toBe(false);
     }
     expect(
