@@ -37,7 +37,7 @@ PromaxCare mobile previously shipped on friend accounts and was removed from the
 | Sign-in PR | [#9](https://github.com/PMXsolutions/Promax-Mobile-App/pull/9) `bbd311d79bc577a95231dd75dcd8470f24d2eb75`, `ff0881301a4de6e9a04cc4707708e62b124151e7`, `246c1b2d37e4d5fd5caf6e25fc4fd48a179f849c` |
 | Roster and drafts PR | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) `16e05534293409d51f288f29d494d749d6c305be`, `a883fdd3443db8f656a707e765be3544da3b26d6`, `1095c75e654f00067e2d04db1d1073587b324738`, `0d73f38c11995d5510d70cdb90bf747c2a4d3bdf` |
 | Profile, documents, trip, notifications PR | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) `8c09eaa4a9bfeb20b7540a874b2f91ddc3beef1f`, `bc3ec9b200e094b8dfbd4b7edc24b22ced51c082` |
-| Web display | Public `app.promaxcare.com.au` meta `app-release=quality-surveys-2026-09-09`. Literal `2.14.19` was not in that shell. `Promax-Web-FRONTEND` and `pmx_api_v2` were not readable with this credential. |
+| Web display | Public `app.promaxcare.com.au` returned HTTP 200 again at 3:16pm Australia/Sydney on 22 October 2026. `last-modified` is still Sun, 11 Oct 2026 17:50:30 GMT. Meta `app-release=quality-surveys-2026-09-09`. Literal `2.14.19` is not in that shell or in `/assets/index-BV83UWOU.js`. Joshua's signed-in v2.14.19 is not mapped to that file or a commit. `Promax-Web-FRONTEND` and `pmx_api_v2` were not readable with this credential. |
 
 ## Pending provenance checklist
 
