@@ -12,19 +12,20 @@ Branch reported there: `codex/ios-company-release`. Expo 54 / React Native 0.81.
 
 | Task | Owner | Evidence required |
 | --- | --- | --- |
-| Preserve the original company checkout | Codex on the Mac | `git status --porcelain=v1` and `git rev-parse HEAD` of the original, taken before the copy. The original stays dirty. |
-| Sanitised copy and presence check | Codex on the Mac | A commit on an isolated branch in the existing private company repository, plus the marker table below. |
-| Reliability port where a marker is absent | Codex on the Mac, in the copy only | A file-level note: present, absent and ported, or different and left untouched. |
-| Independent mocked retest of that copy | A reviewer who did not make the copy | Jest counts. Not a device or store pass. |
-| Staff read contract `ff174a6` | PromaxCare mobile lead, retested by `bc-da4e9ddd-23d0-5a05-9155-cd0145b0d3ad` | 6 tests passed. The reviewer changed no file. Not native acceptance. |
+| Preserve the original company checkout | Codex on the Mac | Original `promax-mobile-ios-company-release` stays untouched. No new source folder. |
+| Existing integration copy | Codex on the Mac | Reuse `engineering/promax-mobile-company-integration-20261022`. It already reconciles pull requests 9, 10, and 11 with Expo 54, company identity, and the Android-only FCM guard. Prior lab result: 162 tests and 20 config checks. Not native acceptance. |
+| Pull requests 13 and 14 on that copy | Codex on the Mac | Both are locally available. Reconcile by marker. Do not push. |
+| Pull request 15 on that copy | Codex on the Mac | Still to fetch and review. Take the scoped record and `fcmTokenForAndroid` from `2b3f43f`. Do not copy `deviceTokenForPlatform`'s iOS return. |
+| Independent mocked retest of the integrated company result | `bc-d9a774a5-988d-549d-9394-4f52b41b33f9`, when the result is supplied | Not started. The copy is not on this host. |
+| Staff reads and accessibility | PromaxCare mobile lead | `5fc62eb`. Blocked writes stay blocked. |
 | Play Console identity and policy text | Joshua, with Codex reading the console | Version code, SHA256, the ten unsubmitted change names, and the current policy wording. Do not submit. |
 | Store upload, EAS, TestFlight, rollout | Nobody until a separate approval names the artifact | Not authorised by the implementation instruction. |
 
-This cloud credential's visible `PMXsolutions` repositories do not include a private company mobile repository, `Promax-Web-FRONTEND`, or `pmx_api_v2`. Pushing the company tree to public `PMXsolutions/Promax-Mobile-App` is not the handoff.
+GitHub API for `PMXsolutions/Promax-Mobile-App` reports `private: false` and `visibility: public`. Both configured GitHub remotes lead there. The company checkout's origin is the local Documents checkout. No other private destination is known to this credential. Do not create a repository, do not change visibility, and do not grant access. Do not push company source.
 
 ## What to copy
 
-Make a filesystem copy or a git worktree. In the copy only, create `codex/company-expo54-preserve-20261022` and commit the previously uncommitted source. Do not stash the original.
+Do not create a new source folder. Keep using `engineering/promax-mobile-company-integration-20261022`. Leave `promax-mobile-ios-company-release` untouched. Do not stash the original.
 
 Include source and project files: `app/`, `components/`, `hooks/`, `libs/`, `modules/`, `services/`, `store/`, `types/`, `constants/`, `utils/`, `__tests__/`, `package.json`, the lockfile, `app.json`, `babel.config.js`, `tsconfig.json`, `metro.config.js`, and the `android/` and `ios/` projects.
 
@@ -36,7 +37,7 @@ Redact `app.config.js` and `eas.json` before they leave the Mac. Replace values 
 
 ## Where it goes
 
-Use the remote already configured in that checkout. Record only its host and repository name. If that remote is `PMXsolutions/Promax-Mobile-App`, do not push. Report the remote and stop. This cloud agent still cannot pull a private repository until that repository is visible to this credential.
+There is no private GitHub destination to name. The existing local integration copy is the working tree. Do not push it to `PMXsolutions/Promax-Mobile-App`. A sanitised marker table, with secrets removed, can be pasted into this mobile ledger. The company tree itself stays on the Mac.
 
 ## Presence check before any port
 
@@ -48,10 +49,10 @@ Compare. Do not apply a remote patch because the file names match. For each mark
 | Session and single-flight sign-in | `2fa074d` | `libs/session-status.ts`, `libs/single-flight.ts`, `libs/auth-hydration.ts`, `libs/startup-fonts.ts`, `libs/login-mail-guard.ts` exist and are used by sign-in. |
 | Report keyboard contract | `926d28d` on pull request 10 | Report forms keep the first tap. `libs/report-validation.ts` and `libs/attendance-error.ts` exist. |
 | Profile, document, and mileage gates | `8c1e1cb` on pull request 11 | `libs/staff-record.ts` `isOwnStaffRecord`, `libs/trip-mileage.ts` `mileageSubmitDecision`, `libs/document-name.ts`, `libs/notification-route.ts`. |
-| Protected draft, no plaintext fallback | `113442f` on pull request 13. This supersedes the draft store in `926d28d` and the plaintext path in `0d73f38`. | `libs/report-draft-store.ts` writes a generation slot and sets `sec.current` only after that slot reads back. `SECURE_DRAFT_SAVE_FAILURE` is visible. The file still says the XOR prefix is not encryption. A failed secure write returns false and does not replace an existing draft. |
+| Protected draft, no plaintext fallback | `4daa0f0` on pull request 13. This supersedes `113442f` for pointer order and supersedes the draft store in `926d28d`. | Writes for one key are serialized. A generation slot is committed before `sec.current` moves. A stale writer does not point `sec.current` back at an older stamp. `SECURE_DRAFT_SAVE_FAILURE` is visible. The XOR prefix is still not encryption. |
 | Other-info Save inside the keyboard scroll | `d925a1a` on pull request 14 | In `modules/profile/edit-otherinfo-form.tsx`, Save Changes is inside the `ScrollView` whose `keyboardShouldPersistTaps` is `handled`. |
-| User and company device token | Behavior `1eaf047`. Comments `775b8d7`. Pull request 15. | Stored registration is JSON `{token, userId, companyId}`. A legacy bare string does not count as registered. A failed post does not write storage. |
-| Company FCM-only guard | Preserved company source. Not pull request 15. | The company function must refuse to post an iOS APNs token to `DeviceTokens/add_token`. Do not copy `deviceTokenForPlatform`'s iOS return from `1eaf047` over that guard. |
+| User and company device token | `2b3f43f` on pull request 15. Behavior from `1eaf047`, comments from `775b8d7`. | Stored registration is JSON `{token, userId, companyId}`. A legacy bare string does not count as registered. A failed post does not write storage. Company reconciliation uses `fcmTokenForAndroid`. |
+| Company FCM-only guard | Already present on the integration copy. | `fcmTokenForAndroid` returns null for iOS, including an APNs device token. `deviceTokenForPlatform` still returns that APNs token for this public remote hook. Do not copy that iOS return onto the company guard. |
 
 Keep `au.com.promaxsolutions.promaxcare`. Do not rebuild the Expo 53 remote over the Expo 54 tree.
 
