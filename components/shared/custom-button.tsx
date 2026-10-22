@@ -61,6 +61,8 @@ const CustomButton = ({
 
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={title}
       {...props}
       onPress={isDisabled ? undefined : onPress}
       disabled={isDisabled}
