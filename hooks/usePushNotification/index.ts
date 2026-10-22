@@ -7,6 +7,13 @@ import axiosInstance from "@/libs/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { pathForNotificationData } from "@/libs/notification-route";
+import {
+  PUSH_TOKEN_STORAGE_KEY,
+  ScopedPushRegistration,
+  deviceTokenForPlatform,
+  samePushRegistration,
+  scopePushIdentity,
+} from "@/libs/push-registration";
 
 export interface NotificationData {
   title?: string;
@@ -44,45 +51,43 @@ const usePushNotifications = (
   const notificationListener = useRef<Notifications.EventSubscription>();
   const responseListener = useRef<Notifications.EventSubscription>();
 
-  // Send token to PromaxCare API (not third-party Render)
-  const sendTokenToBackend = async (deviceToken: string) => {
-    if (userId == null || companyId == null) {
-      console.warn("Skipping DeviceTokens/add_token — missing userId/companyId");
-      return;
-    }
-    try {
-      await axiosInstance.post("/DeviceTokens/add_token", {
-        Device_Token: deviceToken,
-        UserId: String(userId),
-        CompanyId: Number(companyId),
-      });
-      await AsyncStorage.setItem("fcmToken", deviceToken);
-    } catch (error) {
-      console.error("Error sending token to PromaxCare API:", error);
-    }
-  };
-
   useEffect(() => {
-    if (shouldSkip) return;
+    let active = true;
+    const stillCurrent = () => active;
+    if (shouldSkip) {
+      return () => {
+        active = false;
+      };
+    }
+    const scope = scopePushIdentity(userId as number | string, companyId as number | string);
+
     const setupPushNotifications = async () => {
       setLoading(true);
       const expoToken = await registerForPushNotificationsAsync();
+      if (!stillCurrent()) return;
       if (expoToken) {
         setExpoPushToken(expoToken);
       }
 
-      const fcmDeviceToken = await getFCMDevicePushTokenAsync();
-      if (fcmDeviceToken) {
-        setFcmToken(fcmDeviceToken);
-        const storedToken = await AsyncStorage.getItem("fcmToken");
-        if (storedToken !== fcmDeviceToken) {
-          await sendTokenToBackend(fcmDeviceToken);
+      const deviceToken = await readPlatformDeviceToken();
+      if (!stillCurrent()) return;
+      if (deviceToken) {
+        setFcmToken(deviceToken);
+        const storedToken = await AsyncStorage.getItem(PUSH_TOKEN_STORAGE_KEY);
+        if (!stillCurrent()) return;
+        const registration = { ...scope, token: deviceToken };
+        if (!samePushRegistration(storedToken, registration)) {
+          const saved = await postDeviceToken(registration);
+          if (!stillCurrent()) return;
+          if (saved) await rememberPushRegistration(registration, stillCurrent);
+          if (!stillCurrent()) return;
         }
       }
 
       if (Platform.OS === "android") {
         const androidChannels =
           await Notifications.getNotificationChannelsAsync();
+        if (!stillCurrent()) return;
         setChannels(androidChannels ?? []);
       }
 
@@ -103,12 +108,13 @@ const usePushNotifications = (
           }
         );
 
-      setLoading(false);
+      if (stillCurrent()) setLoading(false);
     };
 
     setupPushNotifications();
 
     return () => {
+      active = false;
       notificationListener.current?.remove();
       responseListener.current?.remove();
     };
@@ -185,13 +191,53 @@ async function registerForPushNotificationsAsync(): Promise<
   return token;
 }
 
-// Get FCM token
-async function getFCMDevicePushTokenAsync(): Promise<string | null> {
+let registrationQueue: Promise<void> = Promise.resolve();
+
+async function postDeviceToken(
+  registration: ScopedPushRegistration
+): Promise<boolean> {
   try {
-    const fcmToken = (await Notifications.getDevicePushTokenAsync()).data;
-    return fcmToken;
+    await axiosInstance.post("/DeviceTokens/add_token", {
+      Device_Token: registration.token,
+      UserId: registration.userId,
+      CompanyId: Number(registration.companyId),
+    });
+    return true;
   } catch (error) {
-    console.error("Failed to get FCM token", error);
+    console.error("Error sending token to PromaxCare API:", error);
+    return false;
+  }
+}
+
+async function rememberPushRegistration(
+  registration: ScopedPushRegistration,
+  stillCurrent: () => boolean
+): Promise<void> {
+  const payload = JSON.stringify(registration);
+  const run = registrationQueue.then(async () => {
+    if (!stillCurrent()) return;
+    await AsyncStorage.setItem(PUSH_TOKEN_STORAGE_KEY, payload);
+    if (!stillCurrent()) {
+      const latest = await AsyncStorage.getItem(PUSH_TOKEN_STORAGE_KEY);
+      if (latest === payload) {
+        await AsyncStorage.removeItem(PUSH_TOKEN_STORAGE_KEY);
+      }
+    }
+  });
+  registrationQueue = run.then(
+    () => undefined,
+    () => undefined
+  );
+  await run;
+}
+
+/** Android returns the FCM token. iOS returns the APNs token. The other type is ignored. */
+async function readPlatformDeviceToken(): Promise<string | null> {
+  try {
+    const device = await Notifications.getDevicePushTokenAsync();
+    return deviceTokenForPlatform(Platform.OS, device);
+  } catch (error) {
+    console.error("Failed to get device push token", error);
     return null;
   }
 }
