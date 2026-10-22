@@ -15,6 +15,7 @@ const SECURE_CHUNK_BYTES = 1800;
 const SECURE_VALUE_LIMIT = 2048;
 
 const writeEpoch = new Map<string, number>();
+const draftWrites = new Map<string, Promise<unknown>>();
 let memoryDraftKey: string | null = null;
 
 export function resetDraftKeyMemoryForTests(): void {
@@ -173,21 +174,10 @@ async function writeSecureBody(
     if ((await readSecureSlot(draftKey, slot)) !== plain) return false;
     if (!stillCurrent()) return false;
     const previous = await SecureStore.getItemAsync(`${draftKey}.sec.current`);
+    if (!stillCurrent()) return false;
     await SecureStore.setItemAsync(`${draftKey}.sec.current`, stamp);
-    if (!stillCurrent()) {
-      const seen = await SecureStore.getItemAsync(`${draftKey}.sec.current`);
-      if (seen === stamp) {
-        if (isGenerationStamp(previous)) {
-          await SecureStore.setItemAsync(`${draftKey}.sec.current`, previous);
-        } else {
-          await SecureStore.deleteItemAsync(`${draftKey}.sec.current`);
-        }
-      }
-      return false;
-    }
-    if ((await SecureStore.getItemAsync(`${draftKey}.sec.current`)) !== stamp) {
-      return false;
-    }
+    const seen = await SecureStore.getItemAsync(`${draftKey}.sec.current`);
+    if (seen !== stamp || !stillCurrent()) return false;
     if ((await readSecureSlot(draftKey, slot)) !== plain) return false;
     try {
       if (isGenerationStamp(previous) && previous !== stamp) {
@@ -198,6 +188,7 @@ async function writeSecureBody(
     } catch {
       // The current pointer already names a complete copy.
     }
+    if (!stillCurrent()) return false;
     return true;
   } catch {
     return false;
@@ -435,6 +426,23 @@ export async function readReportDraft<T>(
 }
 
 export async function writeReportDraft<T>(
+  key: string,
+  draft: ReportDraft<T>
+): Promise<boolean> {
+  const earlier = draftWrites.get(key) ?? Promise.resolve();
+  const run = earlier.then(
+    () => writeReportDraftNow(key, draft),
+    () => writeReportDraftNow(key, draft)
+  );
+  draftWrites.set(key, run);
+  try {
+    return await run;
+  } finally {
+    if (draftWrites.get(key) === run) draftWrites.delete(key);
+  }
+}
+
+async function writeReportDraftNow<T>(
   key: string,
   draft: ReportDraft<T>
 ): Promise<boolean> {

@@ -163,10 +163,11 @@ describe("report draft storage", () => {
     expect(
       (SecureStore as unknown as { __isHolding(): boolean }).__isHolding()
     ).toBe(true);
-    await writeReportDraft(key, inFlight);
+    const second = writeReportDraft(key, inFlight);
     expect(firstDone).toBe(false);
     release();
-    expect(await first).toBe(false);
+    expect(await first).toBe(true);
+    expect(await second).toBe(true);
 
     expect(await AsyncStorage.getItem(key)).toBeNull();
     const stored = await readReportDraft<typeof editing.form>(key);
@@ -972,9 +973,10 @@ describe("protected draft persistence", () => {
       updatedAt: "2026-10-21T09:55:00.000Z",
       form: { goal_Progress: "stale edit" },
     };
-    expect(await writeReportDraft(key, stale)).toBe(false);
+    const staleWrite = writeReportDraft(key, stale);
     release();
     expect(await saving).toBe(true);
+    expect(await staleWrite).toBe(false);
     expect((await readReportDraft<typeof inFlight.form>(key))?.submitState).toBe(
       "in_flight"
     );
@@ -1009,6 +1011,46 @@ describe("protected draft persistence", () => {
     expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
       goal_Progress: "retried copy",
     });
+  });
+
+  it("keeps the later allowed draft when an earlier save is still publishing its pointer", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.pointer-order";
+    const original = createDraft(key, { goal_Progress: "original" }, now, "a1");
+    expect(await writeReportDraft(key, original)).toBe(true);
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    (
+      SecureStore as unknown as {
+        __holdNext(pending: Promise<void>, match?: (key: string) => boolean): void;
+      }
+    ).__holdNext(held, (name) => name.endsWith(".sec.current"));
+    const earlier = {
+      ...original,
+      updatedAt: "2026-10-21T12:00:00.000Z",
+      form: { goal_Progress: "earlier" },
+    };
+    const later = {
+      ...original,
+      updatedAt: "2026-10-21T12:05:00.000Z",
+      form: { goal_Progress: "later" },
+    };
+    const first = writeReportDraft(key, earlier);
+    for (let attempt = 0; attempt < 80; attempt += 1) {
+      if ((SecureStore as unknown as { __isHolding(): boolean }).__isHolding()) break;
+      await Promise.resolve();
+    }
+    expect((SecureStore as unknown as { __isHolding(): boolean }).__isHolding()).toBe(true);
+    const second = writeReportDraft(key, later);
+    release();
+    expect(await first).toBe(true);
+    expect(await second).toBe(true);
+    expect((await readReportDraft<typeof later.form>(key))?.form).toEqual({
+      goal_Progress: "later",
+    });
+    expect(JSON.stringify(await readReportDraft(key))).not.toContain("earlier");
+    expect(await AsyncStorage.getItem(key)).toBeNull();
   });
 
   it("does not let an older editing copy replace an in-flight draft", async () => {
