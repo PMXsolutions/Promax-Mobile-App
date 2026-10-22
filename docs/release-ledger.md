@@ -113,6 +113,7 @@ The reported checkout is a source location. These acceptance items are still mis
 | [#10](https://github.com/PMXsolutions/Promax-Mobile-App/pull/10) | `926d28d37b66dd42627cb93e471960362eb087de` | Report screens keep keyboard taps. `0d73f38` remains the draft lab record and was not re-run. The mask is still not protected-draft acceptance. | [Retest report taps 926d28d](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `keyboard-tap-contract` only: 1 suite, 1 test, passed. Draft send functions were not changed. |
 | [#11](https://github.com/PMXsolutions/Promax-Mobile-App/pull/11) | `8c1e1cbe90a7a60247215cdcd122a669703e8b84` | Profile and document screens keep keyboard taps. `bc3ec9b` remains the ownership lab record and was not re-run. | [Retest profile taps 8c1e1cb](https://cursor.com/agents/bc-d9a774a5-988d-549d-9394-4f52b41b33f9) retested `keyboard-tap-contract` only: 1 suite, 1 test, passed. The other-info Save button is outside that scroll view. |
 | [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only. Not a store update. |
+| [#13](https://github.com/PMXsolutions/Promax-Mobile-App/pull/13) | `113442f` | New drafts go to a secure generation. The current pointer is set only after that copy reads back. No plaintext AsyncStorage fallback. | [Draft storage review](https://cursor.com/agents/bc-ef905f1c-7c4a-5b3c-9794-47f13d3ee47c) failed `749406a` on a torn write and an in-flight overwrite, then retested `113442f`: 31 passed, 0 failed, no edits. Both failures stay recorded. Device gate stays: the Jest double is not Keychain or Keystore. |
 
 The independent rows above re-ran the latest commits in existing checkouts. They are unit and source checks. They are not a device, hosted, or store pass.
 
@@ -134,7 +135,8 @@ This is this repository, not the platform module.
 
 - `libs/report-draft.ts` writes AsyncStorage with the prefix `promaxcare.draft.v1.` and XORs the bytes. That file says this is not encryption.
 - If the SecureStore mask key cannot be created, a new draft is plaintext JSON. An existing masked draft is not replaced.
-- Plaintext fallback and the mask remain unaccepted as protected-draft storage.
+- Plaintext fallback and the mask remain the record of the source through `0d73f38`. That record is not deleted.
+- Pull request 13 `113442f` is later source. Its first independent review of `749406a` failed on a torn secure write and on a rejected edit replacing an in-flight draft. The retest passed 31 draft-store tests. Those failures stay recorded. The device gate stays: Jest is not Keychain, Keystore, an APK, or release acceptance.
 
 ## Checkpoint
 
@@ -155,7 +157,7 @@ This is this repository, not the platform module.
 | --- | --- |
 | Android and iOS builds | No Android SDK, `adb`, emulator, or Apple toolchain. No package was produced. |
 | Hosted sign-in, clock-in, report save, and document read | No disposable API and no authorised account. No production request was sent. |
-| Remember me and logout deletion | Remember me is unchanged. Logout still keeps the draft. The AsyncStorage prefix on `0d73f38` is a mask, not encryption. SecureStore values are capped at 2048 bytes. A new draft whose secure key cannot be stored is plain text. Removal on logout was not added. The platform Keychain and Keystore notes above are not a protected-draft pass. Confidentiality versus retention stays parked. |
+| Remember me and logout deletion | Remember me is unchanged. Logout still keeps the draft. The AsyncStorage prefix on `0d73f38` is a mask, not encryption. SecureStore values are capped at 2048 bytes. On that commit, a new draft whose secure key cannot be stored is plain text. Removal on logout was not added. Pull request 13 `113442f` changes the later write path. Its `749406a` review failed on a torn write and an in-flight overwrite, and the `113442f` retest passed 31 tests. The platform Keychain and Keystore notes above are not a protected-draft pass. Confidentiality versus retention stays parked. |
 | Server tenant and assignment enforcement | Blocked until an isolated disposable API can run those tests. Client gates on pull request 11 are not that proof. `pmx_api_v2` was not readable. |
 | Live company iPhone binary | Joshua confirmed the restored company app works on iPhone. Bundle `au.com.promaxsolutions.promaxcare` version `1.1.0` is that existing release. The reported Mac checkout and historical build `2e5bbafd-8c84-4427-8b67-d1eb2f0ef3c5` do not prove the binary's commit. The IPA is not on this host. New pull requests are not accepted by that confirmation. |
 | Live `com.promax-app` binary | Store version is `1.2.0` from Aermeans. This remote is `1.1.0`. |
