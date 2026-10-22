@@ -82,6 +82,9 @@ export const DRAFT_PROTECT_PREFIX = "promaxcare.draft.v1.";
 
 /** Mask only. A raw AsyncStorage read hides the report. This is not encryption. */
 
+export const SECURE_DRAFT_SAVE_FAILURE =
+  "This report was not saved. Secure storage is unavailable, so the text was not stored on this device.";
+
 export function createDraftKey(): string {
   const bytes = new Uint8Array(32);
   const cryptoApi = globalThis.crypto;

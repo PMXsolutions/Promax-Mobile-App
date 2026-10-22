@@ -7,7 +7,6 @@ import {
   draftClaimStorageKey,
   draftWriteMayReplace,
   parseReportDraft,
-  protectDraftPayload,
   revealDraftPayload,
 } from "@/libs/report-draft";
 
@@ -78,19 +77,22 @@ function splitForSecureStore(value: string): string[] | null {
   return chunks;
 }
 
-async function readSecureBody(draftKey: string): Promise<string | null> {
+async function readSecureSlot(
+  draftKey: string,
+  slot: string
+): Promise<string | null> {
   try {
-    const header = await SecureStore.getItemAsync(`${draftKey}.sec.n`);
+    const header = await SecureStore.getItemAsync(`${draftKey}.${slot}.n`);
     if (!header) return null;
     const [countRaw, bytesRaw] = header.split(":");
     const count = Number(countRaw);
     const bytes = Number(bytesRaw);
-    if (!Number.isInteger(count) || count <= 0 || !Number.isInteger(bytes)) {
+    if (!Number.isInteger(count) || count <= 0 || count >= 1000 || !Number.isInteger(bytes)) {
       return null;
     }
     const parts: string[] = [];
     for (let index = 0; index < count; index += 1) {
-      const part = await SecureStore.getItemAsync(`${draftKey}.sec.${index}`);
+      const part = await SecureStore.getItemAsync(`${draftKey}.${slot}.${index}`);
       if (part == null || utf8Size(part) > SECURE_VALUE_LIMIT) return null;
       parts.push(part);
     }
@@ -102,20 +104,84 @@ async function readSecureBody(draftKey: string): Promise<string | null> {
   }
 }
 
-/** `plain` is the report JSON. Device encryption is expo-secure-store, not this function. */
-async function writeSecureBody(draftKey: string, plain: string): Promise<boolean> {
+async function readSecureBody(draftKey: string): Promise<string | null> {
+  const live = await readSecureSlot(draftKey, "sec");
+  if (live) return live;
+  try {
+    const stamp = await SecureStore.getItemAsync(`${draftKey}.sec.pending`);
+    if (!stamp || !/^[a-f0-9]{8,64}$/.test(stamp)) return null;
+    return await readSecureSlot(draftKey, `sec.p.${stamp}`);
+  } catch {
+    return null;
+  }
+}
+
+async function deletePendingCopy(draftKey: string): Promise<void> {
+  const stamp = await SecureStore.getItemAsync(`${draftKey}.sec.pending`);
+  if (!stamp || !/^[a-f0-9]{8,64}$/.test(stamp)) return;
+  const header = await SecureStore.getItemAsync(`${draftKey}.sec.p.${stamp}.n`);
+  if (header) {
+    const count = Number(header.split(":")[0]);
+    if (!Number.isInteger(count) || count <= 0 || count >= 1000) {
+      throw new Error("secure header");
+    }
+    for (let index = 0; index < count; index += 1) {
+      await SecureStore.deleteItemAsync(`${draftKey}.sec.p.${stamp}.${index}`);
+    }
+    await SecureStore.deleteItemAsync(`${draftKey}.sec.p.${stamp}.n`);
+  }
+  await SecureStore.deleteItemAsync(`${draftKey}.sec.pending`);
+}
+
+/**
+ * Stages the report in secure storage, then commits it.
+ * `plain` is the report JSON. Device encryption is expo-secure-store, not this function.
+ * A failed stage does not replace the live copy.
+ */
+async function writeSecureBody(
+  draftKey: string,
+  plain: string,
+  stillCurrent: () => boolean
+): Promise<boolean> {
   const chunks = splitForSecureStore(plain);
   if (!chunks || chunks.length === 0) return false;
+  for (const chunk of chunks) {
+    if (utf8Size(chunk) > SECURE_VALUE_LIMIT) return false;
+  }
+  const stamp = createDraftKey().slice(0, 16);
+  const slot = `sec.p.${stamp}`;
   try {
+    if (!stillCurrent()) return false;
     for (let index = 0; index < chunks.length; index += 1) {
-      if (utf8Size(chunks[index]) > SECURE_VALUE_LIMIT) return false;
+      await SecureStore.setItemAsync(`${draftKey}.${slot}.${index}`, chunks[index]);
+      if (!stillCurrent()) return false;
+    }
+    await SecureStore.setItemAsync(
+      `${draftKey}.${slot}.n`,
+      `${chunks.length}:${utf8Size(plain)}`
+    );
+    if ((await readSecureSlot(draftKey, slot)) !== plain) return false;
+    if (!stillCurrent()) return false;
+    await SecureStore.setItemAsync(`${draftKey}.sec.pending`, stamp);
+    if (!stillCurrent()) {
+      await SecureStore.deleteItemAsync(`${draftKey}.sec.pending`);
+      return false;
+    }
+    for (let index = 0; index < chunks.length; index += 1) {
       await SecureStore.setItemAsync(`${draftKey}.sec.${index}`, chunks[index]);
+      if (!stillCurrent()) return false;
     }
     await SecureStore.setItemAsync(
       `${draftKey}.sec.n`,
       `${chunks.length}:${utf8Size(plain)}`
     );
-    return (await readSecureBody(draftKey)) === plain;
+    if ((await readSecureSlot(draftKey, "sec")) !== plain) return false;
+    try {
+      await deletePendingCopy(draftKey);
+    } catch {
+      // The live copy already matched. A leftover pending copy is the same text.
+    }
+    return true;
   } catch {
     return false;
   }
@@ -267,15 +333,16 @@ async function clearDraftBodies(
     cleared = false;
   }
 
-  if (headerKnown && header) {
+  if (headerKnown) {
     const storedAttempt = attemptIdOf(await readSecureBody(key));
     if (storedAttempt === attemptId) {
       try {
-        await deleteSecureChunks(key, header);
+        if (header) await deleteSecureChunks(key, header);
+        await deletePendingCopy(key);
       } catch {
         cleared = false;
       }
-    } else if (storedAttempt == null) {
+    } else if (storedAttempt == null && header) {
       cleared = false;
     }
   }
@@ -364,19 +431,17 @@ export async function writeReportDraft<T>(
   const existingRaw = await readStoredRaw(key);
   if (existingRaw === "unreadable") return false;
   const keyMaterial = await draftKey();
+  if (!keyMaterial) return false;
   if (
     typeof existingRaw === "string" &&
     existingRaw.startsWith(DRAFT_PROTECT_PREFIX) &&
-    (!keyMaterial || revealDraftPayload(existingRaw, keyMaterial) == null)
+    revealDraftPayload(existingRaw, keyMaterial) == null
   ) {
     return false;
   }
-  const sealed = keyMaterial
-    ? protectDraftPayload(JSON.stringify(draft), keyMaterial)
-    : JSON.stringify(draft);
   const token = (writeEpoch.get(key) ?? 0) + 1;
   writeEpoch.set(key, token);
-  latestPayload.set(key, sealed);
+  latestPayload.set(key, JSON.stringify(draft));
 
   try {
     let guard = 0;
@@ -389,14 +454,23 @@ export async function writeReportDraft<T>(
       const currentToken = writeEpoch.get(key);
       const currentPayload = latestPayload.get(key);
       if (currentToken == null || currentPayload == null) return false;
-      await AsyncStorage.setItem(key, currentPayload);
-      if (writeEpoch.get(key) === currentToken) {
-        if (keyMaterial) {
-          const plain = revealDraftPayload(currentPayload, keyMaterial);
-          if (plain) await writeSecureBody(key, plain);
+      const secured = await writeSecureBody(
+        key,
+        currentPayload,
+        () => writeEpoch.get(key) === currentToken
+      );
+      if (writeEpoch.get(key) !== currentToken) continue;
+      if (!secured) return false;
+      if ((await readStoredRaw(key)) !== "missing") {
+        try {
+          await AsyncStorage.removeItem(key);
+        } catch {
+          return false;
         }
-        return true;
+        if ((await readStoredRaw(key)) !== "missing") return false;
       }
+      if (writeEpoch.get(key) !== currentToken) continue;
+      return true;
     }
     return false;
   } catch {
