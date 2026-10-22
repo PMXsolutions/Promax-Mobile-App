@@ -1,6 +1,8 @@
 # Staff release ledger
 
-Target: 22 October 2026, Australia/Sydney. Care OS is the go-live. This mobile ledger is the frontline staff catch-up record. It is not Ready to Update, a store release, an EAS build, an OTA update, or a production publication. A commit on this remote is not a pushed App Store or Play update. The date does not turn a blocked row into a pass.
+Target: 22 October 2026, Australia/Sydney. Product: PromaxCare mobile. Care OS is a separate new app. Its existing UAT remains `https://uat.promaxcare.com.au/care-os/`. PromaxCare web is the separate existing operational app at `https://app.promaxcare.com.au/`. This ledger does not accept one product with another product's evidence. It is not Ready to Update, a store release, an EAS build, an OTA update, or a production publication. A commit on this remote is not a pushed App Store or Play update. The date does not turn a blocked row into a pass.
+
+Joshua's correction at about 2:00pm Australia/Sydney is authoritative. PromaxCare mobile comprises the existing Android and iPhone apps and aligns to existing PromaxCare web staff workflows. It is not a Care OS mobile redesign. Both mobile apps were previously in use, then removed from the stores. Company-account republication succeeded for iOS. Android public republication did not. The existing private Play route works. No replacement UAT, store listing, VM, database, or access grant was created.
 
 ## Live store lineage
 
@@ -8,8 +10,8 @@ Checked 21 October 2026, with the 22 October account clarification below. No IPA
 
 | Listing | What the public record says | What this remote is |
 | --- | --- | --- |
-| Live company iPhone, [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262) | Apple lookup `bundleId=au.com.promaxsolutions.promaxcare`, country `au`. Version `1.1.0`. Seller PROMAX IT SOLUTIONS PTY LTD. Track `6810018262`. Released 2026-09-25. Current version 2026-09-25T20:34:03Z. Size 56,905,728 bytes. Minimum iOS 15.1. No release notes. Joshua confirmed on 22 October 2026 that this restored app works on iPhone. | That bundle id is not in this git remote. A reported Mac checkout overrides legacy `app.json` ids to that bundle through `app.config.js`. Binary-to-commit lineage for the current store artifact stays Blocked. The confirmation is the existing release, not acceptance of these pull requests. |
-| Other live iPhone, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123) | Apple lookup `bundleId=com.promax-app`. Version `1.2.0`. Seller Aermeans Global Services Limited. Track `6748918123`. First release 2025-08-07. Current version 2025-09-11T18:46:32Z. Size 45,891,584 bytes. Notes mention multi-client reports and per-client kilometres. | `app.json` on `main` `de4eb2f` and on Care OS `981bea5` is version `1.1.0` with the same bundle. Neither commit is the live `1.2.0` binary. Care OS is not the company listing. |
+| PromaxCare mobile iPhone, [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262) | Apple lookup `bundleId=au.com.promaxsolutions.promaxcare`, country `au`. Version `1.1.0`. Seller PROMAX IT SOLUTIONS PTY LTD. Track `6810018262`. Released 2026-09-25. Current version 2026-09-25T20:34:03Z. Size 56,905,728 bytes. Minimum iOS 15.1. No release notes. Joshua confirmed on 22 October 2026 that this restored app works on iPhone. | That bundle id is not in this git remote. A reported Mac checkout overrides legacy `app.json` ids to that bundle through `app.config.js`. Binary-to-commit lineage for the current store artifact stays Blocked. The confirmation is the existing release, not acceptance of these pull requests. |
+| PromaxCare mobile, other iPhone, [Promax Care](https://apps.apple.com/au/app/promax-care/id6748918123) | Apple lookup `bundleId=com.promax-app`. Version `1.2.0`. Seller Aermeans Global Services Limited. Track `6748918123`. First release 2025-08-07. Current version 2025-09-11T18:46:32Z (4:46am Australia/Sydney on 12 September 2025). Size 45,891,584 bytes. Notes mention multi-client reports and per-client kilometres. | PromaxCare mobile `app.json` on `main` `de4eb2f` and on branch `cursor/care-os-mobile-test-target-466d` at `981bea5` is version `1.1.0` with the same bundle. Neither commit is the live `1.2.0` binary. That branch is not the Care OS UAT and not the company listing. |
 | Play `com.tobby95.pmaxapp` | `https://play.google.com/store/apps/details?id=com.tobby95.pmaxapp&hl=en&gl=au` returned HTTP 404. | This remote's package name. `app.json` version `1.1.0`. No APK. Not a public listing today. |
 | Play `au.com.promaxsolutions.promaxcare` | The public Play URL pattern returned HTTP 404. Company console identity, from the reported checkpoints and not opened on this host: package `au.com.promaxsolutions.promaxcare`, Play app `4975822694822650269`, developer `7848143770069177658`. Joshua installed from `https://play.google.com/apps/internaltest/4700932305942754285` on 22 October 2026. App info shows PromaxCare version name `1.1.0` only. The listing was updated on 10 September 2026 and was unreviewed at the earlier read. This host received HTTP 302 to Google sign-in at 1:29pm Australia/Sydney and did not open the page. | The public page stays unavailable. The install confirms the private route and the version name. Version code, SHA256, commit, and the API host inside the binary are not established. October fixes are not established. The phone is not asked for a hash. |
 
@@ -17,19 +19,21 @@ AppBrain, a third-party page, records `com.tobby95.pmaxapp` at version `1.2.1`, 
 
 ## Scope
 
-PromaxCare mobile stays staff-only. Admin, auditor, and company-admin menus were not added. No new staff screen was added. No production write, notification, store action, or VM operation was run. Client gates now skip a cancel, mileage save, report fetch, and notification fetch unless the id is on this sign-in. `pmx_api_v2` was not readable, so server-side tenant enforcement stays Blocked.
+Product: PromaxCare mobile. It stays staff-only. Admin, auditor, and company-admin menus were not added. No new staff screen was added. No production write, notification, store action, or VM operation was run. Client gates now skip a cancel, mileage save, report fetch, and notification fetch unless the id is on this sign-in. `pmx_api_v2` was not readable, so PromaxCare mobile server-side tenant enforcement stays Blocked. That unread repository is not Care OS acceptance.
 
-The deployed web shell at `https://app.promaxcare.com.au/` returned HTTP 200 on 21 October 2026. `last-modified` was Sun, 11 Oct 2026 17:50:30 GMT. The meta tag `app-release` is `quality-surveys-2026-09-09`. The staff menu in `/assets/index-BV83UWOU.js` was read with a public GET. The web repository was not readable with this credential.
+PromaxCare web, not Care OS: `https://app.promaxcare.com.au/` returned HTTP 200 on 21 October 2026. `last-modified` was Sun, 11 Oct 2026 17:50:30 GMT (4:50am Australia/Sydney on 12 October). The meta tag `app-release` is `quality-surveys-2026-09-09`. The staff menu in `/assets/index-BV83UWOU.js` was read with a public GET. The web repository was not readable with this credential. A web menu read is not PromaxCare mobile acceptance.
 
-| Deployed web staff item | Mobile source on these branches | Status |
-| --- | --- | --- |
-| My Dashboard, My Shift Roster, My Shift Report | Home, shift detail, shift report | Present in source. Device and hosted save/reload are Blocked. |
-| My Availabilities | Availability tab | Present in source. Hosted save is Blocked. |
-| My Documents | Documents tab | Present in source. Hosted read is Blocked. |
-| My Attendance, My Progress Note, My Daily Report, My Incident Report, My Timesheet | No matching screen | Gap. Not built in this pass. API proof is Blocked. |
-| PBS, Training, tickets, knowledge base, Chat with SIMA | No matching screen | Gap. Not built in this pass. |
-| Policies for me, care plan and handover | Present on `codex/care-plan-intelligence-r1` at `b773e1d`, same iPhone bundle id | Not merged. Acknowledge and clarification are writes. Downstream web result is Blocked. |
-| Surveys & Feedback, Policy & Compliance admin, invoices | Admin or other-role menus | Out of scope. No admin access was added. |
+Care OS, not this ledger's score: `https://uat.promaxcare.com.au/care-os/` returned HTTP 200 at 2:01pm Australia/Sydney on 22 October 2026. Title `Maxi Care Plus · Care workspace`. `last-modified` Mon, 05 Oct 2026 09:21:06 GMT (8:21pm Australia/Sydney). Server `Microsoft-IIS/10.0`. No login was sent. Original 82 remains that product's register. This mobile stream does not use its scores as a gate. No replacement UAT was proposed or created.
+
+| Product | Surface | PromaxCare mobile alignment | Status |
+| --- | --- | --- | --- |
+| PromaxCare web | My Dashboard, My Shift Roster, My Shift Report | PromaxCare mobile home, shift detail, shift report | Present in mobile source. Device and hosted save/reload are Blocked for PromaxCare mobile. The web GET is not that pass. |
+| PromaxCare web | My Availabilities | PromaxCare mobile availability tab | Present in mobile source. Hosted save is Blocked. |
+| PromaxCare web | My Documents | PromaxCare mobile documents tab | Present in mobile source. Hosted read is Blocked. |
+| PromaxCare web | My Attendance, My Progress Note, My Daily Report, My Incident Report, My Timesheet | No matching PromaxCare mobile screen | Gap. Not built in this pass. Not a Care OS row. |
+| PromaxCare web | PBS, Training, tickets, knowledge base, Chat with SIMA | No matching PromaxCare mobile screen | Gap. Not built in this pass. Not a Care OS row. |
+| PromaxCare web | Policies for me, care plan and handover | PromaxCare mobile branch `codex/care-plan-intelligence-r1` at `b773e1d` | Not merged. That branch is in the mobile repository. Acknowledge and clarification are writes. Not Care OS acceptance. |
+| PromaxCare web | Surveys and feedback, policy and compliance admin, invoices | Admin or other-role menus | Out of scope for PromaxCare mobile. No admin access was added. |
 
 ## Identity
 
@@ -61,7 +65,7 @@ The same lockfile blob is on `main` and on pull requests 9, 10, and 11. An unloc
 
 ## Slice for 22 October
 
-The release target remains the company iPhone [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, App Store track `6810018262`, version `1.1.0`. Joshua confirmed that restored app works. Staff access from both stores is the priority, with the Play review first and the working iOS release left in place. Former distribution used Timi friend accounts. The company now owns the Apple and Google accounts. These rows are Expo 53 source fixes. They do not complete that company app. None of these rows is a new device, hosted, or store pass. Reconcile the company Expo 54 checkout before any release candidate. Do not rebuild this Expo 53 tree over that dirty checkout.
+PromaxCare mobile release target for the working iOS app remains [PromaxCare](https://apps.apple.com/au/app/promaxcare/id6810018262), bundle `au.com.promaxsolutions.promaxcare`, App Store track `6810018262`, version name `1.1.0`. Joshua confirmed that restored company iPhone app works. That is PromaxCare mobile evidence for the existing iOS release. It does not accept these pull requests, PromaxCare web, or Care OS. Android public republication did not succeed. The private Play route is the working Android route. These rows are Expo 53 source fixes on the PromaxCare mobile remote. They do not complete the company Expo 54 app. None of these rows is a new device, hosted, or store pass. Reconcile the company Expo 54 checkout to PromaxCare web staff workflows before any release candidate. Do not rebuild this Expo 53 tree over that dirty checkout. Do not turn it into a Care OS client.
 
 ## Pending provenance checklist
 
@@ -91,9 +95,9 @@ Reported checkpoints `google-play-recovery-2026-10-21.json` and `google-play-rel
 | Review issue | Fix | Next action |
 | --- | --- | --- |
 | App controls | `246c1b2` removes the nested sign-in `ScrollView`. | Android tester steps are in `docs/staff-journey-matrix.md`. Device run stays Blocked here. |
-| Reviewer account or mail delivery | `246c1b2` withholds another sign-in, disables Sign in for that address, and does not call `resend_otp` from the existing-code path. | Stop on that sentence. Hand the account to the Care OS lead. |
+| PromaxCare mobile reviewer account or mail delivery | `246c1b2` withholds another sign-in, disables Sign in for that address, and does not call `resend_otp` from the existing-code path. | Stop on that sentence. Hand the account state to the recorded owner of `cursor/account-mail-order-466d`. That handoff is not Care OS UAT acceptance. |
 | Declaration | Console categories above. | Leave them unsubmitted. |
-| API catch | No mobile edit. Care OS lead is assigned `cb079dbc` on `cursor/account-mail-order-466d` for a local fake-mail sign-in error and order fix. That branch is not on this mobile remote. Hosted cause remains unverified. | Keep the current client contract until that owner supplies an exact independently retested API contract. A message that is `email not confirmed` or starts with `email not confirmed.` stays `email_unconfirmed` and is classified before the generic HTTP 401 sign-in branch. A 401 without that sentence does not open the code screen. Do not edit the API or the company release. Do not send mail or login. |
+| API catch | No PromaxCare mobile edit. The recorded owner of `cb079dbc` on `cursor/account-mail-order-466d` is outside this repository. That branch is not the Care OS UAT and not PromaxCare web. Hosted cause remains unverified. | Keep the current PromaxCare mobile client contract until that owner supplies an exact independently retested contract and names the product. A message that is `email not confirmed` or starts with `email not confirmed.` stays `email_unconfirmed` and is classified before the generic HTTP 401 sign-in branch. A 401 without that sentence does not open the code screen. Do not edit the other repository or the company release. Do not send mail or login. |
 
 [Retest sign-in 246c1b2](https://cursor.com/agents/bc-a2063c0d-dcc9-5e21-9e92-b9f02d3f8f9a) retested `246c1b2`: 3 suites, 44 tests, passed. That worker did not write the commit. No assertion was weakened.
 
@@ -155,7 +159,7 @@ This is this repository, not the platform module.
 | Play, App Store, EAS, and OTA | Publication | Do not submit or publish. Managed publishing stays OFF. The ten changes, including Production 4 Start full rollout, stay unsubmitted until a separate approval. The existing internal-test link may be reused only after track, artifact, Expo 54 integration, qualification, and publication approval. Do not create a new tester link. |
 | Existing internal-test artifact identity | Distribution | Version name `1.1.0` is recorded from App info. Read version code and SHA256 from the Play Console internal-testing release or build 4's downloaded file. Do not ask the phone UI for a hash. The 10 September 2026 date, this remote's `1.1.0`, the iOS `1.1.0`, and the unsubmitted Production 4 label are the same name and not an identification. Compare any hash with `c186cdb620838a505a34504271827c37abd173791f0aa47b1885a1e45ffd900f`. |
 | Installed app server | Read-only | The remote default is `https://api.promaxcare.com.au/api` on package `com.tobby95.pmaxapp`. The 21 October GET of that URL returned 404 and sent no body. The company Expo 54 config was not opened here. The installed binary's API host stays unverified. Do not call production to discover it. |
-| Original 82 and audit | Separate register | Do not edit the Care OS Original 82 register from this mobile ledger. Row 74 stays blocked. Historical scores stay 1 passed, 56 provisional, 9 reopened, 15 blocked, and 1 failed. This login does not close an audit obligation. |
+| Care OS Original 82 | Cross-reference | The Care OS register stays with Care OS. PromaxCare mobile does not copy its scores and does not close its audit rows. |
 | Country availability | Later planning | iOS and Android availability across countries comes after staff workflows and polish. It is not permission to publish, expand access, or write to production. No worldwide release is claimed. |
 | Company FCM-only registration | Company tree | Keep the preserved company refusal to send APNs to the FCM-only endpoint. Do not replace it with pull request 15's iOS post. |
 
