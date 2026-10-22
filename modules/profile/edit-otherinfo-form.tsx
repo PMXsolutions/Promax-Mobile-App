@@ -140,16 +140,15 @@ const EditInfoForm = ({ id }: { id: string }) => {
               onChangeText={(value) => handleInputChange("twitter", value)}
             />
           </View>
+          <View style={styles.footer}>
+            <CustomButton
+              title="Save Changes"
+              onPress={() => handleFormSubmit()}
+              loading={isPending}
+            />
+          </View>
         </ScrollView>
       </KeyboardAwareWrapper>
-
-      <View style={styles.footer}>
-        <CustomButton
-          title="Save Changes"
-          onPress={() => handleFormSubmit()}
-          loading={isPending}
-        />
-      </View>
     </>
   );
 };
