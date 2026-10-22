@@ -4,7 +4,7 @@ Target: 22 October 2026, Australia/Sydney. Care OS is the go-live. This mobile l
 
 ## Live store lineage
 
-Checked 21 October 2026, with the 22 October account clarification below. No IPA or APK was on this host. No store, EAS, or OTA command was run. A preserved Expo 54 checkout was later reported on Joshua's Mac. This cloud host did not open, copy, rebuild, or submit it. Joshua confirmed on 22 October 2026 that the restored company iPhone app works. That confirms the existing release. It does not accept these pull requests.
+Checked 21 October 2026, with the 22 October account clarification below. No IPA or APK was on this host. No store, EAS, or OTA command was run. The 22 October afternoon inspection (Australia/Sydney) records Joshua's MTN-NX1, Android 15, MagicOS 9. That phone is not an approved install target: no installable approved APK, and Android-tools approval was asked and not granted. A preserved Expo 54 checkout was later reported on Joshua's Mac. This cloud host did not open, copy, rebuild, or submit it. Joshua confirmed on 22 October 2026 that the restored company iPhone app works. That confirms the existing release. It does not accept these pull requests.
 
 | Listing | What the public record says | What this remote is |
 | --- | --- | --- |
@@ -115,6 +115,7 @@ The reported checkout is a source location. These acceptance items are still mis
 | [#12](https://github.com/PMXsolutions/Promax-Mobile-App/pull/12) | this file | Acceptance matrix and this ledger | Record only. Not a store update. |
 | [#13](https://github.com/PMXsolutions/Promax-Mobile-App/pull/13) | `113442f` | New drafts go to a secure generation. The current pointer is set only after that copy reads back. No plaintext AsyncStorage fallback. | [Draft storage review](https://cursor.com/agents/bc-ef905f1c-7c4a-5b3c-9794-47f13d3ee47c) failed `749406a` on a torn write and an in-flight overwrite, then retested `113442f`: 31 passed, 0 failed, no edits. Both failures stay recorded. Device gate stays: the Jest double is not Keychain or Keystore. |
 | [#14](https://github.com/PMXsolutions/Promax-Mobile-App/pull/14) | `d925a1a` | Other-info Save is inside the keyboard scroll view. A failed save keeps the typed text. Branched from `8c1e1cb`. | [Retest profile 7ec97f1](https://cursor.com/agents/bc-d854589c-f749-59b9-a200-c4542b57e848) did not write it. 3 suites, 11 tests, passed. The source-attribute check is not this acceptance. A device tap is still unproven. |
+| [#15](https://github.com/PMXsolutions/Promax-Mobile-App/pull/15) | `1eaf047` | The cached device token includes the signed-in user and company. A legacy bare `fcmToken` does not skip registration. A write that finishes after logout does not stay stored. Android stays FCM. iOS stays APNs. Branched from `8c1e1cb`. | [Retest session retry 2fa074d](https://cursor.com/agents/bc-6203ec83-dda9-5cc7-9079-99ed54257f86) did not write it. `__tests__/push-registration.test.tsx`: 1 suite, 6 tests, passed. Axios was mocked. No push was sent. Not a device pass. |
 
 The independent rows above re-ran the latest commits in existing checkouts. They are unit and source checks. They are not a device, hosted, or store pass.
 
@@ -156,7 +157,7 @@ This is this repository, not the platform module.
 
 | Item | Why it stays blocked |
 | --- | --- |
-| Android and iOS builds | No Android SDK, `adb`, emulator, or Apple toolchain. No package was produced. |
+| Android and iOS builds | No Android SDK, `adb`, emulator, or Apple toolchain on this host. No package was produced. On 22 October 2026 Joshua has an MTN-NX1, Android 15, MagicOS 9. No installable approved APK exists. Android-tools approval was asked and not granted. The phone was not used. Phone availability is not native acceptance. Pull request 13 `113442f` and pull request 14 `d925a1a` stay recorded, and that device gate stays. |
 | Hosted sign-in, clock-in, report save, and document read | No disposable API and no authorised account. No production request was sent. |
 | Remember me and logout deletion | Remember me is unchanged. Logout still keeps the draft. The AsyncStorage prefix on `0d73f38` is a mask, not encryption. SecureStore values are capped at 2048 bytes. On that commit, a new draft whose secure key cannot be stored is plain text. Removal on logout was not added. Pull request 13 `113442f` changes the later write path. Its `749406a` review failed on a torn write and an in-flight overwrite, and the `113442f` retest passed 31 tests. The platform Keychain and Keystore notes above are not a protected-draft pass. Confidentiality versus retention stays parked. |
 | Server tenant and assignment enforcement | Blocked until an isolated disposable API can run those tests. Client gates on pull request 11 are not that proof. `pmx_api_v2` was not readable. |
