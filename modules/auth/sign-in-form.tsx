@@ -14,6 +14,7 @@ import { AuthService } from "@/services/auth";
 import { FormInput, FormPasswordInput } from "@/components/wrapper";
 import Checkbox from "@/components/shared/checkbox";
 import { isAxiosError } from "axios";
+import { isEmailUnconfirmedMessage } from "@/libs/login-message";
 
 const readApiMessage = (error: unknown): string | undefined => {
   if (!isAxiosError(error)) {
@@ -76,7 +77,15 @@ const SignInForm = () => {
     } catch (error: unknown) {
       const message = readApiMessage(error);
 
-      if (message === "User Not Found") {
+      if (message && isEmailUnconfirmedMessage(message)) {
+        showMessage({
+          message,
+          type: "danger",
+        });
+        router.navigate(
+          `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
+        );
+      } else if (message === "User Not Found") {
         showMessage({ message: "User not found", type: "danger" });
       } else if (
         message === "Email Not Confirmed" ||
