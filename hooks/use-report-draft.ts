@@ -14,6 +14,7 @@ import {
   releaseDraftSend,
   reportDraftStorageKey,
   restoredDraftNotice,
+  SECURE_DRAFT_SAVE_FAILURE,
 } from "@/libs/report-draft";
 import {
   commitSubmittedDraft,
@@ -166,7 +167,16 @@ export function useReportDraft<T extends object>(options: {
     draftRef.current = next;
     const timer = setTimeout(() => {
       const latest = draftWriteAfterDelay(draftRef.current);
-      if (latest) void writeReportDraft(key, latest);
+      if (!latest) return;
+      void writeReportDraft(key, latest).then((saved) => {
+        if (saved) {
+          setNotice((current) =>
+            current === SECURE_DRAFT_SAVE_FAILURE ? null : current
+          );
+          return;
+        }
+        setNotice(SECURE_DRAFT_SAVE_FAILURE);
+      });
     }, 250);
     return () => clearTimeout(timer);
   }, [form, key, rosterId]);
@@ -198,7 +208,12 @@ export function useReportDraft<T extends object>(options: {
       "Send again only if this report is not already in your report list."
     );
     if (key) {
-      await writeReportDraft(key, next);
+      const stored = await writeReportDraft(key, next);
+      if (!stored) {
+        setNeedsAcknowledge(true);
+        setNotice(SECURE_DRAFT_SAVE_FAILURE);
+        return;
+      }
       await removeDraftClaim(key);
       releaseDraftSend(key);
       ownsClaim.current = false;
@@ -265,7 +280,7 @@ export function useReportDraft<T extends object>(options: {
     const stored = await writeReportDraft(key, begun.draft);
     if (!stored) {
       setNeedsAcknowledge(true);
-      setNotice(restoredDraftNotice(begun.draft));
+      setNotice(SECURE_DRAFT_SAVE_FAILURE);
       return false;
     }
     return true;
@@ -298,7 +313,9 @@ export function useReportDraft<T extends object>(options: {
       draftRef.current = next;
       setNeedsAcknowledge(true);
       setNotice(restoredDraftNotice(next));
-      if (key) await writeReportDraft(key, next);
+      if (key && !(await writeReportDraft(key, next))) {
+        setNotice(SECURE_DRAFT_SAVE_FAILURE);
+      }
       return;
     }
     const next = failDraftSubmit(current, new Date());
@@ -308,7 +325,9 @@ export function useReportDraft<T extends object>(options: {
       releaseDraftSend(key);
       ownsClaim.current = false;
       await removeDraftClaim(key);
-      await writeReportDraft(key, next);
+      if (!(await writeReportDraft(key, next))) {
+        setNotice(SECURE_DRAFT_SAVE_FAILURE);
+      }
     }
   };
 
