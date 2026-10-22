@@ -191,7 +191,9 @@ Nothing in this list authorises signing, EAS, an upload, a store submission, a t
 6. Device cases after a lab pass: a keyboard tap on device, a secure-store restart, an account or company switch that registers without a production push, and a failed save that keeps the typed text on device. Jest is not that pass.
 7. Milestone A test notes list the absent workflows: attendance writes beyond clock-in and clock-out, progress notes, daily reports, incident writes, timesheet generation, PBS, training completion, ticket creation, knowledge-base editing, and SIMA chat.
 
-The one further file identity that would close the Save-test byte claim is the content SHA256 of the working copy's `__tests__/other-info-save-tap.test.tsx`. It is not a commit, and it is not required before the profile proposal. The company hook file has no public blob to match. Its recorded contract is the Android-only early return, `fcmTokenForAndroid`, and no iOS post.
+The Save-test byte claim is closed. Joshua measured the working copy `__tests__/other-info-save-tap.test.tsx` at `6a63c0eb5263ce6041845339bc47ebc7c4d876e050f7863053879750f9d4ac01`. Reproducing the type alias directly under `ReactTestInstance`, and replacing the three annotations, matches that hash. The company file was not copied here. The company hook file has no public blob to match. Its recorded contract is the Android-only early return, `fcmTokenForAndroid`, and no iOS post.
+
+The same contract is now an in-memory module at `18ac5d0` on `cursor/mobile-isolated-fixture-65b8`: `libs/isolated-fixture.ts`. [Retest portable FCM test](https://cursor.com/agents/bc-daa29958-4b19-5481-b123-04d72d23f74a) passed 3 suites and 26 tests there, including the staff-read and mileage regressions, and changed no file. The module opens no socket. It is not the EAS profile and not a device run.
 
 ## Isolated test-profile proposal
 
@@ -237,10 +239,10 @@ These paths are the public client contract in `services/auth.ts`, `services/shif
 | `POST /Account/auth_login?medium=Mobile` | One response has HTTP 401 and a message that is `email not confirmed` or starts with `email not confirmed.`. A later success returns the fictional user, staff, and company. A generic 401 does not use that sentence. |
 | `GET /Account/forgot_password` and `POST /Account/reset_password` | Answer locally. Send no mail. |
 | `GET /ShiftRosters/get_shifts_by_user` and `GET /ShiftRosters/900001` | Return the fictional shift, or an empty list. Never return another company's shift. |
-| `POST /Attendances/clock_in` and `POST /Attendances/clock_out` | Accept only `fixture-user` and shift `900001`. A second clock-in of that shift is rejected. |
+| `GET /Attendances/clock_in` and `GET /Attendances/clock_out` | The public client uses GET. Accept only `fixture-user` and shift `900001`. A second clock-in of that shift is rejected. |
 | `GET /ShiftReports/get_staff_shiftreports` and `GET /ShiftReports/get_shiftreport_details` | Return the fictional report for staff `900001`. |
 | `POST /ShiftReports/add_shiftreport` and `POST /ShiftReports/edit/900001` | Accept one save. A duplicate after the local tombstone is rejected. |
-| `POST /ShiftRosters/fill_mileage` | Accept only an end reading greater than the start, and reject a missing or zero start. |
+| `GET /ShiftRosters/fill_mileage` | The public client uses GET. Accept only an end reading greater than the start, and reject a missing or zero start. |
 | `GET /Documents/get_all_staff_documents` and `GET /Documents/get_document/900001` | Return the fictional document for staff `900001`. |
 | `POST /Documents/add_document`, `POST /Documents/edit/900001`, `POST /Documents/delete/900001` | Accept only that fictional document. |
 | `GET /Staffs/900001` and `GET /Companies/get_company/900001` | Return the fictional staff and company. |
@@ -256,7 +258,7 @@ Secure draft save and the visible secure-save failure notice stay on the device.
 ## Falsifiers for the Mac lab report
 
 1. Closed for the current bytes. The four draft files match the `4daa0f0` content hashes above. A later edit to those files reopens this item.
-2. The Mac Save test changes an `expect()` or `firstTapReachesPress`, or replaces something other than the three `TestRenderer.ReactTestRenderer` annotations plus the one type alias.
+2. Closed by the reproduced hash `6a63c0eb5263ce6041845339bc47ebc7c4d876e050f7863053879750f9d4ac01`. The Mac Save test matches the public file plus the type alias under `ReactTestInstance` and the three annotation replacements. An `expect()` or `firstTapReachesPress` change would have produced a different hash.
 3. `scoped-push-registration.test.tsx` differs from `2b3f43f` in any expectation other than denying the `apns-token` post. Also falsified if the company early return skips listener setup or retry, if a valid Android FCM token is rejected by the combined gates, or if banner, list, or logging edits change a notification route. Replacing the company guard with public `deviceTokenForPlatform` would falsify the company contract.
 4. A test list showing the 180-to-186 increase is not those six rendered tests, or a diff showing the annotation edit changed an assertion.
 5. A log, proxy capture, or binary trace showing a live API or push during that Jest run.
