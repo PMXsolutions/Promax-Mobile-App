@@ -1,4 +1,7 @@
+import { isEmailUnconfirmedMessage } from "@/libs/login-message";
 import { mileageSubmitDecision } from "@/libs/trip-mileage";
+
+export { isEmailUnconfirmedMessage };
 
 /**
  * In-memory disposable fixture for PromaxCare mobile Milestone A.
@@ -60,19 +63,6 @@ export function isolatedBaseUrlDecision(
   return { ok: true, baseUrl: url.toString().replace(/\/$/, "") };
 }
 
-/**
- * Same sentence rule as the mobile sign-in classifier: the message is
- * `email not confirmed` or starts with `email not confirmed.`.
- * A mail-rate message does not match.
- */
-export function isEmailUnconfirmedMessage(message: string): boolean {
-  const normalized = message.trim().toLowerCase();
-  return (
-    normalized === "email not confirmed" ||
-    normalized.startsWith("email not confirmed.")
-  );
-}
-
 export type FixtureCall = {
   method: "GET" | "POST";
   path: string;
@@ -92,6 +82,7 @@ type FixtureState = {
   reports: Set<string>;
   instagram: string;
   tokens: { token: string; userId: string; companyId: number }[];
+  failStaffEdit: boolean;
 };
 
 function unavailable(): FixtureResult {
@@ -131,6 +122,7 @@ export function createIsolatedFixture() {
     reports: new Set(),
     instagram: "fixture-handle",
     tokens: [],
+    failStaffEdit: false,
   };
 
   function respond(call: FixtureCall): FixtureResult {
@@ -164,10 +156,21 @@ export function createIsolatedFixture() {
       return {
         status: 200,
         body: {
+          status: "success",
           userId: FIXTURE_SESSION.userId,
           staffId: FIXTURE_SESSION.staffId,
           companyId: FIXTURE_SESSION.companyId,
           email: FIXTURE_SESSION.email,
+          userProfile: {
+            role: "Staff",
+            token: "fixture-token",
+            userId: FIXTURE_SESSION.userId,
+            companyId: FIXTURE_SESSION.companyId,
+          },
+          staffProfile: {
+            staffId: FIXTURE_SESSION.staffId,
+            firstName: "Fixture",
+          },
         },
       };
     }
@@ -189,6 +192,21 @@ export function createIsolatedFixture() {
               shiftRosterId: FIXTURE_SESSION.shiftId,
               staffId: FIXTURE_SESSION.staffId,
               companyId: FIXTURE_SESSION.companyId,
+              status: "Confirmed",
+              isEnded: false,
+              isShiftReportSigned: false,
+              dateFrom: "2026-10-22T09:00:00",
+              dateTo: "2026-10-22T17:00:00",
+              clients: [],
+              activities: [],
+              attendance: null,
+              staff: {
+                fullName: "Fixture Staff",
+                firstName: "Fixture",
+                middleName: "",
+                imageUrl: "",
+              },
+              profile: { imageUrl: "" },
             },
           ],
         },
@@ -326,6 +344,10 @@ export function createIsolatedFixture() {
           staffId: FIXTURE_SESSION.staffId,
           companyId: FIXTURE_SESSION.companyId,
           instagram: state.instagram,
+          linkedIn: "",
+          facebook: "",
+          youtube: "",
+          twitter: "",
         },
       };
     }
@@ -342,8 +364,16 @@ export function createIsolatedFixture() {
 
     if (pathname === `/Staffs/edit/${FIXTURE_SESSION.staffId}` && call.method === "POST") {
       if (!isFixtureUser(query.get("userId"))) return denied();
-      if (call.body?.fail === true) {
-        return { status: 500, body: { saved: false, instagram: state.instagram } };
+      if (call.body?.fail === true || state.failStaffEdit) {
+        state.failStaffEdit = false;
+        return {
+          status: 500,
+          body: {
+            saved: false,
+            message: "Could not save",
+            instagram: state.instagram,
+          },
+        };
       }
       const next = call.body?.instagram;
       if (typeof next === "string") state.instagram = next;
@@ -420,6 +450,9 @@ export function createIsolatedFixture() {
 
   return {
     respond,
+    armStaffEditFailure: () => {
+      state.failStaffEdit = true;
+    },
     snapshot: () => ({
       instagram: state.instagram,
       tokens: state.tokens.map((item) => item.token),
