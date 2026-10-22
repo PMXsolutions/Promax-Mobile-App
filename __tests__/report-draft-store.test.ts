@@ -70,6 +70,8 @@ jest.mock("expo-secure-store", () => {
   let hold: Promise<void> | null = null;
   let holdKey: ((key: string) => boolean) | null = null;
   let holding = false;
+  let deleteHold: Promise<void> | null = null;
+  let deleteHolding = false;
   return {
     getItemAsync: async (key: string) => {
       if (state.throwKeys.has(key)) throw new Error("secure get");
@@ -98,6 +100,13 @@ jest.mock("expo-secure-store", () => {
       memory.set(key, value);
     },
     deleteItemAsync: async (key: string) => {
+      if (deleteHold) {
+        const pending = deleteHold;
+        deleteHold = null;
+        deleteHolding = true;
+        await pending;
+        deleteHolding = false;
+      }
       if (state.deleteThrows) throw new Error("secure delete");
       memory.delete(key);
     },
@@ -108,6 +117,10 @@ jest.mock("expo-secure-store", () => {
       holdKey = match ?? null;
     },
     __isHolding: () => holding,
+    __holdNextDelete(pending: Promise<void>) {
+      deleteHold = pending;
+    },
+    __isDeleteHolding: () => deleteHolding,
   };
 });
 
@@ -153,7 +166,7 @@ describe("report draft storage", () => {
     await writeReportDraft(key, inFlight);
     expect(firstDone).toBe(false);
     release();
-    expect(await first).toBe(true);
+    expect(await first).toBe(false);
 
     expect(await AsyncStorage.getItem(key)).toBeNull();
     const stored = await readReportDraft<typeof editing.form>(key);
@@ -855,21 +868,121 @@ describe("protected draft persistence", () => {
     const key = "promaxcare.report-draft.c9.s4.create.interrupt";
     const original = createDraft(key, { goal_Progress: "original text" }, now, "a1");
     expect(await writeReportDraft(key, original)).toBe(true);
+    const before = secureChunks(key).map(
+      (name) => [name, secureMemory().get(name)] as const
+    );
     const flags = secureState();
     flags.setCount = 0;
-    flags.failAfterSets = 1;
+    flags.failAfterSets = 2;
     const updated = {
       ...original,
       updatedAt: "2026-10-21T09:30:00.000Z",
       form: { goal_Progress: "partial text" },
     };
     expect(await writeReportDraft(key, updated)).toBe(false);
-    expect(secureMemory().get(`${key}.sec.pending`)).toBeUndefined();
+    for (const [name, value] of before) {
+      expect(secureMemory().get(name)).toBe(value);
+    }
     expect(await AsyncStorage.getItem(key)).toBeNull();
     expect((await readReportDraft<typeof original.form>(key))?.form).toEqual({
       goal_Progress: "original text",
     });
     expect(JSON.stringify(await readReportDraft(key))).not.toContain("partial text");
+  });
+
+  it("keeps the previous secure generation when the new pointer cannot be stored", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.torn";
+    const original = createDraft(
+      key,
+      { goal_Progress: "p".repeat(1900) },
+      now,
+      "a1"
+    );
+    expect(await writeReportDraft(key, original)).toBe(true);
+    const pointer = secureMemory().get(`${key}.sec.current`);
+    expect(pointer).toBeTruthy();
+    const flags = secureState();
+    flags.setCount = 0;
+    flags.failAfterSets = 2;
+    const updated = {
+      ...original,
+      updatedAt: "2026-10-21T09:35:00.000Z",
+      form: { goal_Progress: "q".repeat(1800) },
+    };
+    expect(await writeReportDraft(key, updated)).toBe(false);
+    expect(secureMemory().get(`${key}.sec.current`)).toBe(pointer);
+    expect((await readReportDraft<typeof original.form>(key))?.form.goal_Progress).toBe(
+      "p".repeat(1900)
+    );
+    expect(JSON.stringify(await readReportDraft(key))).not.toContain("q".repeat(1800));
+  });
+
+  it("reads a draft stored in the previous secure chunk layout", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.legacy-secure";
+    const draft = createDraft(key, { goal_Progress: "old layout" }, now, "a1");
+    const body = JSON.stringify(draft);
+    secureMemory().set(`${key}.sec.n`, `1:${new TextEncoder().encode(body).length}`);
+    secureMemory().set(`${key}.sec.0`, body);
+    expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
+      goal_Progress: "old layout",
+    });
+    const updated = {
+      ...draft,
+      updatedAt: "2026-10-21T09:45:00.000Z",
+      form: { goal_Progress: "new layout" },
+    };
+    expect(await writeReportDraft(key, updated)).toBe(true);
+    expect((await readReportDraft<typeof draft.form>(key))?.form).toEqual({
+      goal_Progress: "new layout",
+    });
+    expect(await AsyncStorage.getItem(key)).toBeNull();
+  });
+
+  it("does not let a rejected editing save replace a stored in-flight draft", async () => {
+    const key = "promaxcare.report-draft.c9.s4.create.replace-inflight";
+    const editing = createDraft(key, { goal_Progress: "typed" }, now, "a1");
+    expect(await writeReportDraft(key, editing)).toBe(true);
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    (
+      SecureStore as unknown as { __holdNextDelete(pending: Promise<void>): void }
+    ).__holdNextDelete(held);
+    const inFlight = {
+      ...editing,
+      submitState: "in_flight" as const,
+      updatedAt: "2026-10-21T09:50:00.000Z",
+      form: { goal_Progress: "sending" },
+    };
+    const saving = writeReportDraft(key, inFlight);
+    for (let attempt = 0; attempt < 80; attempt += 1) {
+      if (
+        (SecureStore as unknown as { __isDeleteHolding(): boolean }).__isDeleteHolding()
+      ) {
+        break;
+      }
+      await Promise.resolve();
+    }
+    expect(
+      (SecureStore as unknown as { __isDeleteHolding(): boolean }).__isDeleteHolding()
+    ).toBe(true);
+    const stale = {
+      ...editing,
+      updatedAt: "2026-10-21T09:55:00.000Z",
+      form: { goal_Progress: "stale edit" },
+    };
+    expect(await writeReportDraft(key, stale)).toBe(false);
+    release();
+    expect(await saving).toBe(true);
+    expect((await readReportDraft<typeof inFlight.form>(key))?.submitState).toBe(
+      "in_flight"
+    );
+    expect((await readReportDraft<typeof inFlight.form>(key))?.form).toEqual({
+      goal_Progress: "sending",
+    });
+    expect(JSON.stringify(await readReportDraft(key))).not.toContain("stale edit");
+    expect(await AsyncStorage.getItem(key)).toBeNull();
   });
 
   it("retries a secure save after storage starts working and still stores no plaintext", async () => {

@@ -15,7 +15,6 @@ const SECURE_CHUNK_BYTES = 1800;
 const SECURE_VALUE_LIMIT = 2048;
 
 const writeEpoch = new Map<string, number>();
-const latestPayload = new Map<string, string>();
 let memoryDraftKey: string | null = null;
 
 export function resetDraftKeyMemoryForTests(): void {
@@ -104,39 +103,50 @@ async function readSecureSlot(
   }
 }
 
-async function readSecureBody(draftKey: string): Promise<string | null> {
-  const live = await readSecureSlot(draftKey, "sec");
-  if (live) return live;
-  try {
-    const stamp = await SecureStore.getItemAsync(`${draftKey}.sec.pending`);
-    if (!stamp || !/^[a-f0-9]{8,64}$/.test(stamp)) return null;
-    return await readSecureSlot(draftKey, `sec.p.${stamp}`);
-  } catch {
-    return null;
-  }
+function isGenerationStamp(value: string | null): value is string {
+  return !!value && /^[a-f0-9]{8,64}$/.test(value);
 }
 
-async function deletePendingCopy(draftKey: string): Promise<void> {
-  const stamp = await SecureStore.getItemAsync(`${draftKey}.sec.pending`);
-  if (!stamp || !/^[a-f0-9]{8,64}$/.test(stamp)) return;
-  const header = await SecureStore.getItemAsync(`${draftKey}.sec.p.${stamp}.n`);
-  if (header) {
-    const count = Number(header.split(":")[0]);
-    if (!Number.isInteger(count) || count <= 0 || count >= 1000) {
-      throw new Error("secure header");
+async function readSecureBody(draftKey: string): Promise<string | null> {
+  try {
+    const stamp = await SecureStore.getItemAsync(`${draftKey}.sec.current`);
+    if (isGenerationStamp(stamp)) {
+      const current = await readSecureSlot(draftKey, `sec.p.${stamp}`);
+      if (current) return current;
     }
-    for (let index = 0; index < count; index += 1) {
-      await SecureStore.deleteItemAsync(`${draftKey}.sec.p.${stamp}.${index}`);
-    }
-    await SecureStore.deleteItemAsync(`${draftKey}.sec.p.${stamp}.n`);
+  } catch {
+    // The previous chunk layout below can still be read.
   }
-  await SecureStore.deleteItemAsync(`${draftKey}.sec.pending`);
+  return await readSecureSlot(draftKey, "sec");
+}
+
+async function deleteSlot(draftKey: string, slot: string): Promise<void> {
+  const header = await SecureStore.getItemAsync(`${draftKey}.${slot}.n`);
+  if (!header) return;
+  const count = Number(header.split(":")[0]);
+  if (!Number.isInteger(count) || count <= 0 || count >= 1000) {
+    throw new Error("secure header");
+  }
+  for (let index = 0; index < count; index += 1) {
+    await SecureStore.deleteItemAsync(`${draftKey}.${slot}.${index}`);
+  }
+  await SecureStore.deleteItemAsync(`${draftKey}.${slot}.n`);
+}
+
+async function deleteAllSecureCopies(draftKey: string): Promise<void> {
+  const stamp = await SecureStore.getItemAsync(`${draftKey}.sec.current`);
+  if (isGenerationStamp(stamp)) {
+    await deleteSlot(draftKey, `sec.p.${stamp}`);
+    await SecureStore.deleteItemAsync(`${draftKey}.sec.current`);
+  }
+  const legacy = await SecureStore.getItemAsync(`${draftKey}.sec.n`);
+  if (legacy) await deleteSecureChunks(draftKey, legacy);
 }
 
 /**
- * Stages the report in secure storage, then commits it.
+ * Stages a new generation, then points at it.
  * `plain` is the report JSON. Device encryption is expo-secure-store, not this function.
- * A failed stage does not replace the live copy.
+ * The previous generation stays readable until that pointer is stored.
  */
 async function writeSecureBody(
   draftKey: string,
@@ -162,24 +172,31 @@ async function writeSecureBody(
     );
     if ((await readSecureSlot(draftKey, slot)) !== plain) return false;
     if (!stillCurrent()) return false;
-    await SecureStore.setItemAsync(`${draftKey}.sec.pending`, stamp);
+    const previous = await SecureStore.getItemAsync(`${draftKey}.sec.current`);
+    await SecureStore.setItemAsync(`${draftKey}.sec.current`, stamp);
     if (!stillCurrent()) {
-      await SecureStore.deleteItemAsync(`${draftKey}.sec.pending`);
+      const seen = await SecureStore.getItemAsync(`${draftKey}.sec.current`);
+      if (seen === stamp) {
+        if (isGenerationStamp(previous)) {
+          await SecureStore.setItemAsync(`${draftKey}.sec.current`, previous);
+        } else {
+          await SecureStore.deleteItemAsync(`${draftKey}.sec.current`);
+        }
+      }
       return false;
     }
-    for (let index = 0; index < chunks.length; index += 1) {
-      await SecureStore.setItemAsync(`${draftKey}.sec.${index}`, chunks[index]);
-      if (!stillCurrent()) return false;
+    if ((await SecureStore.getItemAsync(`${draftKey}.sec.current`)) !== stamp) {
+      return false;
     }
-    await SecureStore.setItemAsync(
-      `${draftKey}.sec.n`,
-      `${chunks.length}:${utf8Size(plain)}`
-    );
-    if ((await readSecureSlot(draftKey, "sec")) !== plain) return false;
+    if ((await readSecureSlot(draftKey, slot)) !== plain) return false;
     try {
-      await deletePendingCopy(draftKey);
+      if (isGenerationStamp(previous) && previous !== stamp) {
+        await deleteSlot(draftKey, `sec.p.${previous}`);
+      }
+      const legacy = await SecureStore.getItemAsync(`${draftKey}.sec.n`);
+      if (legacy) await deleteSecureChunks(draftKey, legacy);
     } catch {
-      // The live copy already matched. A leftover pending copy is the same text.
+      // The current pointer already names a complete copy.
     }
     return true;
   } catch {
@@ -325,24 +342,25 @@ async function clearDraftBodies(
   let cleared = true;
 
   let header: string | null = null;
-  let headerKnown = true;
+  let pointer: string | null = null;
+  let copiesKnown = true;
   try {
     header = await SecureStore.getItemAsync(`${key}.sec.n`);
+    pointer = await SecureStore.getItemAsync(`${key}.sec.current`);
   } catch {
-    headerKnown = false;
+    copiesKnown = false;
     cleared = false;
   }
 
-  if (headerKnown) {
+  if (copiesKnown) {
     const storedAttempt = attemptIdOf(await readSecureBody(key));
     if (storedAttempt === attemptId) {
       try {
-        if (header) await deleteSecureChunks(key, header);
-        await deletePendingCopy(key);
+        await deleteAllSecureCopies(key);
       } catch {
         cleared = false;
       }
-    } else if (storedAttempt == null && header) {
+    } else if (storedAttempt == null && (header || pointer)) {
       cleared = false;
     }
   }
@@ -441,41 +459,44 @@ export async function writeReportDraft<T>(
   }
   const token = (writeEpoch.get(key) ?? 0) + 1;
   writeEpoch.set(key, token);
-  latestPayload.set(key, JSON.stringify(draft));
 
   try {
-    let guard = 0;
-    while (guard < 3) {
-      guard += 1;
-      if (writeEpoch.get(key) === token) {
-        const existing = await readReportDraft<T>(key);
-        if (existing && !draftWriteMayReplace(existing, draft)) return false;
+    if (writeEpoch.get(key) !== token) return false;
+    const existing = await readReportDraft<T>(key);
+    if (writeEpoch.get(key) !== token) return false;
+    if (existing && !draftWriteMayReplace(existing, draft)) return false;
+    const secured = await writeSecureBody(
+      key,
+      JSON.stringify(draft),
+      () => writeEpoch.get(key) === token
+    );
+    if (!secured) return false;
+    if (!sameStoredDraft(await readReportDraft<T>(key), draft)) return false;
+    if ((await readStoredRaw(key)) !== "missing") {
+      try {
+        await AsyncStorage.removeItem(key);
+      } catch {
+        return false;
       }
-      const currentToken = writeEpoch.get(key);
-      const currentPayload = latestPayload.get(key);
-      if (currentToken == null || currentPayload == null) return false;
-      const secured = await writeSecureBody(
-        key,
-        currentPayload,
-        () => writeEpoch.get(key) === currentToken
-      );
-      if (writeEpoch.get(key) !== currentToken) continue;
-      if (!secured) return false;
-      if ((await readStoredRaw(key)) !== "missing") {
-        try {
-          await AsyncStorage.removeItem(key);
-        } catch {
-          return false;
-        }
-        if ((await readStoredRaw(key)) !== "missing") return false;
-      }
-      if (writeEpoch.get(key) !== currentToken) continue;
-      return true;
+      if ((await readStoredRaw(key)) !== "missing") return false;
     }
-    return false;
+    return sameStoredDraft(await readReportDraft<T>(key), draft);
   } catch {
     return false;
   }
+}
+
+function sameStoredDraft<T>(
+  stored: ReportDraft<T> | null,
+  draft: ReportDraft<T>
+): boolean {
+  if (!stored) return false;
+  return (
+    stored.attemptId === draft.attemptId &&
+    stored.submitState === draft.submitState &&
+    stored.updatedAt === draft.updatedAt &&
+    JSON.stringify(stored.form) === JSON.stringify(draft.form)
+  );
 }
 
 export async function writeDraftClaim(key: string): Promise<boolean> {
