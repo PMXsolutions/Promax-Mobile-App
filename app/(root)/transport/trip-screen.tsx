@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Alert, Platform } from "react-native";
+import { View, StyleSheet, Alert, Platform, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GoogleTextInput from "@/components/map/google-text-input";
 import { useTripTracker } from "@/hooks/useTripTracker";
@@ -16,6 +16,7 @@ import { mileageSubmitDecision } from "@/libs/trip-mileage";
 import useAuthStore from "@/store/use-auth-store";
 import { shiftQuery } from "@/hooks/queries/shift";
 import { shiftListedForSession } from "@/libs/staff-record";
+import Text from "@/components/shared/text";
 
 export default function TripScreen() {
   const query = useLocalSearchParams();
@@ -39,6 +40,7 @@ export default function TripScreen() {
     calculateDistance,
     getTripDuration,
     initialPosition,
+    locationIssue,
     // tripStart,
     // tripEnd,
   } = useTripTracker();
@@ -169,6 +171,7 @@ export default function TripScreen() {
   };
 
   const handleSummarySubmit = async () => {
+    if (isLoading) return;
     const decision = mileageSubmitDecision(startKm, endKm);
     if (!decision.ok) {
       Alert.alert("Mileage not saved", decision.message, [{ text: "OK" }]);
@@ -203,7 +206,7 @@ export default function TripScreen() {
         decision.endKm
       );
       showMessage({
-        message: data.message,
+        message: data?.message || "Mileage saved",
         type: "success",
       });
       // TODO: Replace with actual API call
@@ -268,6 +271,27 @@ export default function TripScreen() {
         onSubmit={handleSummarySubmit}
         onCancel={handleSummaryCancel}
       />
+    );
+  }
+
+  if (locationIssue && tripState === "IDLE") {
+    const locationCopy =
+      locationIssue === "denied"
+        ? "Location is off, so the map is not tracking this trip."
+        : "The map is unavailable, so this trip is not being tracked.";
+    return (
+      <View style={styles.container}>
+        <View style={{ padding: 24, gap: 12 }}>
+          <Text>{locationCopy}</Text>
+          <Text>Odometer mileage can still be entered for this shift.</Text>
+          <Pressable
+            accessibilityLabel="Enter mileage"
+            onPress={() => setShowSummary(true)}
+          >
+            <Text>Enter mileage</Text>
+          </Pressable>
+        </View>
+      </View>
     );
   }
 

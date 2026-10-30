@@ -83,6 +83,7 @@ type FixtureState = {
   instagram: string;
   tokens: { token: string; userId: string; companyId: number }[];
   failStaffEdit: boolean;
+  failMileage: boolean;
 };
 
 function unavailable(): FixtureResult {
@@ -123,6 +124,7 @@ export function createIsolatedFixture() {
     instagram: "fixture-handle",
     tokens: [],
     failStaffEdit: false,
+    failMileage: false,
   };
 
   function respond(call: FixtureCall): FixtureResult {
@@ -192,6 +194,7 @@ export function createIsolatedFixture() {
               shiftRosterId: FIXTURE_SESSION.shiftId,
               staffId: FIXTURE_SESSION.staffId,
               companyId: FIXTURE_SESSION.companyId,
+              companyID: FIXTURE_SESSION.companyId,
               status: "Confirmed",
               isEnded: false,
               isShiftReportSigned: false,
@@ -232,6 +235,13 @@ export function createIsolatedFixture() {
       );
       if (!decision.ok) {
         return { status: 422, body: { stored: false, message: decision.message } };
+      }
+      if (state.failMileage) {
+        state.failMileage = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not save mileage" },
+        };
       }
       return {
         status: 200,
@@ -452,6 +462,9 @@ export function createIsolatedFixture() {
     respond,
     armStaffEditFailure: () => {
       state.failStaffEdit = true;
+    },
+    armMileageFailure: () => {
+      state.failMileage = true;
     },
     snapshot: () => ({
       instagram: state.instagram,

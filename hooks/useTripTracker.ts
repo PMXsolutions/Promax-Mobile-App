@@ -17,6 +17,9 @@ export function useTripTracker() {
   const watchId = useRef<Location.LocationSubscription | null>(null);
   const tripStart = useRef<Date | null>(null);
   const [initialPosition, setInitialPosition] = useState<Coord | null>(null);
+  const [locationIssue, setLocationIssue] = useState<
+    "denied" | "unavailable" | null
+  >(null);
 
   // Cleanup subscription on unmount
   useEffect(() => {
@@ -31,9 +34,10 @@ export function useTripTracker() {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
+        setLocationIssue("denied");
         Alert.alert(
           "Location needed",
-          "Trip tracking stays off until location is allowed.",
+          "Trip tracking stays off until location is allowed. Odometer mileage can still be entered.",
           [
             { text: "Open Settings", onPress: () => Linking.openSettings() },
             { text: "OK" },
@@ -50,12 +54,14 @@ export function useTripTracker() {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         };
+        setLocationIssue(null);
         setInitialPosition(position);
         // Add initial position to route if trip is already started
         if (tripState === "STARTED") {
           setRoute((prev) => [position]);
         }
       } catch (error) {
+        setLocationIssue("unavailable");
         console.error("Error getting initial position:", error);
       }
     })();
@@ -66,6 +72,7 @@ export function useTripTracker() {
       await Location.requestForegroundPermissionsAsync();
 
     if (status !== "granted") {
+      setLocationIssue("denied");
       if (canAskAgain) {
         Alert.alert(
           "Location Needed",
@@ -127,6 +134,7 @@ export function useTripTracker() {
       watchId.current = watcher;
     } catch (error) {
       console.error("Error starting location tracking:", error);
+      setLocationIssue("unavailable");
       setTripState("IDLE");
     }
   };
@@ -198,6 +206,7 @@ export function useTripTracker() {
     stops,
     destination,
     initialPosition,
+    locationIssue,
     setDestination,
     startTracking,
     pauseTracking,
