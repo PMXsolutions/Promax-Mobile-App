@@ -199,6 +199,8 @@ Rendered journeys at `8bd681a53dd9daf8dd2065d9cd5739e2f532db64` drive that modul
 
 `779b7719a7d9af223b0cc7743717bc76f239e7fb` adds rendered mail-limit and clock actions in `__tests__/fixture-rendered-clock-mail.test.tsx` only. [Retest clock and mail screens](https://cursor.com/agents/bc-daa29958-4b19-5481-b123-04d72d23f74a) passed 1 suite and 4 tests, exit 0, and changed no tracked file. A mail-rate response stays off the code screen. Clock-in and clock-out use the real shift buttons and the fixture's GET methods. A denied location does not call clock-in. This is still the public Expo 53 tree, not the company Expo 54 copy, and not a device run.
 
+`ae6f6915dbaccd8755d4ca70e5cfde5aad56588a` on `cursor/mobile-mileage-summary-65b8` opens the odometer summary when location is denied or the map watch fails. [Mileage rendered regression QA](https://cursor.com/agents/bc-30617101-4611-51cc-b077-4d34b2d80590) passed 1 suite and 5 tests at 7:33am Australia/Sydney on 31 October 2026, exit 0, and changed no tracked file. The parent is `779b7719`. Mileage stays a GET of `fill_mileage` from odometer readings. The map distance is not saved. A shift that is not on the signed-in roster is not sent. This is still the public Expo 53 tree, not the company Expo 54 copy, and not a device run. Map tiles stay Blocked.
+
 ## Isolated test-profile proposal
 
 This profile is a proposal for the working copy. It has not been created. It is not in the public `eas.json`. It does not require a Git commit. Creating it locally, building it, and uploading it are not authorised by this record. The existing Play route and the public repository stay as they are. The current phone install stays as it is.
