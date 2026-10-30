@@ -201,6 +201,8 @@ Rendered journeys at `8bd681a53dd9daf8dd2065d9cd5739e2f532db64` drive that modul
 
 `ae6f6915dbaccd8755d4ca70e5cfde5aad56588a` on `cursor/mobile-mileage-summary-65b8` opens the odometer summary when location is denied or the map watch fails. [Mileage rendered regression QA](https://cursor.com/agents/bc-30617101-4611-51cc-b077-4d34b2d80590) passed 1 suite and 5 tests at 7:33am Australia/Sydney on 31 October 2026, exit 0, and changed no tracked file. The parent is `779b7719`. Mileage stays a GET of `fill_mileage` from odometer readings. The map distance is not saved. A shift that is not on the signed-in roster is not sent. This is still the public Expo 53 tree, not the company Expo 54 copy, and not a device run. Map tiles stay Blocked.
 
+`75823fd18b5fddd05cbe5f6c7831abfa83049f85` on `cursor/mobile-document-denial-65b8` separates a document load error from an unassigned document. [Document rendered regression QA](https://cursor.com/agents/bc-daa29958-4b19-5481-b123-04d72d23f74a) passed 1 suite and 6 tests at 7:37am Australia/Sydney on 31 October 2026, exit 0, and changed no tracked file. The parent is `ae6f6915`. An unlisted id is not requested. A detail from another company does not open the editor. This is still the public Expo 53 tree, not the company Expo 54 copy, and not a device run.
+
 ## Isolated test-profile proposal
 
 This profile is a proposal for the working copy. It has not been created. It is not in the public `eas.json`. It does not require a Git commit. Creating it locally, building it, and uploading it are not authorised by this record. The existing Play route and the public repository stay as they are. The current phone install stays as it is.
