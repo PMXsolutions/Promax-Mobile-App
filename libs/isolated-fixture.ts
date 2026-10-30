@@ -95,6 +95,8 @@ type FixtureState = {
   failReportDetail: boolean;
   failReportSave: boolean;
   failCancel: boolean;
+  failShiftDetail: boolean;
+  mismatchShiftDetail: boolean;
 };
 
 function unavailable(): FixtureResult {
@@ -192,6 +194,8 @@ export function createIsolatedFixture() {
     failReportDetail: false,
     failReportSave: false,
     failCancel: false,
+    failShiftDetail: false,
+    mismatchShiftDetail: false,
   };
 
   function respond(call: FixtureCall): FixtureResult {
@@ -296,19 +300,45 @@ export function createIsolatedFixture() {
     }
 
     if (pathname === `/ShiftRosters/${FIXTURE_SESSION.shiftId}` && call.method === "GET") {
+      if (state.failShiftDetail) {
+        state.failShiftDetail = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load shift" },
+        };
+      }
+      const companyId = state.mismatchShiftDetail ? 4 : FIXTURE_SESSION.companyId;
+      state.mismatchShiftDetail = false;
       return {
         status: 200,
         body: {
           shiftRosterId: FIXTURE_SESSION.shiftId,
           reportId: FIXTURE_SESSION.reportId,
           staffId: FIXTURE_SESSION.staffId,
-          companyId: FIXTURE_SESSION.companyId,
-          companyID: FIXTURE_SESSION.companyId,
+          companyId,
+          companyID: companyId,
+          status: "Confirmed",
+          isEnded: false,
           dateFrom: "2026-10-22T09:00:00",
           dateTo: "2026-10-22T17:00:00",
           dateCreated: "2026-10-22T09:00:00",
           clients: [],
-          staff: { fullName: "Fixture Staff", signatureUrl: "" },
+          activities: "Personal care",
+          attendance: null,
+          profile: {
+            imageUrl: "",
+            address: "",
+            fullName: "Fixture Client",
+            latitude: 0,
+            longitude: 0,
+          },
+          staff: {
+            fullName: "Fixture Staff",
+            firstName: "Fixture",
+            surName: "Staff",
+            imageUrl: "",
+            signatureUrl: "",
+          },
         },
       };
     }
@@ -638,6 +668,12 @@ export function createIsolatedFixture() {
     },
     armCancelFailure: () => {
       state.failCancel = true;
+    },
+    armShiftDetailFailure: () => {
+      state.failShiftDetail = true;
+    },
+    armShiftDetailMismatch: () => {
+      state.mismatchShiftDetail = true;
     },
     snapshot: () => ({
       instagram: state.instagram,
