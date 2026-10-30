@@ -21,22 +21,31 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomBackdrop from "@/components/ui/custom-backdrop";
 import MapPreviewBottomSheet from "@/components/shift/map-preview-modal";
 import Text from "@/components/shared/text";
+import ErrorState from "@/components/shared/error-state";
 import { shiftListedForSession, shiftVisibleToSession } from "@/libs/staff-record";
 
 const ShiftDetail = () => {
-  const { user, staff } = useAuthStore();
+  const { user, staff, isAuthenticated, token } = useAuthStore();
   const query = useLocalSearchParams();
 
   const id = query.id as unknown as string;
   const clients = query.clients as unknown as string;
   const session = { staffId: staff?.staffId, companyId: user?.companyId };
   const staffId = Number(staff?.staffId);
-  const rosterQuery = shiftQuery.useShiftRoster(
-    Number.isFinite(staffId) && staffId > 0 ? staffId : 0
-  );
+  const sessionOpen =
+    isAuthenticated &&
+    Boolean(token) &&
+    Number.isFinite(staffId) &&
+    staffId > 0;
+  const rosterQuery = shiftQuery.useShiftRoster(sessionOpen ? staffId : 0);
   const shiftId = Number(id);
   const listed = shiftListedForSession(rosterQuery.data, shiftId, session);
-  const { data: shift, isLoading } = shiftQuery.useShiftDetail(shiftId, listed);
+  const {
+    data: shift,
+    isLoading,
+    isError: detailFailed,
+    refetch: refetchDetail,
+  } = shiftQuery.useShiftDetail(shiftId, sessionOpen && listed);
 
   const {
     clockInPending,
@@ -91,7 +100,17 @@ const ShiftDetail = () => {
     return () => clearInterval(interval); // Clean up interval on unmount
   }, []);
 
-  // const load = true;
+  if (!sessionOpen) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={clients || "Shift"} />
+        <View style={{ padding: 24 }}>
+          <Text>Your sign-in has ended, so this shift was not opened.</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
+
   if (rosterQuery.isLoading || (listed && isLoading)) {
     return (
       <Loader
@@ -102,10 +121,25 @@ const ShiftDetail = () => {
     );
   }
 
-  if (
-    !listed ||
-    (shift && !shiftVisibleToSession(shift, session))
-  ) {
+  if (rosterQuery.isError || (listed && detailFailed)) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={clients || "Shift"} />
+        <ErrorState
+          message="This shift could not be loaded."
+          onRetry={() => {
+            if (rosterQuery.isError) {
+              void rosterQuery.refetch();
+              return;
+            }
+            void refetchDetail();
+          }}
+        />
+      </ScreenWrapper>
+    );
+  }
+
+  if (!listed || (shift && !shiftVisibleToSession(shift, session))) {
     return (
       <ScreenWrapper barStyle="dark-content">
         <HeaderWhite name={clients || "Shift"} />

@@ -150,6 +150,14 @@ export function armCancelFailure() {
   fixture.armCancelFailure();
 }
 
+export function armShiftDetailFailure() {
+  fixture.armShiftDetailFailure();
+}
+
+export function armShiftDetailMismatch() {
+  fixture.armShiftDetailMismatch();
+}
+
 function holdReport(path: string) {
   reportHoldPath = path;
   reportHold = new Promise<void>((resolve) => {
@@ -175,6 +183,10 @@ export function holdNextReportCreate() {
 
 export function holdNextCancellation() {
   holdReport("/ShiftRosters/shift_cancellation");
+}
+
+export function holdNextShiftDetail() {
+  holdReport(`/ShiftRosters/${FIXTURE_SESSION.shiftId}`);
 }
 
 export function releaseReport() {
