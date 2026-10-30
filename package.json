@@ -12,7 +12,11 @@
     "lint": "expo lint"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "moduleNameMapper": {
+      "^expo-secure-store$": "<rootDir>/test-support/memory-secure-store.ts",
+      "^@react-native-async-storage/async-storage$": "<rootDir>/test-support/memory-async-storage.ts"
+    }
   },
   "dependencies": {
     "@expo-google-fonts/dancing-script": "^0.3.0",
