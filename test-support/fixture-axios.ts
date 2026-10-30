@@ -134,6 +134,10 @@ export function armRosterFailure() {
   fixture.armRosterFailure();
 }
 
+export function armEmptyRoster() {
+  fixture.armEmptyRoster();
+}
+
 export function armRosterExpiry() {
   fixture.armRosterExpiry();
 }
