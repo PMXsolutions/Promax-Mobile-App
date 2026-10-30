@@ -209,6 +209,8 @@ Rendered journeys at `8bd681a53dd9daf8dd2065d9cd5739e2f532db64` drive that modul
 
 `3375ded0e3499e604e36b4456b45711f633ffc25` on `cursor/mobile-report-create-load-65b8` applies the same load, denial, and ended-sign-in split to the add-report screen. [Add-report rendered regression QA](https://cursor.com/agents/bc-30617101-4611-51cc-b077-4d34b2d80590) passed 1 suite and 9 tests at 9:35am Australia/Sydney on 31 October 2026, exit 0, and changed no tracked file. The parent is `7aeeaf2`. Typed progress stays on screen when the create fails or the sign-in ends. This is still the public Expo 53 tree, not the company Expo 54 copy, and not a device run.
 
+`5ab28856279ae3d0fd7496dd3448a605b99f26fe` on `cursor/mobile-shift-cancel-load-65b8` separates a cancellation load error from an unassigned shift. [Shift-cancel rendered regression QA](https://cursor.com/agents/bc-daa29958-4b19-5481-b123-04d72d23f74a) passed 1 suite and 10 tests at 9:40am Australia/Sydney on 31 October 2026, exit 0, and changed no tracked file. The parent is `3375ded`. An unlisted shift is not cancelled. Another company's roster does not open the form. A 401 clears the sign-in. The typed reason stays on screen when the save fails or the sign-in ends, and that text is not sent. This is still the public Expo 53 tree, not the company Expo 54 copy, and not a device run.
+
 ## Isolated test-profile proposal
 
 This profile is a proposal for the working copy. It has not been created. It is not in the public `eas.json`. It does not require a Git commit. Creating it locally, building it, and uploading it are not authorised by this record. The existing Play route and the public repository stay as they are. The current phone install stays as it is.
