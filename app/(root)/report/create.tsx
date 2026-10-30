@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
 import { View } from "react-native";
@@ -10,21 +10,43 @@ import { shiftListedForSession } from "@/libs/staff-record";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
 import Text from "@/components/shared/text";
+import ErrorState from "@/components/shared/error-state";
 
 const ReportCreate = () => {
   const query = useLocalSearchParams();
-  const { user, staff } = useAuthStore();
+  const { user, staff, isAuthenticated, token } = useAuthStore();
+  const [formOpen, setFormOpen] = useState(false);
   const rosterId = query.rosterId as unknown as string;
   const staffId = Number(staff?.staffId);
-  const rosterQuery = shiftQuery.useShiftRoster(
-    Number.isFinite(staffId) && staffId > 0 ? staffId : 0
-  );
+  const sessionOpen =
+    isAuthenticated &&
+    Boolean(token) &&
+    Number.isFinite(staffId) &&
+    staffId > 0;
+  const rosterQuery = shiftQuery.useShiftRoster(sessionOpen ? staffId : 0);
   const listed = shiftListedForSession(rosterQuery.data, Number(rosterId), {
     staffId: staff?.staffId,
     companyId: user?.companyId,
   });
 
-  if (rosterQuery.isLoading) {
+  useEffect(() => {
+    if (sessionOpen && listed && !rosterQuery.isLoading && !rosterQuery.isError) {
+      setFormOpen(true);
+    }
+  }, [sessionOpen, listed, rosterQuery.isLoading, rosterQuery.isError]);
+
+  if (!sessionOpen && !formOpen) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Add Shift Report"} />
+        <View style={{ padding: 24 }}>
+          <Text>Your sign-in has ended, so this report was not opened.</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
+
+  if (sessionOpen && rosterQuery.isLoading) {
     return (
       <Loader
         name="2-curves"
@@ -34,7 +56,21 @@ const ReportCreate = () => {
     );
   }
 
-  if (!listed) {
+  if (sessionOpen && rosterQuery.isError) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Add Shift Report"} />
+        <ErrorState
+          message="This report could not be loaded."
+          onRetry={() => {
+            void rosterQuery.refetch();
+          }}
+        />
+      </ScreenWrapper>
+    );
+  }
+
+  if (sessionOpen && !listed) {
     return (
       <ScreenWrapper barStyle="dark-content">
         <HeaderWhite name={"Add Shift Report"} />
@@ -48,11 +84,14 @@ const ReportCreate = () => {
   return (
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={"Add Shift Report"} />
-      {/* <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      > */}
+      {!sessionOpen && (
+        <View style={{ padding: 24 }}>
+          <Text>
+            Your sign-in has ended. The typed report is still on this screen and was not sent.
+          </Text>
+        </View>
+      )}
       <AddReportForm rosterId={rosterId} />
-      {/* </KeyboardAvoidingView> */}
     </ScreenWrapper>
   );
 };
