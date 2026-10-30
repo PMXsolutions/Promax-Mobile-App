@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import HeaderWhite from "@/components/shared/header-no-bg";
@@ -10,21 +10,43 @@ import { shiftQuery } from "@/hooks/queries/shift";
 import { shiftListedForSession } from "@/libs/staff-record";
 import Loader from "@/components/shared/loader";
 import Text from "@/components/shared/text";
+import ErrorState from "@/components/shared/error-state";
 
 const ShiftCancel = () => {
   const query = useLocalSearchParams();
-  const { user, staff } = useAuthStore();
+  const { user, staff, isAuthenticated, token } = useAuthStore();
+  const [formOpen, setFormOpen] = useState(false);
   const id = query.id as unknown as string;
   const staffId = Number(staff?.staffId);
-  const rosterQuery = shiftQuery.useShiftRoster(
-    Number.isFinite(staffId) && staffId > 0 ? staffId : 0
-  );
+  const sessionOpen =
+    isAuthenticated &&
+    Boolean(token) &&
+    Number.isFinite(staffId) &&
+    staffId > 0;
+  const rosterQuery = shiftQuery.useShiftRoster(sessionOpen ? staffId : 0);
   const listed = shiftListedForSession(rosterQuery.data, Number(id), {
     staffId: staff?.staffId,
     companyId: user?.companyId,
   });
 
-  if (rosterQuery.isLoading) {
+  useEffect(() => {
+    if (sessionOpen && listed && !rosterQuery.isLoading && !rosterQuery.isError) {
+      setFormOpen(true);
+    }
+  }, [sessionOpen, listed, rosterQuery.isLoading, rosterQuery.isError]);
+
+  if (!sessionOpen && !formOpen) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Cancel Shift"} />
+        <View style={{ padding: 24 }}>
+          <Text>Your sign-in has ended, so this cancellation was not opened.</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
+
+  if (sessionOpen && rosterQuery.isLoading) {
     return (
       <Loader
         name="2-curves"
@@ -34,7 +56,21 @@ const ShiftCancel = () => {
     );
   }
 
-  if (!listed) {
+  if (sessionOpen && rosterQuery.isError) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Cancel Shift"} />
+        <ErrorState
+          message="This shift could not be loaded."
+          onRetry={() => {
+            void rosterQuery.refetch();
+          }}
+        />
+      </ScreenWrapper>
+    );
+  }
+
+  if (sessionOpen && !listed) {
     return (
       <ScreenWrapper barStyle="dark-content">
         <HeaderWhite name={"Cancel Shift"} />
@@ -48,7 +84,13 @@ const ShiftCancel = () => {
   return (
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={"Cancel Shift"} />
-
+      {!sessionOpen && (
+        <View style={{ padding: 24 }}>
+          <Text>
+            Your sign-in has ended. The typed reason is still on this screen and was not sent.
+          </Text>
+        </View>
+      )}
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -63,9 +105,7 @@ export default ShiftCancel;
 
 const styles = StyleSheet.create({
   content: {
-    // rowGap: THEME.spacing.lg,
     backgroundColor: THEME.colors.white,
     paddingHorizontal: THEME.spacing.md,
-    // marginTop: 10,
   },
 });

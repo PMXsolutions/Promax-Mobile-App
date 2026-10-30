@@ -146,6 +146,10 @@ export function armReportSaveFailure() {
   fixture.armReportSaveFailure();
 }
 
+export function armCancelFailure() {
+  fixture.armCancelFailure();
+}
+
 function holdReport(path: string) {
   reportHoldPath = path;
   reportHold = new Promise<void>((resolve) => {
@@ -167,6 +171,10 @@ export function holdNextReportSave() {
 
 export function holdNextReportCreate() {
   holdReport("/ShiftReports/add_shiftreport");
+}
+
+export function holdNextCancellation() {
+  holdReport("/ShiftRosters/shift_cancellation");
 }
 
 export function releaseReport() {

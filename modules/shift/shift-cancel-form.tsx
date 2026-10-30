@@ -42,15 +42,36 @@ const ShiftCancelForm = ({ shiftId }: { shiftId: number }) => {
         queryKey: ["shifts"],
       });
     },
-    onError: (error) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       showMessage({
-        message: "Unable to submit form",
+        message: error.response?.data?.message || "Unable to submit form",
         type: "danger",
       });
     },
   });
+  const sessionEnded = () =>
+    !useAuthStore.getState().isAuthenticated || !useAuthStore.getState().token;
   const handleFormSubmit: SubmitHandler<FormValue> = (data) => {
-    onSubmit(data); // Should call the mutation function
+    if (sessionEnded()) {
+      showMessage({
+        message:
+          "Your sign-in has ended. The typed reason is still on this screen and was not sent.",
+        type: "danger",
+      });
+      return;
+    }
+    onSubmit(data);
+  };
+  const handlePress = () => {
+    if (sessionEnded()) {
+      showMessage({
+        message:
+          "Your sign-in has ended. The typed reason is still on this screen and was not sent.",
+        type: "danger",
+      });
+      return;
+    }
+    void form.handleSubmit(handleFormSubmit)();
   };
 
   return (
@@ -70,7 +91,7 @@ const ShiftCancelForm = ({ shiftId }: { shiftId: number }) => {
       <View style={{ marginTop: 10 }}>
         <CustomButton
           title="Submit"
-          onPress={form.handleSubmit(handleFormSubmit)}
+          onPress={handlePress}
           loading={isPending}
         />
       </View>
