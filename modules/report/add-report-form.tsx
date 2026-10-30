@@ -90,6 +90,14 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   });
 
   const handleFormSubmit = () => {
+    if (!useAuthStore.getState().isAuthenticated || !useAuthStore.getState().token) {
+      showMessage({
+        message:
+          "Your sign-in has ended. The typed report is still on this screen and was not sent.",
+        type: "danger",
+      });
+      return;
+    }
     const cleanedGoalProgress = form.goal_Progress.replace(/\s/g, "");
 
     if (!form.goal_Progress || cleanedGoalProgress.length < 100) {

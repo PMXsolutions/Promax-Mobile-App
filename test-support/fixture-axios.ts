@@ -165,6 +165,10 @@ export function holdNextReportSave() {
   holdReport("/ShiftReports/edit/");
 }
 
+export function holdNextReportCreate() {
+  holdReport("/ShiftReports/add_shiftreport");
+}
+
 export function releaseReport() {
   releaseReportHold?.();
   reportHold = null;
