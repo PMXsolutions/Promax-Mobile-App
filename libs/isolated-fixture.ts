@@ -87,6 +87,9 @@ type FixtureState = {
   failDocumentList: boolean;
   failDocumentDetail: boolean;
   mismatchDocument: boolean;
+  failNotificationList: boolean;
+  failNotificationDetail: boolean;
+  mismatchNotification: boolean;
 };
 
 function unavailable(): FixtureResult {
@@ -120,6 +123,15 @@ function isFixtureUser(value: string | null): boolean {
   return value === FIXTURE_SESSION.userId;
 }
 
+function fixtureNotification(companyId: number) {
+  return {
+    messageId: FIXTURE_SESSION.messageId,
+    subject: "Fixture notice",
+    content: "Fixture body",
+    companyId,
+  };
+}
+
 function fixtureDocument(companyId: number) {
   return {
     documentId: FIXTURE_SESSION.documentId,
@@ -141,6 +153,9 @@ export function createIsolatedFixture() {
     failDocumentList: false,
     failDocumentDetail: false,
     mismatchDocument: false,
+    failNotificationList: false,
+    failNotificationDetail: false,
+    mismatchNotification: false,
   };
 
   function respond(call: FixtureCall): FixtureResult {
@@ -441,14 +456,34 @@ export function createIsolatedFixture() {
 
     if (pathname === "/Messages/inbox" && call.method === "GET") {
       if (!isFixtureUser(query.get("userId"))) return denied();
+      if (state.failNotificationList) {
+        state.failNotificationList = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load notifications" },
+        };
+      }
       return {
         status: 200,
-        body: { message: [{ id: FIXTURE_SESSION.messageId }] },
+        body: { message: [fixtureNotification(FIXTURE_SESSION.companyId)] },
       };
     }
 
-    if (pathname === `/Messages/${FIXTURE_SESSION.messageId}` && call.method === "GET") {
-      return { status: 200, body: { id: FIXTURE_SESSION.messageId } };
+    if (
+      pathname.startsWith("/Messages/") &&
+      pathname !== "/Messages/inbox" &&
+      call.method === "GET"
+    ) {
+      if (pathname !== `/Messages/${FIXTURE_SESSION.messageId}`) return denied();
+      if (state.failNotificationDetail) {
+        state.failNotificationDetail = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load notification" },
+        };
+      }
+      const companyId = state.mismatchNotification ? 4 : FIXTURE_SESSION.companyId;
+      return { status: 200, body: fixtureNotification(companyId) };
     }
 
     if (pathname === "/DeviceTokens/add_token" && call.method === "POST") {
@@ -497,6 +532,15 @@ export function createIsolatedFixture() {
     },
     armDocumentOwnershipMismatch: () => {
       state.mismatchDocument = true;
+    },
+    armNotificationListFailure: () => {
+      state.failNotificationList = true;
+    },
+    armNotificationDetailFailure: () => {
+      state.failNotificationDetail = true;
+    },
+    armNotificationOwnershipMismatch: () => {
+      state.mismatchNotification = true;
     },
     snapshot: () => ({
       instagram: state.instagram,
