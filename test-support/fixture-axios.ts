@@ -1,5 +1,6 @@
 import {
   createIsolatedFixture,
+  FIXTURE_SESSION,
   type FixtureCall,
 } from "@/libs/isolated-fixture";
 
@@ -17,6 +18,9 @@ let releaseMileageHold: (() => void) | null = null;
 let documentHold: Promise<void> | null = null;
 let releaseDocumentHold: (() => void) | null = null;
 let documentHoldPath = "";
+let notificationHold: Promise<void> | null = null;
+let releaseNotificationHold: (() => void) | null = null;
+let notificationHoldPath = "";
 
 export function resetFixtureBridge() {
   fixture = createIsolatedFixture();
@@ -26,6 +30,9 @@ export function resetFixtureBridge() {
   documentHold = null;
   releaseDocumentHold = null;
   documentHoldPath = "";
+  notificationHold = null;
+  releaseNotificationHold = null;
+  notificationHoldPath = "";
 }
 
 export function armStaffEditFailure() {
@@ -82,6 +89,40 @@ export function releaseDocument() {
   documentHoldPath = "";
 }
 
+export function armNotificationListFailure() {
+  fixture.armNotificationListFailure();
+}
+
+export function armNotificationDetailFailure() {
+  fixture.armNotificationDetailFailure();
+}
+
+export function armNotificationOwnershipMismatch() {
+  fixture.armNotificationOwnershipMismatch();
+}
+
+function holdNotification(path: string) {
+  notificationHoldPath = path;
+  notificationHold = new Promise<void>((resolve) => {
+    releaseNotificationHold = resolve;
+  });
+}
+
+export function holdNextNotificationList() {
+  holdNotification("/Messages/inbox");
+}
+
+export function holdNextNotificationDetail() {
+  holdNotification(`/Messages/${FIXTURE_SESSION.messageId}`);
+}
+
+export function releaseNotification() {
+  releaseNotificationHold?.();
+  notificationHold = null;
+  releaseNotificationHold = null;
+  notificationHoldPath = "";
+}
+
 export function fixtureSnapshot() {
   return fixture.snapshot();
 }
@@ -120,6 +161,9 @@ async function dispatch(
   }
   if (method === "GET" && documentHold && path.startsWith(documentHoldPath)) {
     await documentHold;
+  }
+  if (method === "GET" && notificationHold && path.startsWith(notificationHoldPath)) {
+    await notificationHold;
   }
   const result = fixture.respond({
     method,
