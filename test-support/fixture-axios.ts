@@ -3,6 +3,7 @@ import {
   FIXTURE_SESSION,
   type FixtureCall,
 } from "@/libs/isolated-fixture";
+import useAuthStore from "@/store/use-auth-store";
 
 /**
  * Test-only axios stand-in. It forwards the real service calls into the
@@ -21,6 +22,9 @@ let documentHoldPath = "";
 let notificationHold: Promise<void> | null = null;
 let releaseNotificationHold: (() => void) | null = null;
 let notificationHoldPath = "";
+let reportHold: Promise<void> | null = null;
+let releaseReportHold: (() => void) | null = null;
+let reportHoldPath = "";
 
 export function resetFixtureBridge() {
   fixture = createIsolatedFixture();
@@ -33,6 +37,9 @@ export function resetFixtureBridge() {
   notificationHold = null;
   releaseNotificationHold = null;
   notificationHoldPath = "";
+  reportHold = null;
+  releaseReportHold = null;
+  reportHoldPath = "";
 }
 
 export function armStaffEditFailure() {
@@ -123,6 +130,48 @@ export function releaseNotification() {
   notificationHoldPath = "";
 }
 
+export function armRosterFailure() {
+  fixture.armRosterFailure();
+}
+
+export function armRosterExpiry() {
+  fixture.armRosterExpiry();
+}
+
+export function armReportDetailFailure() {
+  fixture.armReportDetailFailure();
+}
+
+export function armReportSaveFailure() {
+  fixture.armReportSaveFailure();
+}
+
+function holdReport(path: string) {
+  reportHoldPath = path;
+  reportHold = new Promise<void>((resolve) => {
+    releaseReportHold = resolve;
+  });
+}
+
+export function holdNextRoster() {
+  holdReport("/ShiftRosters/get_shifts_by_user");
+}
+
+export function holdNextReportDetail() {
+  holdReport("/ShiftReports/get_shiftreport_details");
+}
+
+export function holdNextReportSave() {
+  holdReport("/ShiftReports/edit/");
+}
+
+export function releaseReport() {
+  releaseReportHold?.();
+  reportHold = null;
+  releaseReportHold = null;
+  reportHoldPath = "";
+}
+
 export function fixtureSnapshot() {
   return fixture.snapshot();
 }
@@ -153,7 +202,8 @@ async function dispatch(
   method: "GET" | "POST",
   path: string,
   body?: unknown,
-  extra?: Pick<FixtureCall, "platform" | "deviceType" | "offline">
+  extra?: Pick<FixtureCall, "platform" | "deviceType" | "offline">,
+  authenticated = false
 ) {
   calls.push({ method, path });
   if (method === "GET" && path.startsWith("/ShiftRosters/fill_mileage") && mileageHold) {
@@ -165,12 +215,18 @@ async function dispatch(
   if (method === "GET" && notificationHold && path.startsWith(notificationHoldPath)) {
     await notificationHold;
   }
+  if (reportHold && path.startsWith(reportHoldPath)) {
+    await reportHold;
+  }
   const result = fixture.respond({
     method,
     path,
     body: recordBody(body),
     ...extra,
   });
+  if (authenticated && result.status === 401) {
+    void useAuthStore.getState().logout();
+  }
   if (result.status >= 200 && result.status < 300) {
     return { data: result.body, status: result.status };
   }
@@ -184,8 +240,9 @@ async function dispatch(
 }
 
 export const axiosInstance = {
-  get: (path: string) => dispatch("GET", path),
-  post: (path: string, body?: unknown) => dispatch("POST", path, body),
+  get: (path: string) => dispatch("GET", path, undefined, undefined, true),
+  post: (path: string, body?: unknown) =>
+    dispatch("POST", path, body, undefined, true),
 };
 
 export const publicAxios = {

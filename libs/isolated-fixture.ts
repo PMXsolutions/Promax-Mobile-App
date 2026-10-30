@@ -90,6 +90,10 @@ type FixtureState = {
   failNotificationList: boolean;
   failNotificationDetail: boolean;
   mismatchNotification: boolean;
+  failRoster: boolean;
+  expireRoster: boolean;
+  failReportDetail: boolean;
+  failReportSave: boolean;
 };
 
 function unavailable(): FixtureResult {
@@ -121,6 +125,32 @@ function isFixtureStaff(value: string | null): boolean {
 
 function isFixtureUser(value: string | null): boolean {
   return value === FIXTURE_SESSION.userId;
+}
+
+function fixtureReport() {
+  return {
+    shiftReportId: FIXTURE_SESSION.reportId,
+    reportId: FIXTURE_SESSION.reportId,
+    shiftId: FIXTURE_SESSION.shiftId,
+    shiftRosterId: FIXTURE_SESSION.shiftId,
+    goal_Progress: "",
+    urgentMatters: "",
+    medicationGiven: "",
+    medicationSigned: "",
+    medicationAvailable: "",
+    medicatioErrors: "",
+    isMealManagementPlan: false,
+    details_IfNotMealMaganagementPlan: "",
+    isDrinkingProblem: false,
+    details_IfProblemExist: "",
+    isHealthIssues: false,
+    details_IfHealthIssuesExist: "",
+    contactFamily: "",
+    isIncident: false,
+    details_IfIsIncipient: "",
+    isBehaviourConcerned: false,
+    details_ifIsBehaviourConcerned: "",
+  };
 }
 
 function fixtureNotification(companyId: number) {
@@ -156,6 +186,10 @@ export function createIsolatedFixture() {
     failNotificationList: false,
     failNotificationDetail: false,
     mismatchNotification: false,
+    failRoster: false,
+    expireRoster: false,
+    failReportDetail: false,
+    failReportSave: false,
   };
 
   function respond(call: FixtureCall): FixtureResult {
@@ -217,12 +251,24 @@ export function createIsolatedFixture() {
 
     if (pathname === "/ShiftRosters/get_shifts_by_user" && call.method === "GET") {
       if (!isFixtureStaff(query.get("staff"))) return denied();
+      if (state.expireRoster) {
+        state.expireRoster = false;
+        return { status: 401, body: { stored: false, message: "Session Time Out!!" } };
+      }
+      if (state.failRoster) {
+        state.failRoster = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load roster" },
+        };
+      }
       return {
         status: 200,
         body: {
           shiftRoster: [
             {
               shiftRosterId: FIXTURE_SESSION.shiftId,
+              reportId: FIXTURE_SESSION.reportId,
               staffId: FIXTURE_SESSION.staffId,
               companyId: FIXTURE_SESSION.companyId,
               companyID: FIXTURE_SESSION.companyId,
@@ -252,8 +298,15 @@ export function createIsolatedFixture() {
         status: 200,
         body: {
           shiftRosterId: FIXTURE_SESSION.shiftId,
+          reportId: FIXTURE_SESSION.reportId,
           staffId: FIXTURE_SESSION.staffId,
           companyId: FIXTURE_SESSION.companyId,
+          companyID: FIXTURE_SESSION.companyId,
+          dateFrom: "2026-10-22T09:00:00",
+          dateTo: "2026-10-22T17:00:00",
+          dateCreated: "2026-10-22T09:00:00",
+          clients: [],
+          staff: { fullName: "Fixture Staff", signatureUrl: "" },
         },
       };
     }
@@ -312,10 +365,14 @@ export function createIsolatedFixture() {
     if (pathname === "/ShiftReports/get_shiftreport_details" && call.method === "GET") {
       if (query.get("id") !== String(FIXTURE_SESSION.reportId)) return denied();
       if (query.get("shiftId") !== String(FIXTURE_SESSION.shiftId)) return denied();
-      return {
-        status: 200,
-        body: { id: FIXTURE_SESSION.reportId, shiftId: FIXTURE_SESSION.shiftId },
-      };
+      if (state.failReportDetail) {
+        state.failReportDetail = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load report" },
+        };
+      }
+      return { status: 200, body: fixtureReport() };
     }
 
     if (
@@ -324,6 +381,13 @@ export function createIsolatedFixture() {
       call.method === "POST"
     ) {
       if (!isFixtureUser(query.get("userId"))) return denied();
+      if (state.failReportSave) {
+        state.failReportSave = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not save report" },
+        };
+      }
       const key = pathname;
       if (state.reports.has(key)) {
         return { status: 409, body: { kind: "duplicate", stored: false } };
@@ -541,6 +605,18 @@ export function createIsolatedFixture() {
     },
     armNotificationOwnershipMismatch: () => {
       state.mismatchNotification = true;
+    },
+    armRosterFailure: () => {
+      state.failRoster = true;
+    },
+    armRosterExpiry: () => {
+      state.expireRoster = true;
+    },
+    armReportDetailFailure: () => {
+      state.failReportDetail = true;
+    },
+    armReportSaveFailure: () => {
+      state.failReportSave = true;
     },
     snapshot: () => ({
       instagram: state.instagram,
