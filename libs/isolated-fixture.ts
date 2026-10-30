@@ -84,6 +84,9 @@ type FixtureState = {
   tokens: { token: string; userId: string; companyId: number }[];
   failStaffEdit: boolean;
   failMileage: boolean;
+  failDocumentList: boolean;
+  failDocumentDetail: boolean;
+  mismatchDocument: boolean;
 };
 
 function unavailable(): FixtureResult {
@@ -117,6 +120,16 @@ function isFixtureUser(value: string | null): boolean {
   return value === FIXTURE_SESSION.userId;
 }
 
+function fixtureDocument(companyId: number) {
+  return {
+    documentId: FIXTURE_SESSION.documentId,
+    documentName: "Fixture licence",
+    companyId,
+    userId: FIXTURE_SESSION.staffId,
+    documentUrl: "",
+  };
+}
+
 export function createIsolatedFixture() {
   const state: FixtureState = {
     clocked: new Set(),
@@ -125,6 +138,9 @@ export function createIsolatedFixture() {
     tokens: [],
     failStaffEdit: false,
     failMileage: false,
+    failDocumentList: false,
+    failDocumentDetail: false,
+    mismatchDocument: false,
   };
 
   function respond(call: FixtureCall): FixtureResult {
@@ -303,29 +319,36 @@ export function createIsolatedFixture() {
 
     if (pathname === "/Documents/get_all_staff_documents" && call.method === "GET") {
       if (!isFixtureStaff(query.get("staffId"))) return denied();
-      return {
-        status: 200,
-        body: [
-          {
-            id: FIXTURE_SESSION.documentId,
-            staffId: FIXTURE_SESSION.staffId,
-            companyId: FIXTURE_SESSION.companyId,
-          },
-        ],
-      };
-    }
-
-    if (
-      pathname === `/Documents/get_document/${FIXTURE_SESSION.documentId}` &&
-      call.method === "GET"
-    ) {
+      if (state.failDocumentList) {
+        state.failDocumentList = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load documents" },
+        };
+      }
       return {
         status: 200,
         body: {
-          id: FIXTURE_SESSION.documentId,
-          companyId: FIXTURE_SESSION.companyId,
-          userId: FIXTURE_SESSION.staffId,
+          staffDocuments: [fixtureDocument(FIXTURE_SESSION.companyId)],
         },
+      };
+    }
+
+    if (pathname.startsWith("/Documents/get_document/") && call.method === "GET") {
+      if (pathname !== `/Documents/get_document/${FIXTURE_SESSION.documentId}`) {
+        return denied();
+      }
+      if (state.failDocumentDetail) {
+        state.failDocumentDetail = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load document" },
+        };
+      }
+      const companyId = state.mismatchDocument ? 4 : FIXTURE_SESSION.companyId;
+      return {
+        status: 200,
+        body: { staffDocument: fixtureDocument(companyId) },
       };
     }
 
@@ -465,6 +488,15 @@ export function createIsolatedFixture() {
     },
     armMileageFailure: () => {
       state.failMileage = true;
+    },
+    armDocumentListFailure: () => {
+      state.failDocumentList = true;
+    },
+    armDocumentDetailFailure: () => {
+      state.failDocumentDetail = true;
+    },
+    armDocumentOwnershipMismatch: () => {
+      state.mismatchDocument = true;
     },
     snapshot: () => ({
       instagram: state.instagram,

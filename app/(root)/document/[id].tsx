@@ -37,6 +37,20 @@ const EditDocument = () => {
     );
   }
 
+  if (listQuery.isError) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Edit Document"} />
+        <ErrorState
+          message="This document could not be loaded."
+          onRetry={() => {
+            void listQuery.refetch();
+          }}
+        />
+      </ScreenWrapper>
+    );
+  }
+
   if (!listed) {
     return (
       <ScreenWrapper barStyle="dark-content">

@@ -14,12 +14,18 @@ let fixture: Fixture = createIsolatedFixture();
 const calls: { method: "GET" | "POST"; path: string }[] = [];
 let mileageHold: Promise<void> | null = null;
 let releaseMileageHold: (() => void) | null = null;
+let documentHold: Promise<void> | null = null;
+let releaseDocumentHold: (() => void) | null = null;
+let documentHoldPath = "";
 
 export function resetFixtureBridge() {
   fixture = createIsolatedFixture();
   calls.length = 0;
   mileageHold = null;
   releaseMileageHold = null;
+  documentHold = null;
+  releaseDocumentHold = null;
+  documentHoldPath = "";
 }
 
 export function armStaffEditFailure() {
@@ -40,6 +46,40 @@ export function releaseMileage() {
   releaseMileageHold?.();
   mileageHold = null;
   releaseMileageHold = null;
+}
+
+export function armDocumentListFailure() {
+  fixture.armDocumentListFailure();
+}
+
+export function armDocumentDetailFailure() {
+  fixture.armDocumentDetailFailure();
+}
+
+export function armDocumentOwnershipMismatch() {
+  fixture.armDocumentOwnershipMismatch();
+}
+
+function holdDocument(path: string) {
+  documentHoldPath = path;
+  documentHold = new Promise<void>((resolve) => {
+    releaseDocumentHold = resolve;
+  });
+}
+
+export function holdNextDocumentList() {
+  holdDocument("/Documents/get_all_staff_documents");
+}
+
+export function holdNextDocumentDetail() {
+  holdDocument("/Documents/get_document/");
+}
+
+export function releaseDocument() {
+  releaseDocumentHold?.();
+  documentHold = null;
+  releaseDocumentHold = null;
+  documentHoldPath = "";
 }
 
 export function fixtureSnapshot() {
@@ -77,6 +117,9 @@ async function dispatch(
   calls.push({ method, path });
   if (method === "GET" && path.startsWith("/ShiftRosters/fill_mileage") && mileageHold) {
     await mileageHold;
+  }
+  if (method === "GET" && documentHold && path.startsWith(documentHoldPath)) {
+    await documentHold;
   }
   const result = fixture.respond({
     method,
