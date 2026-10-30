@@ -12,14 +12,34 @@ type Fixture = ReturnType<typeof createIsolatedFixture>;
 
 let fixture: Fixture = createIsolatedFixture();
 const calls: { method: "GET" | "POST"; path: string }[] = [];
+let mileageHold: Promise<void> | null = null;
+let releaseMileageHold: (() => void) | null = null;
 
 export function resetFixtureBridge() {
   fixture = createIsolatedFixture();
   calls.length = 0;
+  mileageHold = null;
+  releaseMileageHold = null;
 }
 
 export function armStaffEditFailure() {
   fixture.armStaffEditFailure();
+}
+
+export function armMileageFailure() {
+  fixture.armMileageFailure();
+}
+
+export function holdNextMileage() {
+  mileageHold = new Promise<void>((resolve) => {
+    releaseMileageHold = resolve;
+  });
+}
+
+export function releaseMileage() {
+  releaseMileageHold?.();
+  mileageHold = null;
+  releaseMileageHold = null;
 }
 
 export function fixtureSnapshot() {
@@ -55,6 +75,9 @@ async function dispatch(
   extra?: Pick<FixtureCall, "platform" | "deviceType" | "offline">
 ) {
   calls.push({ method, path });
+  if (method === "GET" && path.startsWith("/ShiftRosters/fill_mileage") && mileageHold) {
+    await mileageHold;
+  }
   const result = fixture.respond({
     method,
     path,

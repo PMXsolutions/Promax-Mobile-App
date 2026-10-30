@@ -213,6 +213,7 @@ export default function TripSummary({
         {/* Actions */}
         <View style={styles.actionsContainer}>
           <Pressable
+            accessibilityLabel="Save mileage"
             style={[styles.button, styles.primaryButton]}
             onPress={onSubmit}
             disabled={isLoading}
