@@ -81,7 +81,10 @@ const Activity = () => {
       bgColor={THEME.colors.brand}
       barStyle="light-content"
     >
-      <MiniLoader visible={isLoading} title="Loading Shifts..." />
+      <MiniLoader
+        visible={isLoading || isRefetching}
+        title="Loading Shifts..."
+      />
       <View
         style={[
           // styles.header,
@@ -97,23 +100,28 @@ const Activity = () => {
         />
         {/* <SearchBar openFilterModal={openFilterModal} /> */}
       </View>
-      {filteredShifts.length > 0 && (
-        <PendingShift num={filteredShifts.length} />
-      )}
-      <View style={styles.container}>
-        {error && (
+      {isLoading || isRefetching ? null : error ? (
+        <View style={styles.container}>
           <ErrorState
             message="Unable to load shift."
             onRetry={onRefresh}
-            icon="file-alert-outline" // Or any icon you want
+            icon="file-alert-outline"
           />
-        )}
-        <BeautifulCalendarAgenda
-          shiftData={agendaShifts}
-          isRefetching={isRefetching}
-          onRefresh={onRefresh}
-        />
-      </View>
+        </View>
+      ) : (
+        <>
+          {filteredShifts.length > 0 && (
+            <PendingShift num={filteredShifts.length} />
+          )}
+          <View style={styles.container}>
+            <BeautifulCalendarAgenda
+              shiftData={agendaShifts}
+              isRefetching={isRefetching}
+              onRefresh={onRefresh}
+            />
+          </View>
+        </>
+      )}
     </ScreenWrapper>
   );
 };

@@ -91,6 +91,7 @@ type FixtureState = {
   failNotificationDetail: boolean;
   mismatchNotification: boolean;
   failRoster: boolean;
+  emptyRoster: boolean;
   expireRoster: boolean;
   failReportDetail: boolean;
   failReportSave: boolean;
@@ -190,6 +191,7 @@ export function createIsolatedFixture() {
     failNotificationDetail: false,
     mismatchNotification: false,
     failRoster: false,
+    emptyRoster: false,
     expireRoster: false,
     failReportDetail: false,
     failReportSave: false,
@@ -267,6 +269,9 @@ export function createIsolatedFixture() {
           status: 500,
           body: { stored: false, message: "Could not load roster" },
         };
+      }
+      if (state.emptyRoster) {
+        return { status: 200, body: { shiftRoster: [] } };
       }
       return {
         status: 200,
@@ -656,6 +661,9 @@ export function createIsolatedFixture() {
     },
     armRosterFailure: () => {
       state.failRoster = true;
+    },
+    armEmptyRoster: () => {
+      state.emptyRoster = true;
     },
     armRosterExpiry: () => {
       state.expireRoster = true;
