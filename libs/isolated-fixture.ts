@@ -94,6 +94,7 @@ type FixtureState = {
   expireRoster: boolean;
   failReportDetail: boolean;
   failReportSave: boolean;
+  failCancel: boolean;
 };
 
 function unavailable(): FixtureResult {
@@ -190,6 +191,7 @@ export function createIsolatedFixture() {
     expireRoster: false,
     failReportDetail: false,
     failReportSave: false,
+    failCancel: false,
   };
 
   function respond(call: FixtureCall): FixtureResult {
@@ -330,6 +332,22 @@ export function createIsolatedFixture() {
       return {
         status: 200,
         body: { stored: true, startKm: decision.startKm, endKm: decision.endKm },
+      };
+    }
+
+    if (pathname === "/ShiftRosters/shift_cancellation" && call.method === "GET") {
+      if (!isFixtureUser(query.get("userId"))) return denied();
+      if (query.get("shiftid") !== String(FIXTURE_SESSION.shiftId)) return denied();
+      if (state.failCancel) {
+        state.failCancel = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not save cancellation" },
+        };
+      }
+      return {
+        status: 200,
+        body: { stored: true, message: "Cancellation saved" },
       };
     }
 
@@ -617,6 +635,9 @@ export function createIsolatedFixture() {
     },
     armReportSaveFailure: () => {
       state.failReportSave = true;
+    },
+    armCancelFailure: () => {
+      state.failCancel = true;
     },
     snapshot: () => ({
       instagram: state.instagram,
