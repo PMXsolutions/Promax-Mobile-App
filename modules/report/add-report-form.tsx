@@ -1,5 +1,5 @@
 import { Image, ScrollView, StyleSheet, Switch, View } from "react-native";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { THEME } from "@/constants/theme";
 import ReportFormHeader from "@/components/shift/report/report-header";
 import TextInput from "@/components/shared/input";
@@ -16,6 +16,8 @@ import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import MiniLoader from "@/components/shared/mini-loader";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import { reportSaveNeedsAcknowledge } from "@/libs/report-draft";
+import { useReportDraft } from "@/hooks/use-report-draft";
 
 const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   const { user, staff } = useAuthStore();
@@ -45,10 +47,22 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
     details_ifIsBehaviourConcerned: "",
   });
 
+  const hasLocalEdits = useRef(false);
+  const draft = useReportDraft({
+    kind: "create",
+    rosterId,
+    ownerStaffId: staff?.staffId,
+    ownerCompanyId: user?.companyId,
+    form,
+    setForm,
+    hasLocalEdits,
+  });
+
   const handleInputChange = <K extends keyof ReportFormState>(
     name: K,
     value: ReportFormState[K]
   ) => {
+    hasLocalEdits.current = true;
     setForm((prevState) => ({
       ...prevState,
       [name]: value,
@@ -67,7 +81,8 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
         reqBody
       );
     },
-    onSuccess: ({ data }) => {
+    onSuccess: async ({ data }) => {
+      await draft.markSaved();
       showMessage({
         message: data.message,
         type: "success",
@@ -81,7 +96,8 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
       ]);
     },
 
-    onError: (error: any) => {
+    onError: async (error: { response?: { data?: { message?: string } } }) => {
+      await draft.markFailed(reportSaveNeedsAcknowledge(error));
       showMessage({
         message: error.response?.data?.message || "Unable to submit report.",
         type: "danger",
@@ -89,7 +105,7 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
     },
   });
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = async () => {
     if (!useAuthStore.getState().isAuthenticated || !useAuthStore.getState().token) {
       showMessage({
         message:
@@ -117,7 +133,9 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
       return;
     }
 
-    onSubmit(); // Call mutation only if valid
+    const allowed = await draft.prepareSubmit();
+    if (!allowed) return;
+    onSubmit();
   };
 
   return (

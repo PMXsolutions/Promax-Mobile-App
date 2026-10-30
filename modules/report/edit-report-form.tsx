@@ -1,5 +1,5 @@
 import { Image, ScrollView, StyleSheet, Switch, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { reportQuery } from "@/hooks/queries/report";
 import { THEME } from "@/constants/theme";
 import ReportFormHeader from "@/components/shift/report/report-header";
@@ -16,6 +16,8 @@ import { router } from "expo-router";
 import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import { reportSaveNeedsAcknowledge } from "@/libs/report-draft";
+import { useReportDraft } from "@/hooks/use-report-draft";
 
 const EditReportForm = ({
   reportId,
@@ -51,36 +53,47 @@ const EditReportForm = ({
     isBehaviourConcerned: false,
     details_ifIsBehaviourConcerned: "",
   });
-  useEffect(() => {
-    if (data) {
-      setForm({
-        urgentMatters: data.urgentMatters || "",
-        medicationGiven: data.medicationGiven || "",
-        medicationSigned: data.medicationSigned || "",
-        medicationAvailable: data.medicationAvailable || "",
-        medicatioErrors: data.medicatioErrors || "",
-        isMealManagementPlan: data.isMealManagementPlan,
-        details_IfNotMealMaganagementPlan:
-          data.details_IfNotMealMaganagementPlan || "",
-        isDrinkingProblem: data.isDrinkingProblem,
-        details_IfProblemExist: data.details_IfProblemExist || "",
-        isHealthIssues: data.isHealthIssues,
-        details_IfHealthIssuesExist: data.details_IfHealthIssuesExist || "",
-        goal_Progress: data.goal_Progress || "",
-        contactFamily: data.contactFamily || "",
-        isIncident: data.isIncident,
-        details_IfIsIncipient: data.details_IfIsIncipient || "",
-        isBehaviourConcerned: data.isBehaviourConcerned,
-        details_ifIsBehaviourConcerned:
-          data.details_ifIsBehaviourConcerned || "",
-      });
-    }
+  const serverForm = useMemo(() => {
+    if (!data) return null;
+    return {
+      urgentMatters: data.urgentMatters || "",
+      medicationGiven: data.medicationGiven || "",
+      medicationSigned: data.medicationSigned || "",
+      medicationAvailable: data.medicationAvailable || "",
+      medicatioErrors: data.medicatioErrors || "",
+      isMealManagementPlan: data.isMealManagementPlan,
+      details_IfNotMealMaganagementPlan:
+        data.details_IfNotMealMaganagementPlan || "",
+      isDrinkingProblem: data.isDrinkingProblem,
+      details_IfProblemExist: data.details_IfProblemExist || "",
+      isHealthIssues: data.isHealthIssues,
+      details_IfHealthIssuesExist: data.details_IfHealthIssuesExist || "",
+      goal_Progress: data.goal_Progress || "",
+      contactFamily: data.contactFamily || "",
+      isIncident: data.isIncident,
+      details_IfIsIncipient: data.details_IfIsIncipient || "",
+      isBehaviourConcerned: data.isBehaviourConcerned,
+      details_ifIsBehaviourConcerned:
+        data.details_ifIsBehaviourConcerned || "",
+    };
   }, [data]);
+  const hasLocalEdits = useRef(false);
+  const draft = useReportDraft({
+    kind: "edit",
+    rosterId,
+    ownerStaffId: staff?.staffId,
+    ownerCompanyId: user?.companyId,
+    form,
+    setForm,
+    serverForm,
+    hasLocalEdits,
+  });
 
   const handleInputChange = <K extends keyof ShiftReport>(
     name: K,
     value: ShiftReport[K]
   ) => {
+    hasLocalEdits.current = true;
     setForm((prevState) => ({
       ...prevState,
       [name]: value,
@@ -99,7 +112,8 @@ const EditReportForm = ({
         reqBody as ShiftReport
       ); // Ensure this API call works
     },
-    onSuccess: ({ data }) => {
+    onSuccess: async ({ data }) => {
+      await draft.markSaved();
       showMessage({
         message: data.message,
         type: "success",
@@ -114,7 +128,8 @@ const EditReportForm = ({
       ]);
     },
 
-    onError: (error: any) => {
+    onError: async (error: { response?: { data?: { message?: string } } }) => {
+      await draft.markFailed(reportSaveNeedsAcknowledge(error));
       showMessage({
         message: error.response?.data?.message || "Unable to update report.",
         type: "danger",
@@ -122,7 +137,7 @@ const EditReportForm = ({
     },
   });
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = async () => {
     if (!useAuthStore.getState().isAuthenticated || !useAuthStore.getState().token) {
       showMessage({
         message:
@@ -150,7 +165,9 @@ const EditReportForm = ({
       return;
     }
 
-    onSubmit(); // Call the mutation only if valid
+    const allowed = await draft.prepareSubmit();
+    if (!allowed) return;
+    onSubmit();
   };
 
   return (
