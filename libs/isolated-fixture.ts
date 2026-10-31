@@ -89,6 +89,7 @@ type FixtureState = {
   failDocumentDetail: boolean;
   mismatchDocument: boolean;
   failNotificationList: boolean;
+  emptyNotificationList: boolean;
   failNotificationDetail: boolean;
   mismatchNotification: boolean;
   failRoster: boolean;
@@ -192,6 +193,7 @@ export function createIsolatedFixture() {
     failDocumentDetail: false,
     mismatchDocument: false,
     failNotificationList: false,
+    emptyNotificationList: false,
     failNotificationDetail: false,
     mismatchNotification: false,
     failRoster: false,
@@ -611,9 +613,19 @@ export function createIsolatedFixture() {
           body: { stored: false, message: "Could not load notifications" },
         };
       }
+      if (state.emptyNotificationList) {
+        return { status: 200, body: { message: [] } };
+      }
       return {
         status: 200,
-        body: { message: [fixtureNotification(FIXTURE_SESSION.companyId)] },
+        body: {
+          message: [
+            {
+              ...fixtureNotification(FIXTURE_SESSION.companyId),
+              dateCreated: "2026-10-22T09:00:00",
+            },
+          ],
+        },
       };
     }
 
@@ -686,6 +698,9 @@ export function createIsolatedFixture() {
     },
     armNotificationListFailure: () => {
       state.failNotificationList = true;
+    },
+    armEmptyNotificationList: () => {
+      state.emptyNotificationList = true;
     },
     armNotificationDetailFailure: () => {
       state.failNotificationDetail = true;

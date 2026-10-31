@@ -19,6 +19,7 @@ import HeaderWhite from "@/components/shared/header-no-bg";
 import ScreenWrapper from "@/components/wrapper/screen-wrapper";
 import MiniLoader from "@/components/shared/mini-loader";
 import EmptyData from "@/components/shared/empty-data";
+import ErrorState from "@/components/shared/error-state";
 import { formattedTime } from "@/helpers/shift-service";
 import { NotificationType } from "@/types/notication";
 import { notificationService } from "@/services/notification";
@@ -30,9 +31,8 @@ const Notification = () => {
 
   const {
     data: notificationData,
-    isLoading,
-    error,
-    isFetching: isRefetching,
+    isError,
+    isFetching,
     refetch,
   } = notificationQuery.useNotification(user?.userId as string);
   const queryClient = useQueryClient();
@@ -161,38 +161,43 @@ const Notification = () => {
 
   return (
     <ScreenWrapper barStyle="dark-content">
-      <MiniLoader visible={isLoading} title="Loading Notification" />
+      <MiniLoader visible={isFetching} title="Loading Notification" />
       <HeaderWhite name={"Notification"} />
 
       <View style={[styles.container]}>
-        {/* {filteredNotification && filteredNotification?.length <= 0 && (
-          <EmptyData />
-        )} */}
-        <FlatList
-          data={filteredNotification}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.messageId!.toString()}
-          style={styles.notificationList}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: 15,
-            gap: 2,
-            marginVertical: 10,
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              progressBackgroundColor="#fff"
-              colors={[THEME.colors.primary]}
-              onRefresh={onRefresh}
-            />
-          }
-          ListEmptyComponent={
-            <View style={{ marginTop: 150 }}>
-              <EmptyData />
-            </View>
-          }
-        />
+        {isFetching ? null : isError ? (
+          <ErrorState
+            message="Unable to load notifications."
+            onRetry={onRefresh}
+            icon="file-alert-outline"
+          />
+        ) : (
+          <FlatList
+            data={filteredNotification ?? []}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.messageId!.toString()}
+            style={styles.notificationList}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: 15,
+              gap: 2,
+              marginVertical: 10,
+            }}
+            refreshControl={
+              <RefreshControl
+                refreshing={isFetching}
+                progressBackgroundColor="#fff"
+                colors={[THEME.colors.primary]}
+                onRefresh={onRefresh}
+              />
+            }
+            ListEmptyComponent={
+              <View style={{ marginTop: 150 }}>
+                <EmptyData />
+              </View>
+            }
+          />
+        )}
 
         {/* Bottom Tab */}
         <View style={styles.bottomTab}>
