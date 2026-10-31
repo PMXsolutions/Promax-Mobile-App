@@ -6,7 +6,9 @@ import useAuthStore from "@/store/use-auth-store";
 import { profileQuery } from "@/hooks/queries/profile";
 import { StaffAvailability } from "@/types/users";
 import MiniLoader from "@/components/shared/mini-loader";
+import ErrorState from "@/components/shared/error-state";
 import DayAvailabilityForm from "@/modules/profile/availability-form";
+import { profileErrorStatus } from "@/libs/staff-record";
 import {
   availbilityMutation,
   FormEditType,
@@ -42,9 +44,18 @@ const AddAvailability = () => {
   const {
     data: availabilityData,
     isError,
-    isRefetching,
-    isPending: isLoading,
+    error,
+    isFetching,
+    refetch,
   } = profileQuery.useFetchAvailability(staff?.staffId as number);
+  const sessionStaffId = Number(staff?.staffId);
+  const hasStaff = Number.isFinite(sessionStaffId) && sessionStaffId > 0;
+  const denied = !hasStaff || profileErrorStatus(error) === 403;
+  const loadError = hasStaff && isError && profileErrorStatus(error) !== 403;
+  const loading = hasStaff && isFetching;
+  const onRefresh = async () => {
+    await refetch();
+  };
 
   const [availableHours, setAvailableHours] = useState<DaySlots>({});
   const [overlapErrors, setOverlapErrors] = useState<{
@@ -284,25 +295,39 @@ const AddAvailability = () => {
           translateTitle={translateTitle}
         />
       </View>
-      <MiniLoader visible={isLoading} title="Loading Availability" />
+      <MiniLoader visible={loading} title="Loading Availability" />
       <View style={styles.container}>
-        <FlatList
-          data={daysOfWeek}
-          keyExtractor={(item) => item}
-          contentContainerStyle={{ ...styles.content, paddingBottom: 10 }}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item: day, index }) => (
-            <DayAvailabilityForm
-              day={day}
-              availableHours={availableHours}
-              handleAddTimeSlot={handleAddTimeSlot}
-              handleChangeTime={handleChangeTime}
-              handleDeleteTimeSlot={handleDeleteTimeSlot}
-              overlapErrors={overlapErrors}
-              index={index}
-            />
-          )}
-        />
+        {loading ? null : denied ? (
+          <ErrorState
+            message="Your staff profile is not available."
+            onRetry={onRefresh}
+            icon="account-alert-outline"
+          />
+        ) : loadError ? (
+          <ErrorState
+            message="Unable to load availability."
+            onRetry={onRefresh}
+            icon="account-alert-outline"
+          />
+        ) : (
+          <FlatList
+            data={daysOfWeek}
+            keyExtractor={(item) => item}
+            contentContainerStyle={{ ...styles.content, paddingBottom: 10 }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item: day, index }) => (
+              <DayAvailabilityForm
+                day={day}
+                availableHours={availableHours}
+                handleAddTimeSlot={handleAddTimeSlot}
+                handleChangeTime={handleChangeTime}
+                handleDeleteTimeSlot={handleDeleteTimeSlot}
+                overlapErrors={overlapErrors}
+                index={index}
+              />
+            )}
+          />
+        )}
       </View>
     </ScreenWrapper>
   );
