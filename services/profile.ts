@@ -9,7 +9,12 @@ const fetchStaffProfile = async (staffId: number) => {
     const { data } = await axiosInstance.get(`/Staffs/${staffId}`);
     return data;
   } catch (error) {
-    throw new Error("Unable to fetch shift details");
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    const wrapped = new Error("Unable to fetch shift details") as Error & {
+      status?: number;
+    };
+    if (typeof status === "number") wrapped.status = status;
+    throw wrapped;
   }
 };
 const fetchCompanyData = async (companyId: number) => {
