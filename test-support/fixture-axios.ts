@@ -104,6 +104,10 @@ export function armNotificationListFailure() {
   fixture.armNotificationListFailure();
 }
 
+export function armEmptyNotificationList() {
+  fixture.armEmptyNotificationList();
+}
+
 export function armNotificationDetailFailure() {
   fixture.armNotificationDetailFailure();
 }
