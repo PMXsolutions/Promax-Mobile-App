@@ -24,8 +24,7 @@ const Report = () => {
   const {
     data: report,
     isError: error,
-    isRefetching,
-    isPending: isLoading,
+    isFetching,
     refetch,
   } = reportQuery.useFetchStaffReport(staff?.staffId!);
 
@@ -42,7 +41,7 @@ const Report = () => {
 
   const reportData = React.useMemo(() => {
     return reportSorted.filter((item) =>
-      item?.shiftRoster?.clients
+      (item?.shiftRoster?.clients ?? "")
         .toLowerCase()
         .includes(searchTerm.trim().toLowerCase())
     );
@@ -67,7 +66,7 @@ const Report = () => {
       bgColor={THEME.colors.brand}
       barStyle="light-content"
     >
-      <MiniLoader visible={isLoading} />
+      <MiniLoader visible={isFetching} />
       <View
         style={[
           // styles.header,
@@ -91,11 +90,11 @@ const Report = () => {
             onSearch={handleSearch}
           />
         </View>
-        {error ? (
+        {isFetching ? null : error ? (
           <ErrorState
             message="Unable to load shift reports."
             onRetry={onRefresh}
-            icon="file-alert-outline" // Or any icon you want
+            icon="file-alert-outline"
           />
         ) : (
           <>
@@ -109,7 +108,7 @@ const Report = () => {
                 estimatedItemSize={88}
                 refreshControl={
                   <RefreshControl
-                    refreshing={isRefetching}
+                    refreshing={isFetching}
                     progressBackgroundColor={"#fff"}
                     colors={[THEME.colors.primary]}
                     onRefresh={onRefresh}
@@ -118,9 +117,9 @@ const Report = () => {
               />
             )}
 
-            {reportData?.length <= 0 &&
-              searchTerm.trim().length < 1 &&
-              !isLoading && <EmptyData />}
+            {reportData?.length <= 0 && searchTerm.trim().length < 1 && (
+              <EmptyData />
+            )}
             {reportData?.length <= 0 && searchTerm.trim().length > 0 && (
               <View
                 style={{

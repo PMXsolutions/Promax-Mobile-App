@@ -54,9 +54,8 @@ const Document = () => {
   const {
     data: documentData,
     isError: error,
-    isRefetching,
+    isFetching,
     refetch,
-    isPending: isLoading,
   } = reportQuery.useFetchStaffDocument(staff?.staffId as number);
   const onRefresh = async () => {
     await refetch();
@@ -130,7 +129,7 @@ const Document = () => {
       bgColor={THEME.colors.brand}
       barStyle="light-content"
     >
-      <MiniLoader visible={isLoading} />
+      <MiniLoader visible={isFetching} />
       <View
         style={[
           // styles.header,
@@ -154,7 +153,7 @@ const Document = () => {
             onSearch={handleSearch}
           />
         </View>
-        {!staff?.staffId ? (
+        {isFetching ? null : !staff?.staffId ? (
           <ErrorState
             message="Your staff profile is not available, so documents cannot load."
             onRetry={onRefresh}
@@ -164,7 +163,7 @@ const Document = () => {
           <ErrorState
             message="Unable to load documents."
             onRetry={onRefresh}
-            icon="file-alert-outline" // Or any icon you want
+            icon="file-alert-outline"
           />
         ) : (
           <>
@@ -178,7 +177,7 @@ const Document = () => {
                 showsVerticalScrollIndicator={false}
                 refreshControl={
                   <RefreshControl
-                    refreshing={isRefetching}
+                    refreshing={isFetching}
                     progressBackgroundColor={"#fff"}
                     colors={[THEME.colors.primary]}
                     onRefresh={onRefresh}
@@ -187,9 +186,8 @@ const Document = () => {
               />
             )}
 
-            {!isLoading &&
-              documentData &&
-              documentData?.length <= 0 &&
+            {documentData &&
+              documentData.length <= 0 &&
               searchTerm.trim().length < 1 && <EmptyData />}
             {docData?.length <= 0 && searchTerm.trim().length > 0 && (
               <View
