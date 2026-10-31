@@ -8,16 +8,72 @@ import { Image } from "react-native";
 import useAuthStore from "@/store/use-auth-store";
 import { profileQuery } from "@/hooks/queries/profile";
 import Text from "@/components/shared/text";
+import ErrorState from "@/components/shared/error-state";
+import EmptyData from "@/components/shared/empty-data";
+import Loader from "@/components/shared/loader";
+import {
+  profileDetailsEmpty,
+  profileErrorStatus,
+  profileVisibleToSession,
+} from "@/libs/staff-record";
 
 const IdentityCard = () => {
   const { staff, user } = useAuthStore();
 
-  const { data: staffData } = profileQuery.useFetchStaffProfile(
-    staff?.staffId as number
-  );
+  const {
+    data: staffData,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = profileQuery.useFetchStaffProfile(staff?.staffId as number);
   const { data: companyData } = profileQuery.useFetchCompanyData(
     user?.companyId as number
   );
+  const sessionStaffId = Number(staff?.staffId);
+  const hasStaff = Number.isFinite(sessionStaffId) && sessionStaffId > 0;
+  const denied =
+    !hasStaff ||
+    profileErrorStatus(error) === 403 ||
+    (staffData != null &&
+      !profileVisibleToSession(staffData, {
+        staffId: sessionStaffId,
+        companyId: user?.companyId,
+      }));
+
+  if (hasStaff && isFetching) {
+    return (
+      <Loader name="2-curves" color={THEME.colors.secondary} title="Loading..." />
+    );
+  }
+
+  if (denied || isError || !staffData) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Identity Card"} />
+        <ErrorState
+          message={
+            denied
+              ? "Your staff profile is not available."
+              : "Identity card could not be loaded."
+          }
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      </ScreenWrapper>
+    );
+  }
+
+  if (profileDetailsEmpty(staffData)) {
+    return (
+      <ScreenWrapper barStyle="dark-content">
+        <HeaderWhite name={"Identity Card"} />
+        <EmptyData />
+      </ScreenWrapper>
+    );
+  }
+
   return (
     <ScreenWrapper barStyle="dark-content">
       <HeaderWhite name={"Identity Card"} />
