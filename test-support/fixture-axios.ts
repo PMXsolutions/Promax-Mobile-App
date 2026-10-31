@@ -28,6 +28,9 @@ let reportHoldPath = "";
 let staffHold: Promise<void> | null = null;
 let releaseStaffHold: (() => void) | null = null;
 let staffHoldPath = "";
+let availabilityHold: Promise<void> | null = null;
+let releaseAvailabilityHold: (() => void) | null = null;
+let availabilityHoldPath = "";
 
 export function resetFixtureBridge() {
   fixture = createIsolatedFixture();
@@ -46,6 +49,9 @@ export function resetFixtureBridge() {
   staffHold = null;
   releaseStaffHold = null;
   staffHoldPath = "";
+  availabilityHold = null;
+  releaseAvailabilityHold = null;
+  availabilityHoldPath = "";
 }
 
 export function armStaffEditFailure() {
@@ -76,6 +82,28 @@ export function releaseStaffProfile() {
   staffHold = null;
   releaseStaffHold = null;
   staffHoldPath = "";
+}
+
+export function armAvailabilityFailure() {
+  fixture.armAvailabilityFailure();
+}
+
+export function armAvailabilitySlot() {
+  fixture.armAvailabilitySlot();
+}
+
+export function holdNextAvailability() {
+  availabilityHoldPath = "/StaffAvailibilities/get_staff_availabilities";
+  availabilityHold = new Promise<void>((resolve) => {
+    releaseAvailabilityHold = resolve;
+  });
+}
+
+export function releaseAvailability() {
+  releaseAvailabilityHold?.();
+  availabilityHold = null;
+  releaseAvailabilityHold = null;
+  availabilityHoldPath = "";
 }
 
 export function armMileageFailure() {
@@ -306,6 +334,14 @@ async function dispatch(
     !path.includes("/edit/")
   ) {
     await staffHold;
+  }
+  if (
+    method === "GET" &&
+    availabilityHold &&
+    availabilityHoldPath.length > 0 &&
+    path.startsWith(availabilityHoldPath)
+  ) {
+    await availabilityHold;
   }
   const result = fixture.respond({
     method,

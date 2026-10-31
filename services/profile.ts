@@ -117,7 +117,12 @@ const fetchStaffAvailability = async (staffId: number) => {
 
     return data;
   } catch (error) {
-    throw new Error("Unable to fetch staff availabilty");
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    const wrapped = new Error("Unable to fetch staff availabilty") as Error & {
+      status?: number;
+    };
+    if (typeof status === "number") wrapped.status = status;
+    throw wrapped;
   }
 };
 const submitStaffAvailability = async (formInfo: FormSubmitType) => {

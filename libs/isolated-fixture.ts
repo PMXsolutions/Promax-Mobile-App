@@ -105,6 +105,8 @@ type FixtureState = {
   failCancel: boolean;
   failShiftDetail: boolean;
   mismatchShiftDetail: boolean;
+  failAvailability: boolean;
+  availabilitySlot: boolean;
 };
 
 function unavailable(): FixtureResult {
@@ -212,6 +214,8 @@ export function createIsolatedFixture() {
     failCancel: false,
     failShiftDetail: false,
     mismatchShiftDetail: false,
+    failAvailability: false,
+    availabilitySlot: false,
   };
 
   function respond(call: FixtureCall): FixtureResult {
@@ -639,6 +643,26 @@ export function createIsolatedFixture() {
       call.method === "GET"
     ) {
       if (!isFixtureStaff(query.get("staffId"))) return denied();
+      if (state.failAvailability) {
+        state.failAvailability = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load availability" },
+        };
+      }
+      if (state.availabilitySlot) {
+        return {
+          status: 200,
+          body: [
+            {
+              staffAvailibilityId: 900001,
+              days: "Monday",
+              fromTimeOfDay: "09:00",
+              toTimeOfDay: "17:00",
+            },
+          ],
+        };
+      }
       return { status: 200, body: [] };
     }
 
@@ -802,6 +826,12 @@ export function createIsolatedFixture() {
     },
     armShiftDetailMismatch: () => {
       state.mismatchShiftDetail = true;
+    },
+    armAvailabilityFailure: () => {
+      state.failAvailability = true;
+    },
+    armAvailabilitySlot: () => {
+      state.availabilitySlot = true;
     },
     snapshot: () => ({
       instagram: state.instagram,
