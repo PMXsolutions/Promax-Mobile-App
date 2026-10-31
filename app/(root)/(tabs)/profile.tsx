@@ -25,6 +25,12 @@ import ModalPop from "@/components/shared/modal";
 import Button from "@/components/shared/button";
 import Constants from "expo-constants";
 import ErrorState from "@/components/shared/error-state";
+import EmptyData from "@/components/shared/empty-data";
+import {
+  profileDetailsEmpty,
+  profileErrorStatus,
+  profileVisibleToSession,
+} from "@/libs/staff-record";
 
 const Profile = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -40,18 +46,29 @@ const Profile = () => {
     outputRange: [0, 40],
     extrapolate: "clamp",
   });
-  const { staff, logout } = useAuthStore();
+  const { staff, user, logout } = useAuthStore();
 
   const {
     data: staffData,
-    isLoading,
     isError,
     error,
+    isFetching,
     refetch,
   } = profileQuery.useFetchStaffProfile(staff?.staffId as number);
   const onRefresh = async () => {
     await refetch();
   };
+  const sessionStaffId = Number(staff?.staffId);
+  const hasStaff = Number.isFinite(sessionStaffId) && sessionStaffId > 0;
+  const denied =
+    !hasStaff ||
+    profileErrorStatus(error) === 403 ||
+    (staffData != null &&
+      !profileVisibleToSession(staffData, {
+        staffId: sessionStaffId,
+        companyId: user?.companyId,
+      }));
+  const loadError = hasStaff && isError && profileErrorStatus(error) !== 403;
 
   const appVersion = Constants.expoConfig?.version;
   return (
@@ -60,7 +77,7 @@ const Profile = () => {
       bgColor={THEME.colors.brand}
       barStyle="light-content"
     >
-      <MiniLoader visible={isLoading} />
+      <MiniLoader visible={hasStaff && isFetching} />
       <View
         style={[
           // styles.header,
@@ -79,21 +96,25 @@ const Profile = () => {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {!staff?.staffId || isError ? (
+          {hasStaff && isFetching ? null : denied ? (
             <ErrorState
-              message={
-                !staff?.staffId
-                  ? "Your staff profile is not available."
-                  : error instanceof Error
-                    ? error.message
-                    : "Unable to load profile."
-              }
+              message="Your staff profile is not available."
+              onRetry={onRefresh}
+              icon="account-alert-outline"
+            />
+          ) : loadError ? (
+            <ErrorState
+              message="Unable to load profile."
               onRetry={onRefresh}
               icon="account-alert-outline"
             />
           ) : (
             <>
-              <ProfileHeader data={staffData!} />
+              {profileDetailsEmpty(staffData) ? (
+                <EmptyData />
+              ) : (
+                <ProfileHeader data={staffData!} />
+              )}
               <View style={{ paddingVertical: 8, rowGap: THEME.spacing.sm }}>
                 {labelArr.map((item, index) => (
                   <ProfileLabel

@@ -83,6 +83,9 @@ type FixtureState = {
   instagram: string;
   tokens: { token: string; userId: string; companyId: number }[];
   failStaffEdit: boolean;
+  failStaffProfile: boolean;
+  emptyStaffProfile: boolean;
+  mismatchStaffProfile: boolean;
   failMileage: boolean;
   failDocumentList: boolean;
   emptyDocumentList: boolean;
@@ -187,6 +190,9 @@ export function createIsolatedFixture() {
     instagram: "fixture-handle",
     tokens: [],
     failStaffEdit: false,
+    failStaffProfile: false,
+    emptyStaffProfile: false,
+    mismatchStaffProfile: false,
     failMileage: false,
     failDocumentList: false,
     emptyDocumentList: false,
@@ -536,11 +542,57 @@ export function createIsolatedFixture() {
     }
 
     if (pathname === `/Staffs/${FIXTURE_SESSION.staffId}` && call.method === "GET") {
+      if (state.failStaffProfile) {
+        state.failStaffProfile = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load profile" },
+        };
+      }
+      if (state.emptyStaffProfile) {
+        return {
+          status: 200,
+          body: {
+            staffId: FIXTURE_SESSION.staffId,
+            companyId: FIXTURE_SESSION.companyId,
+            fullName: "",
+            email: "",
+            phoneNumber: "",
+            employmentType: "",
+            payRate: null,
+            dateJoined: "",
+            salary: null,
+            level: "",
+            instagram: state.instagram,
+            linkedIn: "",
+            facebook: "",
+            youtube: "",
+            twitter: "",
+          },
+        };
+      }
+      const companyId = state.mismatchStaffProfile ? 4 : FIXTURE_SESSION.companyId;
       return {
         status: 200,
         body: {
           staffId: FIXTURE_SESSION.staffId,
-          companyId: FIXTURE_SESSION.companyId,
+          companyId,
+          fullName: "Fixture Staff",
+          email: "fixture.staff@example.invalid",
+          phoneNumber: "0400000000",
+          gender: "Fixture",
+          country: "Australia",
+          state: "NSW",
+          city: "Sydney",
+          address: "1 Fixture Street",
+          suburb: "Fixture",
+          postcode: "2000",
+          dateOfBirth: "1990-01-01",
+          employmentType: "Casual",
+          payRate: 32,
+          dateJoined: "2026-01-01",
+          salary: 0,
+          level: "1",
           instagram: state.instagram,
           linkedIn: "",
           facebook: "",
@@ -680,6 +732,15 @@ export function createIsolatedFixture() {
     respond,
     armStaffEditFailure: () => {
       state.failStaffEdit = true;
+    },
+    armStaffProfileFailure: () => {
+      state.failStaffProfile = true;
+    },
+    armEmptyStaffProfile: () => {
+      state.emptyStaffProfile = true;
+    },
+    armStaffProfileMismatch: () => {
+      state.mismatchStaffProfile = true;
     },
     armMileageFailure: () => {
       state.failMileage = true;

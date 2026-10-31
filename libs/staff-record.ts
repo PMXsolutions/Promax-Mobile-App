@@ -115,3 +115,35 @@ export function shiftVisibleToSession(
   if (!Number.isFinite(sessionCompany) || sessionCompany <= 0) return false;
   return companyId === sessionCompany;
 }
+
+export function profileVisibleToSession(
+  profile: { staffId?: number | null; companyId?: number | null } | null | undefined,
+  session: { staffId?: number | null; companyId?: number | null }
+): boolean {
+  if (!profile) return false;
+
+  const staffId = Number(profile.staffId);
+  const sessionStaff = Number(session.staffId);
+  if (!Number.isFinite(staffId) || staffId <= 0) return false;
+  if (!Number.isFinite(sessionStaff) || staffId !== sessionStaff) return false;
+
+  const companyId = Number(profile.companyId);
+  const sessionCompany = Number(session.companyId);
+  if (!Number.isFinite(companyId) || companyId <= 0) return false;
+  if (!Number.isFinite(sessionCompany) || sessionCompany <= 0) return false;
+  return companyId === sessionCompany;
+}
+
+export function profileErrorStatus(error: unknown): number | undefined {
+  if (!error || typeof error !== "object" || !("status" in error)) return undefined;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === "number" ? status : undefined;
+}
+
+export function profileDetailsEmpty(
+  profile: { fullName?: string | null; email?: string | null } | null | undefined
+): boolean {
+  const name = profile?.fullName?.trim() ?? "";
+  const email = profile?.email?.trim() ?? "";
+  return name.length === 0 && email.length === 0;
+}

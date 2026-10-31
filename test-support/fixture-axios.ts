@@ -25,6 +25,9 @@ let notificationHoldPath = "";
 let reportHold: Promise<void> | null = null;
 let releaseReportHold: (() => void) | null = null;
 let reportHoldPath = "";
+let staffHold: Promise<void> | null = null;
+let releaseStaffHold: (() => void) | null = null;
+let staffHoldPath = "";
 
 export function resetFixtureBridge() {
   fixture = createIsolatedFixture();
@@ -40,10 +43,39 @@ export function resetFixtureBridge() {
   reportHold = null;
   releaseReportHold = null;
   reportHoldPath = "";
+  staffHold = null;
+  releaseStaffHold = null;
+  staffHoldPath = "";
 }
 
 export function armStaffEditFailure() {
   fixture.armStaffEditFailure();
+}
+
+export function armStaffProfileFailure() {
+  fixture.armStaffProfileFailure();
+}
+
+export function armEmptyStaffProfile() {
+  fixture.armEmptyStaffProfile();
+}
+
+export function armStaffProfileMismatch() {
+  fixture.armStaffProfileMismatch();
+}
+
+export function holdNextStaffProfile() {
+  staffHoldPath = `/Staffs/${FIXTURE_SESSION.staffId}`;
+  staffHold = new Promise<void>((resolve) => {
+    releaseStaffHold = resolve;
+  });
+}
+
+export function releaseStaffProfile() {
+  releaseStaffHold?.();
+  staffHold = null;
+  releaseStaffHold = null;
+  staffHoldPath = "";
 }
 
 export function armMileageFailure() {
@@ -265,6 +297,15 @@ async function dispatch(
   }
   if (reportHold && path.startsWith(reportHoldPath)) {
     await reportHold;
+  }
+  if (
+    method === "GET" &&
+    staffHold &&
+    staffHoldPath.length > 0 &&
+    path.startsWith(staffHoldPath) &&
+    !path.includes("/edit/")
+  ) {
+    await staffHold;
   }
   const result = fixture.respond({
     method,

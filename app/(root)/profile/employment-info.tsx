@@ -7,34 +7,48 @@ import { profileQuery } from "@/hooks/queries/profile";
 import { THEME } from "@/constants/theme";
 import ProfileTag from "@/components/profile/profile-tag";
 import { displaySydneyDate } from "@/libs/display-date";
+import {
+  profileErrorStatus,
+  profileVisibleToSession,
+} from "@/libs/staff-record";
 import ErrorState from "@/components/shared/error-state";
 import Loader from "@/components/shared/loader";
 
 const EmploymentInfo = () => {
-  const { staff } = useAuthStore();
+  const { staff, user } = useAuthStore();
 
   const {
     data: staffData,
-    isLoading,
+    isFetching,
     isError,
     error,
     refetch,
   } = profileQuery.useFetchStaffProfile(staff?.staffId as number);
+  const sessionStaffId = Number(staff?.staffId);
+  const hasStaff = Number.isFinite(sessionStaffId) && sessionStaffId > 0;
+  const denied =
+    !hasStaff ||
+    profileErrorStatus(error) === 403 ||
+    (staffData != null &&
+      !profileVisibleToSession(staffData, {
+        staffId: sessionStaffId,
+        companyId: user?.companyId,
+      }));
 
-  if (isLoading) {
+  if (hasStaff && isFetching) {
     return (
       <Loader name="2-curves" color={THEME.colors.secondary} title="Loading..." />
     );
   }
 
-  if (isError || !staffData) {
+  if (denied || isError || !staffData) {
     return (
       <ScreenWrapper barStyle="dark-content">
         <HeaderWhite name={"Employment Details"} />
         <ErrorState
           message={
-            error instanceof Error
-              ? error.message
+            denied
+              ? "Your staff profile is not available."
               : "Employment details could not be loaded."
           }
           onRetry={() => {
