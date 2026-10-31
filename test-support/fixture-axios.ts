@@ -66,6 +66,10 @@ export function armDocumentListFailure() {
   fixture.armDocumentListFailure();
 }
 
+export function armEmptyDocumentList() {
+  fixture.armEmptyDocumentList();
+}
+
 export function armDocumentDetailFailure() {
   fixture.armDocumentDetailFailure();
 }
@@ -142,6 +146,14 @@ export function armRosterExpiry() {
   fixture.armRosterExpiry();
 }
 
+export function armStaffReportListFailure() {
+  fixture.armStaffReportListFailure();
+}
+
+export function armEmptyStaffReports() {
+  fixture.armEmptyStaffReports();
+}
+
 export function armReportDetailFailure() {
   fixture.armReportDetailFailure();
 }
@@ -171,6 +183,10 @@ function holdReport(path: string) {
 
 export function holdNextRoster() {
   holdReport("/ShiftRosters/get_shifts_by_user");
+}
+
+export function holdNextStaffReports() {
+  holdReport("/ShiftReports/get_staff_shiftreports");
 }
 
 export function holdNextReportDetail() {

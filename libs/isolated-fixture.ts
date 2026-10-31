@@ -85,6 +85,7 @@ type FixtureState = {
   failStaffEdit: boolean;
   failMileage: boolean;
   failDocumentList: boolean;
+  emptyDocumentList: boolean;
   failDocumentDetail: boolean;
   mismatchDocument: boolean;
   failNotificationList: boolean;
@@ -93,6 +94,8 @@ type FixtureState = {
   failRoster: boolean;
   emptyRoster: boolean;
   expireRoster: boolean;
+  failStaffReports: boolean;
+  emptyStaffReports: boolean;
   failReportDetail: boolean;
   failReportSave: boolean;
   failCancel: boolean;
@@ -185,6 +188,7 @@ export function createIsolatedFixture() {
     failStaffEdit: false,
     failMileage: false,
     failDocumentList: false,
+    emptyDocumentList: false,
     failDocumentDetail: false,
     mismatchDocument: false,
     failNotificationList: false,
@@ -193,6 +197,8 @@ export function createIsolatedFixture() {
     failRoster: false,
     emptyRoster: false,
     expireRoster: false,
+    failStaffReports: false,
+    emptyStaffReports: false,
     failReportDetail: false,
     failReportSave: false,
     failCancel: false,
@@ -409,9 +415,31 @@ export function createIsolatedFixture() {
 
     if (pathname === "/ShiftReports/get_staff_shiftreports" && call.method === "GET") {
       if (!isFixtureStaff(query.get("staffId"))) return denied();
+      if (state.failStaffReports) {
+        state.failStaffReports = false;
+        return {
+          status: 500,
+          body: { stored: false, message: "Could not load shift reports" },
+        };
+      }
+      if (state.emptyStaffReports) {
+        return { status: 200, body: [] };
+      }
       return {
         status: 200,
-        body: [{ id: FIXTURE_SESSION.reportId, staffId: FIXTURE_SESSION.staffId }],
+        body: [
+          {
+            id: FIXTURE_SESSION.reportId,
+            shiftReportId: FIXTURE_SESSION.reportId,
+            staffId: FIXTURE_SESSION.staffId,
+            dateCreated: "2026-10-22T09:00:00",
+            dateModified: "2026-10-22T09:00:00",
+            shiftRoster: {
+              dateCreated: "2026-10-22T09:00:00",
+              clients: "Fixture client",
+            },
+          },
+        ],
       };
     }
 
@@ -457,6 +485,9 @@ export function createIsolatedFixture() {
           status: 500,
           body: { stored: false, message: "Could not load documents" },
         };
+      }
+      if (state.emptyDocumentList) {
+        return { status: 200, body: { staffDocuments: [] } };
       }
       return {
         status: 200,
@@ -644,6 +675,9 @@ export function createIsolatedFixture() {
     armDocumentListFailure: () => {
       state.failDocumentList = true;
     },
+    armEmptyDocumentList: () => {
+      state.emptyDocumentList = true;
+    },
     armDocumentDetailFailure: () => {
       state.failDocumentDetail = true;
     },
@@ -667,6 +701,12 @@ export function createIsolatedFixture() {
     },
     armRosterExpiry: () => {
       state.expireRoster = true;
+    },
+    armStaffReportListFailure: () => {
+      state.failStaffReports = true;
+    },
+    armEmptyStaffReports: () => {
+      state.emptyStaffReports = true;
     },
     armReportDetailFailure: () => {
       state.failReportDetail = true;
