@@ -14,7 +14,7 @@ import {
 
 const baseConfig = {
   expo: {
-    owner: "promax",
+    owner: "promax-it-solutions",
     version: "1.1.0",
     extra: {
       eas: { projectId: "70d0de46-7142-4d9a-a7b5-a089e9ea2879" },
@@ -48,6 +48,11 @@ const iosConfirmed = assessStoreIdentity(iosConfirmedConfig, {
   iosConfirmation: "require",
 });
 assert.deepEqual(iosConfirmed.errors, []);
+
+const oldOwner = structuredClone(baseConfig);
+oldOwner.expo.owner = "promax";
+const ownerMismatch = assessStoreIdentity(oldOwner);
+assert.match(ownerMismatch.errors.join("\n"), /promax-it-solutions/);
 
 const redacted = redactAssignments("EXPO_TOKEN=secret\nOK");
 assert.equal(redacted.includes("secret"), false);
