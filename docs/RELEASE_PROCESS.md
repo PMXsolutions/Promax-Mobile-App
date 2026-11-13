@@ -6,8 +6,7 @@ This process does not mean the app is ready for a public release. Confirm all of
 
 - The 22 September 2026 Google Play policy rejection has been read in Play Console and the cited policy issues are resolved.
 - QA has accepted the shift, trip, document, and report behaviour on the exact build being promoted. Commit `413d421` on `main` records code changes for those areas and for Play sign-in controls. This deployment work did not retest them.
-- The Android package in the build is the Play application ID `au.com.promaxsolutions.promaxcare`. Today the repository still has `com.tobby95.pmaxapp`, so the Android workflow stops before `eas build`.
-- The iOS bundle identifier has been checked in Apple Developer and stored in the GitHub variable `EXPECTED_IOS_BUNDLE_IDENTIFIER`.
+- The build application ID is `au.com.promaxsolutions.promaxcare` on both Google Play and TestFlight. That is the package and bundle identifier in `app.json`.
 
 Setup for tokens and store credentials is in `docs/GITHUB_DEPLOYMENT_SETUP.md`.
 
@@ -64,7 +63,7 @@ There is no separate dev-store workflow. The `development` and `preview` EAS pro
 
 The workflow is `.github/workflows/android-build.yml`.
 
-1. Resolve the package mismatch first. In Play Console, open the existing app and confirm its application ID is `au.com.promaxsolutions.promaxcare`. Update the Expo Android package to that ID only after this confirmation. The workflow compares the resolved package with that ID and stops when they differ.
+1. The Expo Android package is `au.com.promaxsolutions.promaxcare`. The workflow stops before `eas build` if the resolved package is anything else. EAS Android credentials and `google-services.json` must be for that same application ID.
 2. Configure the EAS keystore, Play service account, Maps key, and `GOOGLE_SERVICES_JSON` as described in the setup guide.
 3. Push to `main`, or run the workflow manually from `main`.
 4. The build command is:
@@ -102,8 +101,8 @@ Internal testing uses the same AAB that a later production promotion submits. Do
 
 The workflow is `.github/workflows/ios-build.yml`. The runner is `macos-latest` because the workflow is the iOS orchestration job. It does not run `xcodebuild`. Compilation and signing happen in EAS.
 
-1. In Apple Developer, confirm the bundle ID for this app. Set the GitHub variable `EXPECTED_IOS_BUNDLE_IDENTIFIER` to that value. The job stops before `eas build` when the variable is missing or does not match the Expo config. The repository currently contains `com.promax-app`; that string is not evidence that Apple has registered it.
-2. Confirm an App Store Connect app already exists for that bundle ID, and that the EAS iOS credentials include the App Store Connect API key.
+1. The Expo iOS bundle identifier is `au.com.promaxsolutions.promaxcare`. The workflow stops before `eas build` if the resolved bundle identifier is anything else.
+2. Confirm the App Store Connect app and the EAS iOS credentials use that bundle ID. EAS submit does not create the Apple app.
 3. Set `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` on the EAS production environment. iOS does not currently load `GoogleService-Info.plist`.
 4. Push to `main` or run the workflow from `main`.
 5. The build command is:
@@ -199,8 +198,8 @@ A rollback that needs a code change is a new production-profile build, a new tes
 | --- | --- |
 | `EXPO_TOKEN GitHub repository secret is not set` | Add the repository secret. Environment-only secrets are invisible to the build workflows. |
 | Expo returns 401 or "not logged in" | The token is revoked, belongs to the wrong account, or lacks access to owner `promax`. Rotate it as in the setup guide. |
-| Android package differs from `au.com.promaxsolutions.promaxcare` | Expected until Play Console confirms the application ID and the Expo package is updated to match. The job stops before `eas build` so it does not consume a `versionCode`. |
-| `EXPECTED_IOS_BUNDLE_IDENTIFIER is not set` | Set the GitHub variable after reading the identifier in Apple Developer. |
+| Android package or iOS bundle is not `au.com.promaxsolutions.promaxcare` | The job stops before `eas build`. Both stores use that application ID. |
+| Credential lookup uses an old application ID | Credentials saved for `com.tobby95.pmaxapp` or `com.promax-app` are not used. Assign the Play upload key and Apple profile for `au.com.promaxsolutions.promaxcare` in EAS. |
 | Missing `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` or `GOOGLE_SERVICES_JSON` | Create them on the EAS production environment. The checker reports names only. |
 | `google-services.json` missing during the EAS build | The file is not in git and is not uploaded. The secret file variable must exist, and `app.config.js` must keep using `GOOGLE_SERVICES_JSON`. |
 | Credential or keystore error with `--freeze-credentials` | CI will not create credentials. Configure them with `npx eas-cli credentials` and run again. Do not remove `--freeze-credentials` to get past a missing key. |

@@ -24,7 +24,7 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "supportsTablet": false,
-      "bundleIdentifier": "com.promax-app",
+      "bundleIdentifier": "au.com.promaxsolutions.promaxcare",
       "runtimeVersion": {
         "policy": "appVersion"
       }
@@ -39,7 +39,7 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ],
-      "package": "com.tobby95.pmaxapp",
+      "package": "au.com.promaxsolutions.promaxcare",
       "googleServicesFile": "./google-services.json"
     },
     "web": {

@@ -153,7 +153,6 @@ jobs:
       EXPO_NO_TELEMETRY: "1"
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
       EAS_BUILD_ID: ${{ inputs.ios_build_id }}
-      EXPECTED_IOS_BUNDLE_IDENTIFIER: ${{ vars.EXPECTED_IOS_BUNDLE_IDENTIFIER }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
