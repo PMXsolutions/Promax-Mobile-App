@@ -1,4 +1,5 @@
 import { StyleSheet, View, Alert } from "react-native";
+import Text from "@/components/shared/text";
 import React, { useState } from "react";
 import CustomButton from "@/components/shared/custom-button";
 import { Link, router } from "expo-router";
@@ -25,9 +26,20 @@ const readApiMessage = (error: unknown): string | undefined => {
   return data?.message || data?.Message;
 };
 
+const signInFailureMessage = (message?: string) => {
+  if (!message) {
+    return "Unable to sign in. Check your email and password, then try again.";
+  }
+  if (/sending mail|mail address does not exist/i.test(message)) {
+    return "Sign in did not complete. Check the email address and try again.";
+  }
+  return message;
+};
+
 const SignInForm = () => {
   const [loading, setLoading] = useState(false);
   const [checked, setChecked] = useState(true);
+  const [formError, setFormError] = useState<string | null>(null);
   const form = useForm<SigninFormSchema>({
     resolver: zodResolver(signInFormSchema),
   });
@@ -35,6 +47,7 @@ const SignInForm = () => {
 
   const onSignIn = async (data: SigninFormSchema) => {
     setLoading(true);
+    setFormError(null);
     try {
       const response = await AuthService.loginUser(data);
       const status =
@@ -49,8 +62,10 @@ const SignInForm = () => {
         const role = userProfile?.role || userProfile?.Role;
         if (role === "Staff") {
           if (!accessToken) {
+            const message = "Login succeeded but no access token was returned.";
+            setFormError(message);
             showMessage({
-              message: "Login succeeded but no access token was returned.",
+              message,
               type: "danger",
             });
             return;
@@ -66,18 +81,21 @@ const SignInForm = () => {
         return;
       }
 
+      const failure = signInFailureMessage(
+        response?.response?.message || response?.Response?.Message
+      );
+      setFormError(failure);
       showMessage({
-        message:
-          response?.response?.message ||
-          response?.Response?.Message ||
-          "Unable to login!",
+        message: failure,
         type: "danger",
       });
     } catch (error: unknown) {
       const message = readApiMessage(error);
 
       if (message === "User Not Found") {
-        showMessage({ message: "User not found", type: "danger" });
+        const failure = "User not found";
+        setFormError(failure);
+        showMessage({ message: failure, type: "danger" });
       } else if (
         message === "Email Not Confirmed" ||
         message ===
@@ -91,13 +109,17 @@ const SignInForm = () => {
           `/(auth)/otp-verification/${encodeURIComponent(data.email)}`
         );
       } else if (message === "Invalid Login Attempt") {
+        const failure = "Incorrect Email or Password";
+        setFormError(failure);
         showMessage({
-          message: "Incorrect Email or Password",
+          message: failure,
           type: "danger",
         });
       } else {
+        const failure = signInFailureMessage(message);
+        setFormError(failure);
         showMessage({
-          message: message || "Unable to login!",
+          message: failure,
           type: "danger",
         });
       }
@@ -148,10 +170,19 @@ const SignInForm = () => {
       <View style={styles.formAction}>
         <CustomButton
           title={"Sign In"}
-          onPress={form.handleSubmit(handleFormSubmit)}
+          onPress={form.handleSubmit(handleFormSubmit, () => {
+            const failure = "Enter your email and password to sign in.";
+            setFormError(failure);
+            showMessage({ message: failure, type: "danger" });
+          })}
           loading={loading}
           disabled={loading}
         />
+        {formError ? (
+          <Text style={styles.formError} accessibilityRole="alert">
+            {formError}
+          </Text>
+        ) : null}
       </View>
     </View>
   );
@@ -170,6 +201,11 @@ const styles = StyleSheet.create({
   },
   formAction: {
     marginBottom: 16,
+    gap: 8,
+  },
+  formError: {
+    color: THEME.colors.red,
+    fontSize: 14,
   },
   row: {
     flexDirection: "row",

@@ -64,7 +64,7 @@ const PendingCard = ({ item }: { item: ShiftRosterType }) => {
             Date
           </Text>
           <Text weight="semiBold" size="sm" style={styles.value}>
-            {formattedTime(item?.dateCreated, "d MMM, yyyy")}
+            {formattedTime(item?.dateFrom, "d MMM, yyyy")}
           </Text>
         </View>
 

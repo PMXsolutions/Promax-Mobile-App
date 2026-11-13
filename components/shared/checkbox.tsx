@@ -19,8 +19,15 @@ const Checkbox: React.FC<CheckboxProps> = ({
   style,
 }) => {
   return (
-    <View style={[styles.container, style]}>
+    <Pressable
+      style={[styles.container, style]}
+      onPress={() => onChange(!checked)}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked }}
+      hitSlop={8}
+    >
       <CheckboxPrimitive.Root
+        pointerEvents="none"
         style={[
           styles.checkbox,
           {
@@ -36,14 +43,11 @@ const Checkbox: React.FC<CheckboxProps> = ({
       </CheckboxPrimitive.Root>
 
       {label && (
-        <Pressable
-          onPress={() => onChange(!checked)}
-          style={styles.labelContainer}
-        >
+        <View style={styles.labelContainer}>
           <Text style={styles.label}>{label}</Text>
-        </Pressable>
+        </View>
       )}
-    </View>
+    </Pressable>
   );
 };
 
@@ -54,6 +58,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: THEME.spacing.xs,
+    minHeight: 44,
   },
   checkbox: {
     width: 17,

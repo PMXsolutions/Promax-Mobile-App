@@ -35,7 +35,7 @@ const ShiftDetailContent = ({ shift }: { shift: ShiftRosterType }) => {
         <TableStructure
           iconName={"calendar-month"}
           label={"Date"}
-          value={formattedTime(shift?.dateCreated, "d MMMM, yyyy")}
+          value={formattedTime(shift?.dateFrom, "d MMMM, yyyy")}
         />
       )}
       {shift && (

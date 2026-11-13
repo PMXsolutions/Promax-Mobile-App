@@ -7,7 +7,10 @@ import { shiftQuery } from "@/hooks/queries/shift";
 import Loader from "@/components/shared/loader";
 import { THEME } from "@/constants/theme";
 import ShiftDetailContent from "@/modules/shift/shift-details";
-import { getActivityDetailStatus } from "@/helpers/shift-service";
+import {
+  getActivityDetailStatus,
+  shiftIncludesTransport,
+} from "@/helpers/shift-service";
 import ProgressBanner from "@/components/shift/banner/progress-banner";
 import useClockIn from "@/hooks/queries/shift/clock-in";
 import { useClockOut } from "@/hooks/queries/shift/clock-out";
@@ -70,7 +73,6 @@ const ShiftDetail = () => {
     return () => clearTimeout(timer);
   }, [modalVisible]);
 
-  const shiftActivities = shift?.activities.split(", ");
   // Live time tracking state
   const [now, setNow] = useState(new Date());
 
@@ -121,10 +123,9 @@ const ShiftDetail = () => {
 
       <>
         {shift &&
-          // getActivityDetailStatus(shift, now) === "Present" &&
-          // getActivityDetailStatus(shift, now) === "Absent" &&
-          shiftActivities?.includes("Transport") && (
-            <TransportButton shiftId={shift?.shiftRosterId!} />
+          shiftIncludesTransport(shift.activities) &&
+          getActivityDetailStatus(shift, now) === "Shift In progress" && (
+            <TransportButton shiftId={shift.shiftRosterId} />
           )}
       </>
       {/* <>{shift && <TransportButton shiftId={shift?.shiftRosterId!} />}</> */}

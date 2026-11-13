@@ -4,7 +4,6 @@ import {
   StyleSheet,
   View,
   Image,
-  TouchableOpacity,
   ScrollView,
 } from "react-native";
 import SignInForm from "@/modules/auth/sign-in-form";
@@ -20,7 +19,7 @@ export default function Signin() {
       <KeyboardAwareWrapper>
         <ScrollView>
           <View style={styles.header}>
-            <TouchableOpacity
+            <View
               style={{
                 backgroundColor: THEME.colors.light,
                 padding: 2,
@@ -34,7 +33,7 @@ export default function Signin() {
                 style={styles.headerImg}
                 source={require("@/assets/images/adaptive-icon.png")}
               />
-            </TouchableOpacity>
+            </View>
 
             <Text style={styles.title} size="2xl" weight="bold">
               Sign In to your Account

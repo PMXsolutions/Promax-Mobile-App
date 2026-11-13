@@ -1,13 +1,9 @@
 import React, { ReactNode, useState } from "react";
 import {
-  Keyboard,
-  KeyboardAvoidingView,
   TextInput as NativeTextInput,
-  Platform,
+  Pressable,
   StyleSheet,
   TextStyle,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
   ViewStyle,
   StyleProp,
@@ -126,37 +122,40 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={[styles.outerContainer, style]}>
-          {label && <Text style={styles.inputLabel}>{label}</Text>}
-          <Animated.View
-            style={[styles.container, containerStyle, animatedContainerStyle]}
-          >
-            {icon && <View style={styles.iconContainer}>{icon}</View>}
-            <NativeTextInput
-              style={[styles.input, inputStyle]}
-              placeholder={placeholder}
-              value={value}
-              onChangeText={onChangeText}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              placeholderTextColor={THEME.colors.grayBg}
-              secureTextEntry={!isPasswordVisible}
-            />
-            <TouchableOpacity onPress={togglePasswordVisibility}>
-              {isPasswordVisible ? (
-                <Icon name="eye" size={20} color={THEME.colors.dark} />
-              ) : (
-                <Icon name="eye-off" size={20} color={THEME.colors.dark} />
-              )}
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    <View style={[styles.outerContainer, style]}>
+      {label && <Text style={styles.inputLabel}>{label}</Text>}
+      <Animated.View
+        style={[styles.container, containerStyle, animatedContainerStyle]}
+      >
+        {icon && <View style={styles.iconContainer}>{icon}</View>}
+        <NativeTextInput
+          style={[styles.input, inputStyle]}
+          placeholder={placeholder}
+          value={value}
+          onChangeText={onChangeText}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          placeholderTextColor={THEME.colors.grayBg}
+          secureTextEntry={!isPasswordVisible}
+          accessibilityLabel={label || "Password"}
+        />
+        <Pressable
+          onPress={togglePasswordVisibility}
+          accessibilityRole="button"
+          accessibilityLabel={
+            isPasswordVisible ? "Hide password" : "Show password"
+          }
+          hitSlop={8}
+          style={styles.eyeButton}
+        >
+          <Icon
+            name={isPasswordVisible ? "eye" : "eye-off"}
+            size={20}
+            color={THEME.colors.dark}
+          />
+        </Pressable>
+      </Animated.View>
+    </View>
   );
 };
 
@@ -181,6 +180,12 @@ const styles = StyleSheet.create({
     fontFamily: THEME.fontFamily.medium,
     fontSize: THEME.fontSize.md,
     color: "#000",
+  },
+  eyeButton: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
   inputLabel: {
     fontSize: THEME.fontSize.md,

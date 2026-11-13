@@ -10,8 +10,13 @@ import { Coord } from "@/types/map";
 import { isAxiosError } from "axios";
 import { reportService } from "@/services/report";
 import { showMessage } from "react-native-flash-message";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import ActionSheetModal from "@/components/shared/action-sheet-modal";
+import { shiftQuery } from "@/hooks/queries/shift";
+import { getActivityDetailStatus } from "@/helpers/shift-service";
+import { getShiftClients, ShiftClientChoice } from "@/helpers/shift-clients";
+import Text from "@/components/shared/text";
+import CustomButton from "@/components/shared/custom-button";
 
 export default function TripScreen() {
   const query = useLocalSearchParams();
@@ -35,6 +40,12 @@ export default function TripScreen() {
   } = useTripTracker();
 
   const id = query.id as unknown as string;
+  const { data: shift, isLoading: shiftLoading } = shiftQuery.useShiftDetail(
+    Number(id)
+  );
+  const [now, setNow] = useState(new Date());
+  const [selectedClient, setSelectedClient] = useState<ShiftClientChoice>();
+  const clients = getShiftClients(shift);
 
   const [showSummary, setShowSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -81,6 +92,11 @@ export default function TripScreen() {
     });
   };
 
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Handle back button or app state changes during active trip
   useEffect(() => {
     if (tripState === "STARTED" || tripState === "PAUSED") {
@@ -102,6 +118,17 @@ export default function TripScreen() {
   };
 
   const handleStart = async () => {
+    if (
+      shift &&
+      getActivityDetailStatus(shift, now) !== "Shift In progress"
+    ) {
+      Alert.alert(
+        "Trip recording is closed",
+        "Clock in first. A trip can only be recorded while the shift is in progress."
+      );
+      return;
+    }
+
     if (!destination) {
       Alert.alert(
         "Destination Required",
@@ -119,6 +146,24 @@ export default function TripScreen() {
       );
       return;
     }
+
+    const chosen =
+      selectedClient || (clients.length === 1 ? clients[0] : undefined);
+    if (clients.length > 1 && !chosen) {
+      showConfirm(
+        "Which client is this trip for?",
+        "Choose the participant this travel covers.",
+        clients.map((client) => ({ key: client.key, label: client.name })),
+        (key) => {
+          const match = clients.find((client) => client.key === key);
+          if (!match) return;
+          setSelectedClient(match);
+          void startTracking();
+        }
+      );
+      return;
+    }
+    if (chosen && !selectedClient) setSelectedClient(chosen);
 
     setIsLoading(true);
     try {
@@ -172,18 +217,25 @@ export default function TripScreen() {
       };
 
       // console.log("Submit payload to backend:", tripData);
+      const chosen =
+        selectedClient || (clients.length === 1 ? clients[0] : undefined);
+      if (clients.length > 1 && !chosen) {
+        showMessage({
+          message: "Select which client this trip is for.",
+          type: "info",
+        });
+        return;
+      }
       const data = await reportService.fetchStaffKm(
         Number(id),
         0,
-        tripData.distance
+        tripData.distance,
+        { clientId: chosen?.clientId, clientName: chosen?.name }
       );
       showMessage({
         message: data.message,
         type: "success",
       });
-      // TODO: Replace with actual API call
-      // await submitTripToAPI(tripData);
-      // Reset trip state after successful submission
       resetTrip();
       setShowSummary(false);
 
@@ -223,6 +275,24 @@ export default function TripScreen() {
       ]
     );
   };
+
+  const shiftIsOpen =
+    !!shift && getActivityDetailStatus(shift, now) === "Shift In progress";
+
+  if (!shiftLoading && shift && !shiftIsOpen && tripState === "IDLE") {
+    return (
+      <View style={styles.blocked}>
+        <Text weight="semiBold" size="lg" style={styles.blockedTitle}>
+          Trip recording is closed
+        </Text>
+        <Text style={styles.blockedBody}>
+          A trip can only be recorded after you clock in, while the shift is in
+          progress.
+        </Text>
+        <CustomButton title="Go back" onPress={() => router.back()} />
+      </View>
+    );
+  }
 
   // Show summary screen
   if (showSummary) {
@@ -307,6 +377,20 @@ const styles = StyleSheet.create({
         elevation: 5,
       },
     }),
+  },
+  blocked: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    gap: 12,
+    backgroundColor: "#fff",
+  },
+  blockedTitle: {
+    textAlign: "center",
+  },
+  blockedBody: {
+    textAlign: "center",
+    marginBottom: 8,
   },
   tripInfo: {
     position: "absolute",

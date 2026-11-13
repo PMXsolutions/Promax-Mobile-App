@@ -4,10 +4,19 @@ import { formattedTime } from "@/helpers/shift-service";
 import { ShiftReport } from "@/types/report";
 import { ShiftRosterType } from "@/types/shift";
 
-const ReportFormHeader = ({ item }: { item: ShiftRosterType }) => {
+const ReportFormHeader = ({
+  item,
+  clientName,
+}: {
+  item: ShiftRosterType;
+  clientName?: string;
+}) => {
   return (
     <>
-      <FormTableDisp label="Client’s Name" value={item?.clients} />
+      <FormTableDisp
+        label="Client’s Name"
+        value={clientName || item?.clients}
+      />
       <FormTableDisp
         label="Shift Start Time"
         value={formattedTime(item?.dateFrom, "d MMMM, yyyy h:mm a")}
@@ -18,7 +27,7 @@ const ReportFormHeader = ({ item }: { item: ShiftRosterType }) => {
       />
       <FormTableDisp
         label="Date"
-        value={formattedTime(item?.dateCreated, "d MMMM, yyyy")}
+        value={formattedTime(item?.dateFrom, "d MMMM, yyyy")}
       />
     </>
   );

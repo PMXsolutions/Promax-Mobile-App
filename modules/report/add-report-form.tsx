@@ -1,5 +1,5 @@
 import { Image, ScrollView, StyleSheet, Switch, View } from "react-native";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { THEME } from "@/constants/theme";
 import ReportFormHeader from "@/components/shift/report/report-header";
 import TextInput from "@/components/shared/input";
@@ -16,6 +16,8 @@ import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import MiniLoader from "@/components/shared/mini-loader";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import { getShiftClients } from "@/helpers/shift-clients";
+import ClientPicker from "@/components/shift/client-picker";
 
 const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   const { user, staff } = useAuthStore();
@@ -23,6 +25,11 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
   const { data: shift, isLoading } = shiftQuery.useShiftDetail(
     Number(rosterId)
   );
+  const clients = useMemo(() => getShiftClients(shift), [shift]);
+  const [clientKey, setClientKey] = useState("");
+  const selectedClient =
+    clients.find((client) => client.key === clientKey) ||
+    (clients.length === 1 ? clients[0] : undefined);
 
   // Update the `useState` to match the type
   const [form, setForm] = useState({
@@ -61,6 +68,8 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
         companyID: user?.companyId,
         shiftRosterId: rosterId,
         ...form,
+        clientId: selectedClient?.clientId,
+        clientName: selectedClient?.name,
       };
       return await reportService.submitShiftForm(
         user?.userId as string,
@@ -109,6 +118,14 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
       return;
     }
 
+    if (clients.length > 1 && !selectedClient) {
+      showMessage({
+        message: "Select which client this report is for.",
+        type: "info",
+      });
+      return;
+    }
+
     onSubmit(); // Call mutation only if valid
   };
 
@@ -119,7 +136,17 @@ const AddReportForm = ({ rosterId }: { rosterId: string }) => {
         showsVerticalScrollIndicator={false}
       >
         <MiniLoader visible={isLoading} title="Loading Report.." />
-        {shift && <ReportFormHeader item={shift} />}
+        {shift && (
+          <ReportFormHeader
+            item={shift}
+            clientName={selectedClient?.name}
+          />
+        )}
+        <ClientPicker
+          clients={clients}
+          value={clientKey}
+          onChange={setClientKey}
+        />
         <View style={{ gap: THEME.spacing.sm, marginVertical: 10 }}>
           <Text size="md" weight="bold" style={{ color: THEME.colors.red }}>
             URGENT MATTER ALERTS:

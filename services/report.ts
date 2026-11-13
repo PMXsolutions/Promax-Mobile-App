@@ -1,21 +1,32 @@
 import axiosInstance from "@/libs/axiosInstance";
 import { ReportFormState, ShiftReport } from "@/types/report";
-import { DocumentPickerAsset } from "expo-document-picker";
+import { PickedDocument } from "@/utils/profile-image-handler";
 
 interface reqBodyType {
-  docFile: DocumentPickerAsset | null;
+  docFile: PickedDocument | null;
   companyId: number | undefined;
   docuName: string;
   expirationDate: string;
   staffName: string | undefined;
 }
 
-const getDocumentMimeType = (file: DocumentPickerAsset) => {
+const getDocumentMimeType = (file: {
+  name?: string | null;
+  mimeType?: string | null;
+}) => {
   if (file.mimeType) return file.mimeType;
 
-  const extension = file.name.split(".").pop()?.toLowerCase();
+  const extension = file.name?.split(".").pop()?.toLowerCase();
 
   switch (extension) {
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "png":
+      return "image/png";
+    case "heic":
+    case "heif":
+      return "image/heic";
     case "pdf":
       return "application/pdf";
     case "doc":
@@ -40,11 +51,19 @@ const fetchStaffReport = async (staffId: number) => {
 const fetchStaffKm = async (
   shiftId: number,
   startKm: number,
-  endKm: number
+  endKm: number,
+  client?: { clientId?: number; clientName?: string }
 ) => {
   try {
+    const clientId =
+      client?.clientId && client.clientId > 0
+        ? `&clientId=${client.clientId}`
+        : "";
+    const clientName = client?.clientName
+      ? `&clientName=${encodeURIComponent(client.clientName)}`
+      : "";
     const { data } = await axiosInstance.get(
-      `/ShiftRosters/fill_mileage?shiftId=${shiftId}&startKm=${startKm}&endKm=${endKm}`
+      `/ShiftRosters/fill_mileage?shiftId=${shiftId}&startKm=${startKm}&endKm=${endKm}${clientId}${clientName}`
     );
     return data;
   } catch (error) {
