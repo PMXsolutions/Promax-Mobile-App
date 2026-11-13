@@ -66,7 +66,7 @@ Signing material and store API keys stay in EAS. GitHub only needs the Expo toke
 
 ## How to obtain and configure each value
 
-Use the Expo account `promax-it-solutions` and project `promax-care`. The account slug is the name in https://expo.dev/accounts/promax-it-solutions. Install the pinned CLI from this repository with `npx eas-cli` after `npm ci`. Run credential commands on a trusted machine, not in GitHub Actions. Prefer prompts over `--value` so the secret is not stored in shell history.
+Use the Expo account `promax-it-solutions` and project slug `promax-it-solutions`. The project page is https://expo.dev/accounts/promax-it-solutions/projects/promax-it-solutions. Install the pinned CLI from this repository with `npx eas-cli` after `npm ci`. Run credential commands on a trusted machine, not in GitHub Actions. Prefer prompts over `--value` so the secret is not stored in shell history.
 
 ### EXPO_TOKEN
 
@@ -76,7 +76,7 @@ Use the Expo account `promax-it-solutions` and project `promax-care`. The accoun
 4. GitHub repository **Settings → Secrets and variables → Actions → New repository secret**.
 5. Name the secret `EXPO_TOKEN` and paste the token. Replace the existing secret if one is already stored.
 6. Do not put the token in `eas.json`, a workflow file, or a `.env` file that is committed.
-7. Confirm https://expo.dev/accounts/promax-it-solutions/projects/promax-care shows project ID `e2e19955-9a63-4002-803a-73fee46b337f`. The production environment variables and the Android and iOS credentials must exist on this project. The previous project `70d0de46-7142-4d9a-a7b5-a089e9ea2879` is no longer used.
+7. Confirm https://expo.dev/accounts/promax-it-solutions/projects/promax-it-solutions shows project ID `e2e19955-9a63-4002-803a-73fee46b337f`. The production environment variables and the Android and iOS credentials must exist on this project. The previous project `70d0de46-7142-4d9a-a7b5-a089e9ea2879` is no longer used.
 
 ### Android upload keystore
 
