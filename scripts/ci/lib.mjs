@@ -8,6 +8,7 @@ export const repoRoot = path.resolve(scriptDir, "../..");
 
 export const EXPO_PROJECT_ID = "e2e19955-9a63-4002-803a-73fee46b337f";
 export const EXPO_OWNER = "promax-it-solutions";
+export const EXPO_SLUG = "promax-it-solutions";
 export const PRODUCTION_API_BASE_URL = "https://api.promaxcare.com.au/api";
 
 /**
@@ -87,6 +88,7 @@ export function assessStoreIdentity(config, options = {}) {
   const iosBundleIdentifier = expo.ios?.bundleIdentifier ?? "";
   const projectId = expo.extra?.eas?.projectId ?? "";
   const owner = expo.owner ?? "";
+  const slug = expo.slug ?? "";
   const apiBaseUrl = expo.extra?.apiBaseUrl ?? "";
   const googleServicesFile = expo.android?.googleServicesFile ?? "";
 
@@ -98,6 +100,11 @@ export function assessStoreIdentity(config, options = {}) {
   if (owner !== EXPO_OWNER) {
     errors.push(
       `Expo owner is "${owner || "missing"}". Expected ${EXPO_OWNER}.`
+    );
+  }
+  if (slug !== EXPO_SLUG) {
+    errors.push(
+      `Expo slug is "${slug || "missing"}". The project ${EXPO_PROJECT_ID} on ${EXPO_OWNER} uses slug ${EXPO_SLUG}.`
     );
   }
   if (apiBaseUrl !== PRODUCTION_API_BASE_URL) {
@@ -147,6 +154,7 @@ export function assessStoreIdentity(config, options = {}) {
     identity: {
       projectId,
       owner,
+      slug,
       apiBaseUrl,
       androidPackage,
       iosBundleIdentifier,
@@ -399,6 +407,7 @@ export function formatIdentity(identity) {
   return [
     `Expo project: ${identity.projectId}`,
     `Owner: ${identity.owner}`,
+    `Slug: ${identity.slug}`,
     `API: ${identity.apiBaseUrl}`,
     `Android package: ${identity.androidPackage}`,
     `Play application: ${PLAY_APPLICATION_ID}`,

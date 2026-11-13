@@ -15,6 +15,7 @@ import {
 const baseConfig = {
   expo: {
     owner: "promax-it-solutions",
+    slug: "promax-it-solutions",
     version: "1.1.0",
     extra: {
       eas: { projectId: "e2e19955-9a63-4002-803a-73fee46b337f" },
@@ -53,6 +54,11 @@ const oldOwner = structuredClone(baseConfig);
 oldOwner.expo.owner = "promax";
 const ownerMismatch = assessStoreIdentity(oldOwner);
 assert.match(ownerMismatch.errors.join("\n"), /promax-it-solutions/);
+
+const oldSlug = structuredClone(baseConfig);
+oldSlug.expo.slug = "promax-care";
+const slugMismatch = assessStoreIdentity(oldSlug);
+assert.match(slugMismatch.errors.join("\n"), /promax-it-solutions/);
 
 const redacted = redactAssignments("EXPO_TOKEN=secret\nOK");
 assert.equal(redacted.includes("secret"), false);
