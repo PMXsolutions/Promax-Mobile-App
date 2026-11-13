@@ -14,7 +14,7 @@ Google Play and TestFlight both use `au.com.promaxsolutions.promaxcare`.
 | --- | --- | --- |
 | Android | `expo.android.package` | `au.com.promaxsolutions.promaxcare` |
 | iOS | `expo.ios.bundleIdentifier` | `au.com.promaxsolutions.promaxcare` |
-| Expo project | `extra.eas.projectId`, owner `promax-it-solutions` | `70d0de46-7142-4d9a-a7b5-a089e9ea2879` |
+| Expo project | `extra.eas.projectId`, owner `promax-it-solutions` | `e2e19955-9a63-4002-803a-73fee46b337f` |
 
 The workflows compare the resolved Expo config and the finished EAS build with that application ID. A mismatch stops the job before `eas build` on the identity step, and again before submit if the binary was built with a different ID.
 
@@ -76,7 +76,7 @@ Use the Expo account `promax-it-solutions` and project `promax-care`. The accoun
 4. GitHub repository **Settings → Secrets and variables → Actions → New repository secret**.
 5. Name the secret `EXPO_TOKEN` and paste the token. Replace the existing secret if one is already stored.
 6. Do not put the token in `eas.json`, a workflow file, or a `.env` file that is committed.
-7. Confirm the project is on this account: https://expo.dev/accounts/promax-it-solutions/projects/promax-care must show project ID `70d0de46-7142-4d9a-a7b5-a089e9ea2879`. If that page does not list this project, transfer the project to `promax-it-solutions` from the account that currently owns it before rerunning the workflow. Changing `owner` in `app.json` does not move the project.
+7. Confirm https://expo.dev/accounts/promax-it-solutions/projects/promax-care shows project ID `e2e19955-9a63-4002-803a-73fee46b337f`. The production environment variables and the Android and iOS credentials must exist on this project. The previous project `70d0de46-7142-4d9a-a7b5-a089e9ea2879` is no longer used.
 
 ### Android upload keystore
 

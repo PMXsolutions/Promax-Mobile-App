@@ -17,7 +17,7 @@ const baseConfig = {
     owner: "promax-it-solutions",
     version: "1.1.0",
     extra: {
-      eas: { projectId: "70d0de46-7142-4d9a-a7b5-a089e9ea2879" },
+      eas: { projectId: "e2e19955-9a63-4002-803a-73fee46b337f" },
       apiBaseUrl: "https://api.promaxcare.com.au/api",
     },
     android: {
@@ -74,7 +74,7 @@ assert.deepEqual(
 );
 
 const finished = {
-  id: "70d0de46-7142-4d9a-a7b5-a089e9ea2879",
+  id: "e2e19955-9a63-4002-803a-73fee46b337f",
   status: "FINISHED",
   platform: "ANDROID",
   buildProfile: "production",
@@ -85,7 +85,7 @@ const finished = {
   gitCommitHash: "abc123",
   expirationDate: "2999-01-01T00:00:00.000Z",
   artifacts: { applicationArchiveUrl: "https://example.invalid/app.aab" },
-  app: { id: "70d0de46-7142-4d9a-a7b5-a089e9ea2879" },
+  app: { id: "e2e19955-9a63-4002-803a-73fee46b337f" },
   updateChannel: { name: "production" },
   runtime: { version: "1.1.0" },
 };

@@ -76,12 +76,12 @@
         "origin": false
       },
       "eas": {
-        "projectId": "70d0de46-7142-4d9a-a7b5-a089e9ea2879"
+        "projectId": "e2e19955-9a63-4002-803a-73fee46b337f"
       }
     },
     "owner": "promax-it-solutions",
     "updates": {
-      "url": "https://u.expo.dev/70d0de46-7142-4d9a-a7b5-a089e9ea2879"
+      "url": "https://u.expo.dev/e2e19955-9a63-4002-803a-73fee46b337f"
     }
   }
 }
