@@ -62,6 +62,7 @@ const CustomButton = ({
   return (
     <TouchableOpacity
       {...props}
+      accessibilityRole="button"
       onPress={isDisabled ? undefined : onPress}
       disabled={isDisabled}
       activeOpacity={isDisabled ? 1 : props.activeOpacity}

@@ -1,4 +1,9 @@
-import { getActivityDetailStatus } from "@/helpers/shift-service";
+import {
+  formattedTime,
+  getActivityDetailStatus,
+  shiftIncludesTransport,
+} from "@/helpers/shift-service";
+import { getShiftClients } from "@/helpers/shift-clients";
 import { ShiftRosterType } from "@/types/shift";
 
 const buildShift = (overrides: Partial<ShiftRosterType>): ShiftRosterType =>
@@ -52,5 +57,50 @@ describe("getActivityDetailStatus", () => {
     );
 
     expect(status).toBe("Cancelled");
+  });
+
+  it("keeps a timezone-less Sydney afternoon shift on that Sydney day", () => {
+    const shift = buildShift({
+      dateFrom: "2026-10-03T16:15:00" as unknown as Date,
+      dateTo: "2026-10-03T17:18:00" as unknown as Date,
+      attendance: false,
+    });
+
+    expect(formattedTime(shift.dateFrom, "d MMMM yyyy h:mm a")).toBe(
+      "3 October 2026 4:15 PM"
+    );
+    expect(
+      getActivityDetailStatus(shift, new Date("2026-10-03T06:17:00.000Z"))
+    ).toBe("Clock-In");
+    expect(
+      getActivityDetailStatus(shift, new Date("2026-10-03T05:00:00.000Z"))
+    ).toBe("Upcoming");
+  });
+
+  it("detects a transport activity with extra spacing", () => {
+    expect(shiftIncludesTransport("Install phone, Transport")).toBe(true);
+    expect(shiftIncludesTransport("Personal Support")).toBe(false);
+  });
+});
+
+describe("getShiftClients", () => {
+  it("splits a combined client string and keeps the matching client id", () => {
+    const clients = getShiftClients({
+      clients: "Ajeh Wumi Tao, Olatunji John",
+      profile: {
+        clientId: 42,
+        profileId: 7,
+        firstName: "Ajeh",
+        middleName: "Wumi",
+        surName: "Tao",
+      },
+    });
+
+    expect(clients).toHaveLength(2);
+    expect(clients[0]).toMatchObject({ name: "Ajeh Wumi Tao", clientId: 42 });
+    expect(clients[1]).toMatchObject({
+      name: "Olatunji John",
+      clientId: undefined,
+    });
   });
 });

@@ -10,7 +10,7 @@ import { THEME } from "@/constants/theme";
 import { uploadDoc } from "@/utils/profile-image-handler";
 import { showMessage } from "react-native-flash-message";
 import Text from "@/components/shared/text";
-import { DocumentPickerAsset } from "expo-document-picker";
+import { PickedDocument } from "@/utils/profile-image-handler";
 import { Feather } from "@expo/vector-icons";
 import TextInput from "@/components/shared/input";
 import CustomButton from "@/components/shared/custom-button";
@@ -37,7 +37,7 @@ const EditForm = ({ id }: { id: string }) => {
   const [expiryDate, setExpiryDate] = useState(docData?.expirationDate || "");
   const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
   const [selectedDocument, setSelectedDocument] =
-    useState<DocumentPickerAsset | null>(null);
+    useState<PickedDocument | null>(null);
   React.useEffect(() => {
     if (docData) {
       setForm({
@@ -161,7 +161,7 @@ const EditForm = ({ id }: { id: string }) => {
                 Tap to select file
               </Text>
             </View>
-            <Text> (.pdf, .doc, .docx)</Text>
+            <Text> (JPEG, PNG, PDF, or Word)</Text>
           </Pressable>
 
           {/* Display Uploaded Document */}

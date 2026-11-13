@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import {
-  format,
   addDays,
   startOfWeek,
   startOfMonth,
@@ -10,6 +9,7 @@ import {
   eachDayOfInterval,
 } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+import { rosterDateKey } from "@/helpers/shift-service";
 import type { AgendaProps, ShiftRosterType } from "@/types/shift";
 
 interface UseShiftCalendarProps {
@@ -39,7 +39,7 @@ export const useShiftCalendar = ({
 
     if (shiftData && Array.isArray(shiftData)) {
       shiftData.forEach((shift) => {
-        const date = formattedTime(shift.dateFrom);
+        const date = rosterDateKey(shift.dateFrom);
         if (!grouped[date]) {
           grouped[date] = [];
         }
@@ -80,7 +80,7 @@ export const useShiftCalendar = ({
 
   // Get shifts for selected date
   const selectedDateShifts = useMemo(() => {
-    const dateKey = format(selectedDate, "yyyy-MM-dd");
+    const dateKey = rosterDateKey(selectedDate);
     return groupedShifts[dateKey] || [];
   }, [groupedShifts, selectedDate]);
 
@@ -109,7 +109,7 @@ export const useShiftCalendar = ({
 
   // Get shifts count for a specific date
   const getShiftsCountForDate = (date: Date) => {
-    const dateKey = format(date, "yyyy-MM-dd");
+    const dateKey = rosterDateKey(date);
     return groupedShifts[dateKey]?.length || 0;
   };
 

@@ -5,7 +5,10 @@ import { THEME } from "@/constants/theme";
 import useAuthStore from "@/store/use-auth-store";
 import { shiftQuery } from "@/hooks/queries/shift";
 import Header from "@/components/shared/header";
-import { getActivityDetailStatus } from "@/helpers/shift-service";
+import {
+  getActivityDetailStatus,
+  parseRosterDateTime,
+} from "@/helpers/shift-service";
 import MiniLoader from "@/components/shared/mini-loader";
 import PendingShift from "@/components/shift/banner/pending-shift";
 import BeautifulCalendarAgenda from "@/components/shift/beatiful-shift";
@@ -66,8 +69,8 @@ const Activity = () => {
       staffImage: shift.staff.imageUrl ?? "",
       client: shift.clients,
       activities: shift.activities,
-      dateFrom: new Date(shift.dateFrom),
-      dateTo: new Date(shift.dateTo),
+      dateFrom: parseRosterDateTime(shift.dateFrom),
+      dateTo: parseRosterDateTime(shift.dateTo),
       status: shift.status,
       isEnded: shift.isEnded,
       attendance: shift.attendance,

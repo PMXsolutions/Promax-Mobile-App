@@ -1,5 +1,5 @@
 import { Image, ScrollView, StyleSheet, Switch, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { reportQuery } from "@/hooks/queries/report";
 import { THEME } from "@/constants/theme";
 import ReportFormHeader from "@/components/shift/report/report-header";
@@ -16,6 +16,8 @@ import { router } from "expo-router";
 import { queryClient } from "@/libs/query";
 import { shiftQuery } from "@/hooks/queries/shift";
 import KeyboardAwareWrapper from "@/components/wrapper/keyboard-aware-wrapper";
+import { getShiftClients } from "@/helpers/shift-clients";
+import ClientPicker from "@/components/shift/client-picker";
 
 const EditReportForm = ({
   reportId,
@@ -30,6 +32,11 @@ const EditReportForm = ({
     Number(rosterId)
   );
   const { data: shift } = shiftQuery.useShiftDetail(Number(rosterId));
+  const clients = useMemo(() => getShiftClients(shift), [shift]);
+  const [clientKey, setClientKey] = useState("");
+  const selectedClient =
+    clients.find((client) => client.key === clientKey) ||
+    (clients.length === 1 ? clients[0] : undefined);
 
   // Update the `useState` to match the type
   const [form, setForm] = useState({
@@ -92,6 +99,8 @@ const EditReportForm = ({
       const reqBody = {
         ...data,
         ...form,
+        clientId: selectedClient?.clientId,
+        clientName: selectedClient?.name,
       };
       return reportService.handleEditShiftForm(
         Number(data?.shiftReportId),
@@ -142,6 +151,14 @@ const EditReportForm = ({
       return;
     }
 
+    if (clients.length > 1 && !selectedClient) {
+      showMessage({
+        message: "Select which client this report is for.",
+        type: "info",
+      });
+      return;
+    }
+
     onSubmit(); // Call the mutation only if valid
   };
 
@@ -152,7 +169,14 @@ const EditReportForm = ({
         showsVerticalScrollIndicator={false}
       >
         {/* <KeyboardAvoiderView> */}
-        {shift && <ReportFormHeader item={shift} />}
+        {shift && (
+          <ReportFormHeader item={shift} clientName={selectedClient?.name} />
+        )}
+        <ClientPicker
+          clients={clients}
+          value={clientKey}
+          onChange={setClientKey}
+        />
         <View style={{ gap: THEME.spacing.sm, marginVertical: 10 }}>
           <Text size="md" weight="bold" style={{ color: THEME.colors.red }}>
             URGENT MATTER ALERTS:

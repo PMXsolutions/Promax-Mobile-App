@@ -12,6 +12,13 @@ import { AgendaProps } from "@/types/shift";
 import { FlashList } from "@shopify/flash-list";
 import UpdatedShiftItem from "./updated-shift-item";
 import { formatInTimeZone } from "date-fns-tz";
+import {
+  addRosterDays,
+  rosterDateKey,
+  startOfRosterMonth,
+  startOfRosterWeek,
+  ROSTER_TIMEZONE,
+} from "@/helpers/shift-service";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -19,7 +26,6 @@ import Animated, {
 } from "react-native-reanimated";
 const CALENDAR_HEIGHT = 100;
 const ROW_HEIGHT = 370;
-const ROSTER_TIMEZONE = "Australia/Sydney";
 interface Props {
   shiftData: AgendaProps[];
   isRefetching: boolean;
@@ -37,41 +43,18 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
 
   const animatedHeight = useSharedValue(CALENDAR_HEIGHT);
   // Format time helper;
-  const formatDate = (date: Date, format: SupportedFormat) => {
-    const options: Record<SupportedFormat, Intl.DateTimeFormatOptions> = {
-      "MMMM yyyy": { month: "long", year: "numeric" },
-      "EEEE, MMMM d": { weekday: "long", month: "long", day: "numeric" },
-      EEE: { weekday: "short" },
-      d: { day: "numeric" },
-      "HH:mm": { hour: "2-digit", minute: "2-digit" },
-    };
+  const formatDate = (date: Date, format: SupportedFormat) =>
+    formatInTimeZone(date, ROSTER_TIMEZONE, format);
 
-    return date.toLocaleDateString("en-US", options[format]);
-  };
-
-  const addDays = (date: Date, days: number) => {
-    const result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
-  };
-
-  const startOfWeek = (date: Date) => {
-    const result = new Date(date);
-    const day = result.getDay();
-    const diff = result.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(result.setDate(diff));
-  };
-
-  const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
-  const isToday = (date: Date) => isSameDay(date, new Date());
-  const isBefore = (a: Date, b: Date) => a < b;
-  const getRosterDateKey = (date: Date) =>
-    formatInTimeZone(date, ROSTER_TIMEZONE, "yyyy-MM-dd");
+  const isSameDay = (a: Date, b: Date) => rosterDateKey(a) === rosterDateKey(b);
+  const isToday = (date: Date) => rosterDateKey(date) === rosterDateKey(new Date());
+  const isBefore = (a: Date, b: Date) => rosterDateKey(a) < rosterDateKey(b);
+  const getRosterDateKey = (date: Date | string | number) => rosterDateKey(date);
 
   const groupedShifts = useMemo(() => {
     const grouped: { [date: string]: AgendaProps[] } = {};
     shiftData.forEach((shift) => {
-      const dateKey = getRosterDateKey(new Date(shift.dateFrom));
+      const dateKey = getRosterDateKey(shift.dateFrom);
       if (!grouped[dateKey]) grouped[dateKey] = [];
       grouped[dateKey].push(shift);
     });
@@ -80,27 +63,19 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
 
   const displayDates = useMemo(() => {
     if (viewMode === "week") {
-      const start = startOfWeek(selectedDate);
-      return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+      const start = startOfRosterWeek(selectedDate);
+      return Array.from({ length: 7 }, (_, i) => addRosterDays(start, i));
     } else {
-      const start = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        1
-      );
-      const end = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth() + 1,
-        0
-      );
-      const startDay = start.getDay();
-      const daysInMonth = end.getDate();
-
-      const totalCells = Math.ceil((startDay + daysInMonth) / 7) * 7;
-      const firstDate = addDays(start, -startDay);
+      const start = startOfRosterMonth(selectedDate);
+      const [year, month] = rosterDateKey(start).split("-").map(Number);
+      const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+      const sundayIndex =
+        Number(formatInTimeZone(start, ROSTER_TIMEZONE, "i")) % 7;
+      const totalCells = Math.ceil((sundayIndex + daysInMonth) / 7) * 7;
+      const firstDate = addRosterDays(start, -sundayIndex);
 
       return Array.from({ length: totalCells }, (_, i) =>
-        addDays(firstDate, i)
+        addRosterDays(firstDate, i)
       );
     }
   }, [selectedDate, viewMode]);
@@ -118,12 +93,8 @@ const BeautifulCalendarAgenda: React.FC<Props> = ({
 
     const newDate =
       viewMode === "week"
-        ? addDays(selectedDate, 7 * increment)
-        : new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth() + increment,
-            1
-          );
+        ? addRosterDays(selectedDate, 7 * increment)
+        : addRosterDays(startOfRosterMonth(selectedDate), 32 * increment);
 
     setSelectedDate(newDate);
   };

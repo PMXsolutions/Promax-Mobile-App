@@ -7,10 +7,6 @@ import {
   View,
   ViewStyle,
   StyleProp,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Platform,
 } from "react-native";
 import Animated, {
   interpolateColor,
@@ -86,11 +82,7 @@ const TextInput: React.FC<TextInputProps> = ({
   const { colors } = useTheme();
 
   return (
-    // <KeyboardAvoidingView
-    //   behavior={Platform.OS === "ios" ? "padding" : "height"}
-    // >
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={[styles.outerContainer, containerStyle]}>
+    <View style={[styles.outerContainer, containerStyle]}>
         {label && (
           <View style={{ flexDirection: "row" }}>
             <Text style={styles.inputLabel}>{label} </Text>
@@ -113,8 +105,6 @@ const TextInput: React.FC<TextInputProps> = ({
           />
         </Animated.View>
       </View>
-    </TouchableWithoutFeedback>
-    // </KeyboardAvoidingView>
   );
 };
 

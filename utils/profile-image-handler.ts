@@ -99,29 +99,137 @@ export const resizeImage = async (uri: string) => {
   return manipResult.uri;
 };
 
-export const uploadDoc = async () => {
-  try {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: [
-        "image/jpeg",
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ],
+export type PickedDocument = {
+  uri: string;
+  name: string;
+  mimeType: string | null;
+};
+
+const COMPLIANCE_FILE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/heic",
+  "image/heif",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
+const imageToDocument = async (
+  uri: string,
+  mimeType?: string | null,
+  fileName?: string | null
+): Promise<PickedDocument> => {
+  const lowerName = fileName?.toLowerCase() || "";
+  const isHeic =
+    mimeType === "image/heic" ||
+    mimeType === "image/heif" ||
+    lowerName.endsWith(".heic") ||
+    lowerName.endsWith(".heif");
+
+  if (isHeic) {
+    const converted = await manipulateAsync(uri, [], {
+      compress: 0.8,
+      format: SaveFormat.JPEG,
     });
-    if (!result.canceled) {
-      return result.assets[0];
-    } else {
-      showMessage({
-        type: "danger",
-        message: "Document selection cancelled",
-      });
-    }
+    return {
+      uri: converted.uri,
+      name: `document-${Date.now()}.jpg`,
+      mimeType: "image/jpeg",
+    };
+  }
+
+  const extension = mimeType === "image/png" ? "png" : "jpg";
+  return {
+    uri,
+    name: fileName || `document-${Date.now()}.${extension}`,
+    mimeType: mimeType || (extension === "png" ? "image/png" : "image/jpeg"),
+  };
+};
+
+const captureDocumentPhoto = async (): Promise<PickedDocument | undefined> => {
+  const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  if (status !== "granted") {
+    Alert.alert(
+      "Permission denied",
+      "Camera access is needed to photograph a document."
+    );
+    return undefined;
+  }
+  const result = await ImagePicker.launchCameraAsync({
+    mediaTypes: ["images"],
+    quality: 0.8,
+  });
+  if (result.canceled || !result.assets?.[0]) return undefined;
+  const asset = result.assets[0];
+  return imageToDocument(asset.uri, asset.mimeType, asset.fileName);
+};
+
+const pickDocumentImage = async (): Promise<PickedDocument | undefined> => {
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status !== "granted") {
+    Alert.alert(
+      "Permission denied",
+      "Photo library access is needed to choose a document image."
+    );
+    return undefined;
+  }
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ["images"],
+    quality: 0.8,
+  });
+  if (result.canceled || !result.assets?.[0]) return undefined;
+  const asset = result.assets[0];
+  return imageToDocument(asset.uri, asset.mimeType, asset.fileName);
+};
+
+const pickDocumentFile = async (): Promise<PickedDocument | undefined> => {
+  const result = await DocumentPicker.getDocumentAsync({
+    type: COMPLIANCE_FILE_TYPES,
+  });
+  if (result.canceled || !result.assets?.[0]) return undefined;
+  const asset = result.assets[0];
+  if (asset.mimeType?.startsWith("image/") || /\.(jpe?g|png|heic|heif)$/i.test(asset.name || "")) {
+    return imageToDocument(asset.uri, asset.mimeType, asset.name);
+  }
+  return {
+    uri: asset.uri,
+    name: asset.name,
+    mimeType: asset.mimeType ?? null,
+  };
+};
+
+export const uploadDoc = async (): Promise<PickedDocument | undefined> => {
+  try {
+    return await new Promise((resolve) => {
+      Alert.alert("Add a document", "Take a photo or choose a file.", [
+        { text: "Cancel", style: "cancel", onPress: () => resolve(undefined) },
+        {
+          text: "Take photo",
+          onPress: () => {
+            void captureDocumentPhoto().then(resolve);
+          },
+        },
+        {
+          text: "Photo library",
+          onPress: () => {
+            void pickDocumentImage().then(resolve);
+          },
+        },
+        {
+          text: "Choose file",
+          onPress: () => {
+            void pickDocumentFile().then(resolve);
+          },
+        },
+      ]);
+    });
   } catch (error) {
     showMessage({
       type: "danger",
-      message: "Error selecting document: ",
+      message: "Error selecting document",
     });
+    return undefined;
   }
 };
 
