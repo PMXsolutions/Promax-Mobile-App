@@ -24,6 +24,7 @@
       }
     },
     "production": {
+      "environment": "production",
       "android": {
         "buildType": "app-bundle"
       },
@@ -40,8 +41,19 @@
   "submit": {
     "production": {
       "android": {
-        "track": "internal"
+        "track": "production",
+        "releaseStatus": "draft"
+      },
+      "ios": {}
+    },
+    "internal": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "completed"
       }
+    },
+    "testflight": {
+      "ios": {}
     }
   }
 }

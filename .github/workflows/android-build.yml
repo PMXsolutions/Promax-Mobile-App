@@ -1,0 +1,123 @@
+name: Android build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promaxcare-android-internal
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash --noprofile --norc -eo pipefail {0}
+
+jobs:
+  android-internal:
+    name: Build and submit to Play internal testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      CI: true
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EXPECTED_IOS_BUNDLE_IDENTIFIER: ${{ vars.EXPECTED_IOS_BUNDLE_IDENTIFIER }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Configure Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Require Node.js 20.18.3 or newer
+        run: |
+          node -e 'const [major, minor, patch] = process.versions.node.split(".").map(Number); if (major < 20 || (major === 20 && (minor < 18 || (minor === 18 && patch < 3)))) { console.error("Node " + process.versions.node + " is older than eas-cli 27 requires (20.18.3)."); process.exit(1); }'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate TypeScript
+        run: npx tsc --noEmit
+
+      - name: Validate Expo configuration
+        run: node scripts/ci/assert-store-identity.mjs --warn-ios-confirmation
+
+      - name: Validate EAS configuration
+        run: node scripts/ci/validate-eas-json.mjs
+
+      - name: Run unit tests
+        run: npx jest --ci --watchAll=false
+
+      - name: Run ESLint when it is configured
+        run: node scripts/ci/run-eslint-if-configured.mjs
+
+      - name: Stop unless the Android package matches the Play listing
+        run: node scripts/ci/assert-store-identity.mjs --require-play-package
+
+      - name: Require Expo token
+        run: node scripts/ci/require-expo-token.mjs
+
+      - name: Require Android EAS environment variables
+        run: node scripts/ci/assert-eas-env.mjs android production
+
+      - name: Build the Android App Bundle
+        run: |
+          npx eas-cli build \
+            --platform android \
+            --profile production \
+            --non-interactive \
+            --wait \
+            --json \
+            --freeze-credentials \
+            > /tmp/eas-build.json
+
+      - name: Verify the finished build
+        run: |
+          BUILD_ID="$(node scripts/ci/verify-eas-build.mjs --file /tmp/eas-build.json --platform android --profile production --expect-commit "$GITHUB_SHA" --require-play-package)"
+          node scripts/ci/verify-eas-build.mjs --assert-uuid "$BUILD_ID" >/dev/null
+          npx eas-cli build:view "$BUILD_ID" --json > /tmp/eas-build-view.json
+          CONFIRMED="$(node scripts/ci/verify-eas-build.mjs --file /tmp/eas-build-view.json --platform android --profile production --expect-commit "$GITHUB_SHA" --expect-id "$BUILD_ID" --require-play-package)"
+          printf '%s\n' "$CONFIRMED" > /tmp/eas-build-id.txt
+
+      - name: Submit that build to Google Play internal testing
+        run: |
+          BUILD_ID="$(tr -d '[:space:]' < /tmp/eas-build-id.txt)"
+          node scripts/ci/verify-eas-build.mjs --assert-uuid "$BUILD_ID" >/dev/null
+          # --id is the EAS selector for this exact build. --latest is not used:
+          # another finished build can become latest before submission.
+          npx eas-cli submit \
+            --platform android \
+            --profile internal \
+            --id "$BUILD_ID" \
+            --non-interactive \
+            --wait
+          echo "SUBMIT_EXIT=0" >> "$GITHUB_ENV"
+
+      - name: Read the latest Android submission
+        if: success()
+        run: |
+          npx eas-cli submit:list \
+            --platform android \
+            --limit 1 \
+            --json \
+            --non-interactive \
+            > /tmp/eas-submit-list.json \
+            || echo "The submit command finished, but the submission list could not be read."
+
+      - name: Report build and submission results
+        if: always()
+        env:
+          BUILD_RESULT_PATH: /tmp/eas-build.json
+          BUILD_VIEW_PATH: /tmp/eas-build-view.json
+          SUBMISSION_LIST_PATH: /tmp/eas-submit-list.json
+        run: node scripts/ci/summarize-eas-result.mjs

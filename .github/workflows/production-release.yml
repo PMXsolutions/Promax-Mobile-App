@@ -1,0 +1,227 @@
+name: Production release
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Store platform to promote
+        required: true
+        type: choice
+        options:
+          - android
+          - ios
+          - both
+      android_build_id:
+        description: EAS build UUID of the approved Android production AAB
+        required: false
+        type: string
+      ios_build_id:
+        description: EAS build UUID of the approved iOS production IPA
+        required: false
+        type: string
+      testing_approved:
+        description: Confirm this exact build passed internal testing or TestFlight and is approved for store submission
+        required: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promaxcare-production-release
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash --noprofile --norc -eo pipefail {0}
+
+jobs:
+  guard:
+    name: Check release request
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Configure Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+
+      - name: Require main, approval, and an exact build ID
+        env:
+          GIT_REF: ${{ github.ref }}
+          PLATFORM: ${{ inputs.platform }}
+          TESTING_APPROVED: ${{ inputs.testing_approved }}
+          ANDROID_BUILD_ID: ${{ inputs.android_build_id }}
+          IOS_BUILD_ID: ${{ inputs.ios_build_id }}
+        run: node scripts/ci/assert-production-request.mjs
+
+  promote-android:
+    name: Submit approved Android build
+    needs: guard
+    if: ${{ inputs.platform == 'android' || inputs.platform == 'both' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: production
+    env:
+      CI: true
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_BUILD_ID: ${{ inputs.android_build_id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Configure Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Require Expo token
+        run: node scripts/ci/require-expo-token.mjs
+
+      - name: Validate Expo package against the Play listing
+        run: node scripts/ci/assert-store-identity.mjs --require-play-package
+
+      - name: Validate EAS configuration
+        run: node scripts/ci/validate-eas-json.mjs
+
+      - name: Fetch the approved build
+        run: |
+          node scripts/ci/verify-eas-build.mjs --assert-uuid "$EAS_BUILD_ID" >/dev/null
+          npx eas-cli build:view "$EAS_BUILD_ID" --json > /tmp/eas-build-view.json
+
+      - name: Refuse any build other than the approved one
+        run: |
+          CONFIRMED="$(node scripts/ci/verify-eas-build.mjs --file /tmp/eas-build-view.json --platform android --profile production --expect-id "$EAS_BUILD_ID" --require-play-package)"
+          if [ "$CONFIRMED" != "$EAS_BUILD_ID" ]; then
+            echo "Refusing to submit because the fetched build does not match the approved build."
+            exit 1
+          fi
+          printf '%s\n' "$CONFIRMED" > /tmp/eas-build-id.txt
+
+      - name: Submit the approved AAB to the Play production track
+        run: |
+          BUILD_ID="$(tr -d '[:space:]' < /tmp/eas-build-id.txt)"
+          node scripts/ci/verify-eas-build.mjs --assert-uuid "$BUILD_ID" >/dev/null
+          npx eas-cli submit \
+            --platform android \
+            --profile production \
+            --id "$BUILD_ID" \
+            --non-interactive \
+            --wait
+          echo "SUBMIT_EXIT=0" >> "$GITHUB_ENV"
+
+      - name: Read the latest Android submission
+        if: success()
+        run: |
+          npx eas-cli submit:list \
+            --platform android \
+            --limit 1 \
+            --json \
+            --non-interactive \
+            > /tmp/eas-submit-list.json \
+            || echo "The submit command finished, but the submission list could not be read."
+
+      - name: Report submission result
+        if: always()
+        env:
+          BUILD_VIEW_PATH: /tmp/eas-build-view.json
+          SUBMISSION_LIST_PATH: /tmp/eas-submit-list.json
+          RELEASE_PLATFORM: android
+        run: node scripts/ci/summarize-eas-result.mjs
+
+  promote-ios:
+    name: Submit approved iOS build
+    needs: guard
+    if: ${{ inputs.platform == 'ios' || inputs.platform == 'both' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: production
+    env:
+      CI: true
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_BUILD_ID: ${{ inputs.ios_build_id }}
+      EXPECTED_IOS_BUNDLE_IDENTIFIER: ${{ vars.EXPECTED_IOS_BUNDLE_IDENTIFIER }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Configure Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Require Expo token
+        run: node scripts/ci/require-expo-token.mjs
+
+      - name: Require a confirmed iOS bundle identifier
+        run: node scripts/ci/assert-store-identity.mjs --require-ios-confirmation
+
+      - name: Validate EAS configuration
+        run: node scripts/ci/validate-eas-json.mjs
+
+      - name: Fetch the approved build
+        run: |
+          node scripts/ci/verify-eas-build.mjs --assert-uuid "$EAS_BUILD_ID" >/dev/null
+          npx eas-cli build:view "$EAS_BUILD_ID" --json > /tmp/eas-build-view.json
+
+      - name: Refuse any build other than the approved one
+        run: |
+          CONFIRMED="$(node scripts/ci/verify-eas-build.mjs --file /tmp/eas-build-view.json --platform ios --profile production --expect-id "$EAS_BUILD_ID" --require-ios-identifier)"
+          if [ "$CONFIRMED" != "$EAS_BUILD_ID" ]; then
+            echo "Refusing to submit because the fetched build does not match the approved build."
+            exit 1
+          fi
+          printf '%s\n' "$CONFIRMED" > /tmp/eas-build-id.txt
+
+      - name: Submit the approved IPA to App Store Connect
+        run: |
+          BUILD_ID="$(tr -d '[:space:]' < /tmp/eas-build-id.txt)"
+          node scripts/ci/verify-eas-build.mjs --assert-uuid "$BUILD_ID" >/dev/null
+          # This uploads the existing IPA. It does not run a new iOS build and
+          # it does not submit the version for App Review.
+          npx eas-cli submit \
+            --platform ios \
+            --profile production \
+            --id "$BUILD_ID" \
+            --non-interactive \
+            --wait \
+            --auto-testflight-setup
+          echo "SUBMIT_EXIT=0" >> "$GITHUB_ENV"
+
+      - name: Read the latest iOS submission
+        if: success()
+        run: |
+          npx eas-cli submit:list \
+            --platform ios \
+            --limit 1 \
+            --json \
+            --non-interactive \
+            > /tmp/eas-submit-list.json \
+            || echo "The submit command finished, but the submission list could not be read."
+
+      - name: Report submission result
+        if: always()
+        env:
+          BUILD_VIEW_PATH: /tmp/eas-build-view.json
+          SUBMISSION_LIST_PATH: /tmp/eas-submit-list.json
+          RELEASE_PLATFORM: ios
+        run: node scripts/ci/summarize-eas-result.mjs

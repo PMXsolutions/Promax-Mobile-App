@@ -47,3 +47,23 @@ app-example
 
 /ios
 /android
+
+# .easignore replaces .gitignore for the EAS upload archive.
+# The patterns above are unchanged. Several of them were saved with
+# underscores in place of asterisks, so they do not match real files.
+# The patterns below are what keep credentials out of the archive.
+.env
+.env.*
+!.env.example
+google-services.json
+GoogleService-Info.plist
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+*-adminsdk*.json
+eas-build.json
+eas-submit.json
