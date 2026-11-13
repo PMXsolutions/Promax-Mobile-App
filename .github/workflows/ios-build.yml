@@ -27,7 +27,6 @@ jobs:
       CI: true
       EXPO_NO_TELEMETRY: "1"
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      EXPECTED_IOS_BUNDLE_IDENTIFIER: ${{ vars.EXPECTED_IOS_BUNDLE_IDENTIFIER }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -51,7 +50,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Validate Expo configuration
-        run: node scripts/ci/assert-store-identity.mjs --warn-ios-confirmation
+        run: node scripts/ci/assert-store-identity.mjs
 
       - name: Validate EAS configuration
         run: node scripts/ci/validate-eas-json.mjs

@@ -11,10 +11,10 @@ export const EXPO_OWNER = "promax";
 export const PRODUCTION_API_BASE_URL = "https://api.promaxcare.com.au/api";
 
 /**
- * Application ID of the existing Google Play listing.
- * The Expo package is compared with this value and is not changed here.
+ * Confirmed store application ID for Google Play and Apple App Store / TestFlight.
  */
 export const PLAY_APPLICATION_ID = "au.com.promaxsolutions.promaxcare";
+export const IOS_APPLICATION_ID = "au.com.promaxsolutions.promaxcare";
 
 export const BUILD_UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -117,39 +117,20 @@ export function assessStoreIdentity(config, options = {}) {
     errors.push(
       [
         `Android package in the Expo config is "${androidPackage || "missing"}".`,
-        `The existing Google Play application ID is ${PLAY_APPLICATION_ID}.`,
-        "These identifiers differ. Android EAS builds are not started for that Play listing, because a production-profile build would consume a remote versionCode and the resulting AAB cannot be submitted to the existing app.",
-        "Confirm the application ID in Google Play Console, then update the Expo package only after that confirmation. This check does not change the package.",
+        `Google Play application ID is ${PLAY_APPLICATION_ID}.`,
+        "Android EAS builds are not started until the Expo package matches that application ID.",
       ].join(" ")
     );
   }
 
-  const expectedIosBundle = String(options.expectedIosBundleIdentifier ?? "").trim();
-  if (options.iosConfirmation === "require") {
-    if (!expectedIosBundle) {
-      errors.push(
-        [
-          "GitHub Actions variable EXPECTED_IOS_BUNDLE_IDENTIFIER is not set.",
-          `The repository currently contains ${iosBundleIdentifier || "no bundle identifier"}.`,
-          "That repository value has not been confirmed against Apple Developer.",
-          "After verifying the identifier in Apple Developer and App Store Connect, set the variable to that confirmed value. Production iOS promotion stays blocked until it matches the Expo config.",
-        ].join(" ")
-      );
-    } else if (expectedIosBundle !== iosBundleIdentifier) {
-      errors.push(
-        `EXPECTED_IOS_BUNDLE_IDENTIFIER is "${expectedIosBundle}" but the Expo bundle identifier is "${iosBundleIdentifier}". Production iOS promotion is blocked.`
-      );
-    }
-  } else if (options.iosConfirmation === "warn") {
-    if (!expectedIosBundle) {
-      warnings.push(
-        `Apple bundle confirmation is still outstanding. The repository bundle identifier is "${iosBundleIdentifier}". Set the GitHub variable EXPECTED_IOS_BUNDLE_IDENTIFIER after checking Apple Developer. This TestFlight workflow does not treat the repository value as confirmed.`
-      );
-    } else if (expectedIosBundle !== iosBundleIdentifier) {
-      errors.push(
-        `EXPECTED_IOS_BUNDLE_IDENTIFIER is "${expectedIosBundle}" but the Expo bundle identifier is "${iosBundleIdentifier}".`
-      );
-    }
+  if (options.iosConfirmation === "require" && iosBundleIdentifier !== IOS_APPLICATION_ID) {
+    errors.push(
+      [
+        `iOS bundle identifier in the Expo config is "${iosBundleIdentifier || "missing"}".`,
+        `TestFlight and the App Store application ID are ${IOS_APPLICATION_ID}.`,
+        "iOS EAS builds are not started until the Expo bundle identifier matches that application ID.",
+      ].join(" ")
+    );
   }
 
   if (!options.googleServicesFromEnv) {
@@ -275,17 +256,13 @@ export function assessEasBuild(record, options) {
     );
   }
 
-  if (options.requireIosIdentifier) {
-    const expected = String(options.expectedIosBundleIdentifier ?? "").trim();
-    if (!expected) {
-      errors.push(
-        "EXPECTED_IOS_BUNDLE_IDENTIFIER is required before an iOS build can be submitted."
-      );
-    } else if (build.appIdentifier && build.appIdentifier !== expected) {
-      errors.push(
-        `EAS build bundle identifier is "${build.appIdentifier}". EXPECTED_IOS_BUNDLE_IDENTIFIER is "${expected}".`
-      );
-    }
+  if (
+    options.requireIosIdentifier &&
+    build.appIdentifier !== IOS_APPLICATION_ID
+  ) {
+    errors.push(
+      `EAS build bundle identifier is "${build.appIdentifier || "missing"}". TestFlight requires ${IOS_APPLICATION_ID}. This binary will not be submitted.`
+    );
   }
 
   if (build.updateChannel?.name && build.updateChannel.name !== "production") {
@@ -426,6 +403,7 @@ export function formatIdentity(identity) {
     `Android package: ${identity.androidPackage}`,
     `Play application: ${PLAY_APPLICATION_ID}`,
     `iOS bundle: ${identity.iosBundleIdentifier}`,
+    `TestFlight application: ${IOS_APPLICATION_ID}`,
     `app.json version: ${identity.version}`,
     `Android services file: ${identity.googleServicesFile}`,
   ].join("\n");

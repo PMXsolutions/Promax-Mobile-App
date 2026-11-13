@@ -6,17 +6,19 @@ Nothing in this setup publishes the app to users by itself. Android production s
 
 The app is not cleared for a public store release. `main` includes commit `413d421`, described as fixing the four open shift defects and Play sign-in controls. That work was not retested here. Google Play rejected the app on 22 September 2026. The rejection text is not in this repository and has to be read in Play Console.
 
-## Current blockers
+## Store application ID
 
-These are configuration facts, not changes made by the workflows.
+Google Play and TestFlight both use `au.com.promaxsolutions.promaxcare`.
 
-| Item | Repository value | Store value | Effect |
-| --- | --- | --- | --- |
-| Android application ID | `com.tobby95.pmaxapp` in `app.json` | Existing Play app `au.com.promaxsolutions.promaxcare` | Android workflows stop before `eas build`. A production-profile build would consume a remote `versionCode`, and the AAB cannot be attached to that Play app until the package is confirmed and updated. |
-| iOS bundle identifier | `com.promax-app` | Not confirmed in this repository | iOS build and production jobs stop before EAS until the GitHub variable `EXPECTED_IOS_BUNDLE_IDENTIFIER` is set to the identifier shown in Apple Developer. |
-| Expo project | `70d0de46-7142-4d9a-a7b5-a089e9ea2879`, owner `promax` | Same project must be reused | Workflows reject any other project ID. |
+| Platform | Expo field | Value |
+| --- | --- | --- |
+| Android | `expo.android.package` | `au.com.promaxsolutions.promaxcare` |
+| iOS | `expo.ios.bundleIdentifier` | `au.com.promaxsolutions.promaxcare` |
+| Expo project | `extra.eas.projectId`, owner `promax` | `70d0de46-7142-4d9a-a7b5-a089e9ea2879` |
 
-Do not change either store identifier until the corresponding console shows the application that should receive the binary.
+The workflows compare the resolved Expo config and the finished EAS build with that application ID. A mismatch stops the job before `eas build` on the identity step, and again before submit if the binary was built with a different ID.
+
+Earlier identifiers `com.tobby95.pmaxapp` and `com.promax-app` are not used. EAS credentials, the Play upload key, the Apple provisioning profile, `google-services.json`, and the Google Maps key restrictions must all be for `au.com.promaxsolutions.promaxcare`. Credentials stored only under the old identifiers are not selected for these builds. `--freeze-credentials` still prevents CI from creating a new keystore or profile.
 
 ## Workflows
 
@@ -44,13 +46,7 @@ Android and iOS promotion are separate jobs. A run that selects both waits for t
 
 `EXPO_TOKEN` must be a repository secret, or an organization secret available to all Actions. Do not store it only on the `production` environment. The Android and iOS build workflows are not deployment jobs, so they cannot read environment-only secrets.
 
-Repository variable, under **Settings → Secrets and variables → Actions → Variables**:
-
-| Name | Value | Purpose |
-| --- | --- | --- |
-| `EXPECTED_IOS_BUNDLE_IDENTIFIER` | The bundle ID shown for this app in Apple Developer | Required before an iOS EAS build or iOS production promotion. Must match `expo.ios.bundleIdentifier`. |
-
-No other GitHub variables are required.
+No GitHub Actions variables are required. The store application ID is `au.com.promaxsolutions.promaxcare` in `app.json`.
 
 ## Where each credential belongs
 
@@ -82,7 +78,7 @@ Use the Expo account `promax` and project `promax-care`. Install the pinned CLI 
 
 ### Android upload keystore
 
-The existing Play app already has an upload key if a release was signed before. Creating a new keystore will not update that app. After the Expo package is confirmed against Play Console, give EAS the upload key that Play already has for `au.com.promaxsolutions.promaxcare`.
+The existing Play app already has an upload key if a release was signed before. Creating a new keystore will not update that app. Give EAS the upload key that Play already has for `au.com.promaxsolutions.promaxcare`.
 
 1. In Play Console, open the app → **Test and release → App integrity** (or **Setup → App signing**) and record the upload certificate.
 2. On a trusted machine, from this repository, run `npx eas-cli credentials`.
@@ -108,14 +104,14 @@ The build workflows pass `--freeze-credentials`, so CI fails if the keystore is 
 2. Create a team key that can manage builds and TestFlight. Record the **issuer ID** and **key ID**.
 3. Download the `.p8` file once. Apple does not offer it again.
 4. Run `npx eas-cli credentials`, choose iOS, and store the API key, key ID, and issuer ID. The official steps are at https://docs.expo.dev/submit/ios/.
-5. Confirm the Apple Developer identifier matches `EXPECTED_IOS_BUNDLE_IDENTIFIER`, and that an App Store Connect app record already exists for it. EAS submit does not create the Apple app from these workflows.
+5. Confirm the App Store Connect app record uses bundle ID `au.com.promaxsolutions.promaxcare`. EAS submit does not create the Apple app from these workflows.
 6. Do not commit the `.p8` file. `.gitignore` already excludes `*.p8`.
 
 The iOS submit profiles in `eas.json` are empty objects on purpose. They do not contain Apple IDs or key paths.
 
 ### Google Maps API key
 
-`app.config.js` reads `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` and places it in the native Google Maps config. `constants/api-key.ts` reads the same variable for Places and static map requests. The key is embedded in the client binary. Restrict it in Google Cloud by Android package, signing certificate, and iOS bundle ID.
+`app.config.js` reads `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` and places it in the native Google Maps config. `constants/api-key.ts` reads the same variable for Places and static map requests. The key is embedded in the client binary. Restrict it in Google Cloud to Android package `au.com.promaxsolutions.promaxcare`, that app's signing certificate, and iOS bundle ID `au.com.promaxsolutions.promaxcare`.
 
 From the repository, signed in to the `promax` Expo account:
 
@@ -142,7 +138,7 @@ npx eas-cli env:set production \
   --value ./google-services.json
 ```
 
-`--value` here is a local path. The JSON itself is read from that file. Run this on a machine that already has the Firebase Android config for this app. Download `google-services.json` from the Firebase project that serves this Android app, not from git.
+`--value` here is a local path. The JSON itself is read from that file. Download `google-services.json` for Android package `au.com.promaxsolutions.promaxcare`. A file generated for `com.tobby95.pmaxapp` will not match this build. Do not commit the file.
 
 Push notification registration in `hooks/usePushNotification/index.ts` uses the Expo project ID with `expo-notifications`. It does not read `google-services.json` directly. The native Android build still needs that file because `googleServicesFile` is set. iOS does not reference `GoogleService-Info.plist`.
 
@@ -157,7 +153,7 @@ Local checks, with no store upload:
 ```bash
 npm ci
 npx tsc --noEmit
-node scripts/ci/assert-store-identity.mjs --warn-ios-confirmation
+node scripts/ci/assert-store-identity.mjs --require-play-package --require-ios-confirmation
 node scripts/ci/validate-eas-json.mjs
 node scripts/ci/self-test.mjs
 npx jest --ci --watchAll=false
@@ -178,10 +174,11 @@ npx eas-cli build:version:get --platform android --profile production --non-inte
 npx eas-cli build:version:get --platform ios --profile production --non-interactive
 ```
 
-The Android identity check fails while the package differs from `au.com.promaxsolutions.promaxcare`. That failure is the current expected result of:
+These checks pass when both Expo identifiers are `au.com.promaxsolutions.promaxcare`:
 
 ```bash
 node scripts/ci/assert-store-identity.mjs --require-play-package
+node scripts/ci/assert-store-identity.mjs --require-ios-confirmation
 ```
 
 Do not run `eas build` or `eas submit` to "see if it works" against the stores from a workstation unless you intend to create a release candidate. Those commands are what the workflows run after the gates pass.
@@ -190,7 +187,7 @@ Workflow checks that still require GitHub:
 
 - `EXPO_TOKEN` is present and accepted by Expo.
 - The `production` environment has required reviewers.
-- `EXPECTED_IOS_BUNDLE_IDENTIFIER` matches Apple Developer.
+- EAS credentials exist for application ID `au.com.promaxsolutions.promaxcare` on both platforms.
 - A protected production run waits for approval and then rejects a missing or mismatched build UUID.
 
 ## Rotate credentials

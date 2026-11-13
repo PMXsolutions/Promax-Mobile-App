@@ -49,7 +49,6 @@ try {
     expectId: readOption("--expect-id"),
     requirePlayPackage: process.argv.includes("--require-play-package"),
     requireIosIdentifier: process.argv.includes("--require-ios-identifier"),
-    expectedIosBundleIdentifier: process.env.EXPECTED_IOS_BUNDLE_IDENTIFIER,
   });
 } catch (error) {
   console.error(error.message);

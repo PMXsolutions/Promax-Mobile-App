@@ -9,11 +9,7 @@ import {
 
 const args = new Set(process.argv.slice(2));
 const requirePlayPackage = args.has("--require-play-package");
-const iosConfirmation = args.has("--require-ios-confirmation")
-  ? "require"
-  : args.has("--warn-ios-confirmation")
-    ? "warn"
-    : "none";
+const iosConfirmation = args.has("--require-ios-confirmation") ? "require" : "none";
 
 let stdout = "";
 try {
@@ -43,7 +39,6 @@ try {
 const result = assessStoreIdentity(config, {
   requirePlayPackage,
   iosConfirmation,
-  expectedIosBundleIdentifier: process.env.EXPECTED_IOS_BUNDLE_IDENTIFIER,
   googleServicesFromEnv: Boolean(process.env.GOOGLE_SERVICES_JSON),
 });
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  IOS_APPLICATION_ID,
   PLAY_APPLICATION_ID,
   assessEasBuild,
   assessEasJson,
@@ -38,19 +39,15 @@ const matched = assessStoreIdentity(matchedConfig, { requirePlayPackage: true })
 assert.deepEqual(matched.errors, []);
 
 const iosBlocked = assessStoreIdentity(baseConfig, { iosConfirmation: "require" });
-assert.match(iosBlocked.errors[0], /EXPECTED_IOS_BUNDLE_IDENTIFIER/);
+assert.match(iosBlocked.errors[0], /com\.promax-app/);
+assert.match(iosBlocked.errors[0], new RegExp(IOS_APPLICATION_ID.replace(/\./g, "\\.")));
 
-const iosConfirmed = assessStoreIdentity(baseConfig, {
+const iosConfirmedConfig = structuredClone(baseConfig);
+iosConfirmedConfig.expo.ios.bundleIdentifier = IOS_APPLICATION_ID;
+const iosConfirmed = assessStoreIdentity(iosConfirmedConfig, {
   iosConfirmation: "require",
-  expectedIosBundleIdentifier: "com.promax-app",
 });
 assert.deepEqual(iosConfirmed.errors, []);
-
-const iosMismatch = assessStoreIdentity(baseConfig, {
-  iosConfirmation: "warn",
-  expectedIosBundleIdentifier: "au.com.example.app",
-});
-assert.equal(iosMismatch.errors.length, 1);
 
 const redacted = redactAssignments("EXPO_TOKEN=secret\nOK");
 assert.equal(redacted.includes("secret"), false);
@@ -102,6 +99,12 @@ const wrongPackage = assessEasBuild(
   { platform: "android", requirePlayPackage: true }
 );
 assert.match(wrongPackage.errors.join("\n"), /will not be submitted/);
+
+const wrongBundle = assessEasBuild(
+  { ...finished, platform: "IOS", appIdentifier: "com.promax-app" },
+  { platform: "ios", requireIosIdentifier: true }
+);
+assert.match(wrongBundle.errors.join("\n"), /TestFlight requires/);
 
 const preview = assessEasBuild(
   { ...finished, buildProfile: "preview", distribution: "INTERNAL" },
