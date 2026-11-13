@@ -14,7 +14,7 @@ Google Play and TestFlight both use `au.com.promaxsolutions.promaxcare`.
 | --- | --- | --- |
 | Android | `expo.android.package` | `au.com.promaxsolutions.promaxcare` |
 | iOS | `expo.ios.bundleIdentifier` | `au.com.promaxsolutions.promaxcare` |
-| Expo project | `extra.eas.projectId`, owner `promax` | `70d0de46-7142-4d9a-a7b5-a089e9ea2879` |
+| Expo project | `extra.eas.projectId`, owner `promax-it-solutions` | `70d0de46-7142-4d9a-a7b5-a089e9ea2879` |
 
 The workflows compare the resolved Expo config and the finished EAS build with that application ID. A mismatch stops the job before `eas build` on the identity step, and again before submit if the binary was built with a different ID.
 
@@ -66,15 +66,17 @@ Signing material and store API keys stay in EAS. GitHub only needs the Expo toke
 
 ## How to obtain and configure each value
 
-Use the Expo account `promax` and project `promax-care`. Install the pinned CLI from this repository with `npx eas-cli` after `npm ci`. Run credential commands on a trusted machine, not in GitHub Actions. Prefer prompts over `--value` so the secret is not stored in shell history.
+Use the Expo account `promax-it-solutions` and project `promax-care`. The account slug is the name in https://expo.dev/accounts/promax-it-solutions. Install the pinned CLI from this repository with `npx eas-cli` after `npm ci`. Run credential commands on a trusted machine, not in GitHub Actions. Prefer prompts over `--value` so the secret is not stored in shell history.
 
 ### EXPO_TOKEN
 
-1. Sign in to https://expo.dev as an account that can build and submit project `70d0de46-7142-4d9a-a7b5-a089e9ea2879`.
-2. Open **Account settings → Access tokens** and create a token.
-3. GitHub repository **Settings → Secrets and variables → Actions → New repository secret**.
-4. Name the secret `EXPO_TOKEN` and paste the token.
-5. Do not put the token in `eas.json`, a workflow file, or a `.env` file that is committed.
+1. Sign in to https://expo.dev with access to the `promax-it-solutions` account.
+2. Open https://expo.dev/accounts/promax-it-solutions/settings/access-tokens. The URL must contain `/accounts/promax-it-solutions/`. A token created on another Expo account cannot read this project.
+3. Create a robot with the Admin role, then create its token.
+4. GitHub repository **Settings → Secrets and variables → Actions → New repository secret**.
+5. Name the secret `EXPO_TOKEN` and paste the token. Replace the existing secret if one is already stored.
+6. Do not put the token in `eas.json`, a workflow file, or a `.env` file that is committed.
+7. Confirm the project is on this account: https://expo.dev/accounts/promax-it-solutions/projects/promax-care must show project ID `70d0de46-7142-4d9a-a7b5-a089e9ea2879`. If that page does not list this project, transfer the project to `promax-it-solutions` from the account that currently owns it before rerunning the workflow. Changing `owner` in `app.json` does not move the project.
 
 ### Android upload keystore
 
@@ -113,7 +115,7 @@ The iOS submit profiles in `eas.json` are empty objects on purpose. They do not 
 
 `app.config.js` reads `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` and places it in the native Google Maps config. `constants/api-key.ts` reads the same variable for Places and static map requests. The key is embedded in the client binary. Restrict it in Google Cloud to Android package `au.com.promaxsolutions.promaxcare`, that app's signing certificate, and iOS bundle ID `au.com.promaxsolutions.promaxcare`.
 
-From the repository, signed in to the `promax` Expo account:
+From the repository, signed in to the `promax-it-solutions` Expo account:
 
 ```bash
 npx eas-cli env:set production \
