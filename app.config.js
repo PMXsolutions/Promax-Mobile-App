@@ -26,6 +26,11 @@ module.exports = () => {
     },
     android: {
       ...appJson.expo.android,
+      // EAS file variables expose a temp path, not the JSON contents.
+      // Local builds keep the gitignored ./google-services.json path.
+      ...(process.env.GOOGLE_SERVICES_JSON
+        ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON }
+        : {}),
       ...(googleMapsApiKey
         ? {
             config: {
