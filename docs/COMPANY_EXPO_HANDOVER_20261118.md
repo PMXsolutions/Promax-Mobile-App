@@ -41,3 +41,5 @@ The second build passed npm install and native prebuild, then found an undeclare
 Damola's Developer invitation was sent on 18 November after Joshua approved and completed Expo re-authentication; acceptance is pending.
 
 Direct Places API (New) probes using the stored Android/iOS Places keys and the configured application identifiers returned HTTP 403. Invalid identifiers were also rejected. Address search therefore remains unverified and requires Google permission/billing/API restriction diagnosis as well as the legacy-client migration; do not report it working.
+
+Both local Android and iOS Hermes bundles now export successfully. The legacy Places endpoint was also tested directly with a public Canberra query: both platform keys receive `REQUEST_DENIED` with Google's specific message that the legacy API is not enabled and the integration should switch to Places API (New). Google Cloud shows the iOS key restricted to the correct bundle and Places API (New); its value matches the saved Expo variable. Billing is linked to an existing free-trial account, with the console showing trial end on 9 December 2026; no billing changes were made.
