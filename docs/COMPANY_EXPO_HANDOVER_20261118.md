@@ -25,7 +25,7 @@ Do not merge casually: the current main-branch push workflows automatically buil
 
 ## Remaining engineering / access checks
 
-1. Damola is not currently listed as an Expo organisation member. Arrange an authorised individual role or approved CI access; do not email Joshua's personal token.
+1. Damola’s approved Developer invitation was sent on 18 November to `ayobamideleadepoju@gmail.com`; acceptance is pending. Accept it and use an individual login. Any CI token must be separately configured securely; do not email Joshua’s personal token.
 2. Address autocomplete still uses the legacy Places client and `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`; trip summary still uses that variable for Static Maps. These web-service usages need separate implementation and API/restriction testing. A native SDK key is not a substitute. Existing iOS Places restriction was Places API (New), so merely changing the variable name does not establish compatibility.
 3. Expo shows no FCM V1 service-account credential and no Apple push key. Firebase FCM API enabled does not mean push delivery is configured. Complete least-privilege credentials through an approved secure path, and test delivery on devices.
 4. Validate a fresh build, then map rendering, address selection, trip summary and push notifications on real devices. Existing September builds are expired and do not establish current readiness.
@@ -43,3 +43,15 @@ Damola's Developer invitation was sent on 18 November after Joshua approved and 
 Direct Places API (New) probes using the stored Android/iOS Places keys and the configured application identifiers returned HTTP 403. Invalid identifiers were also rejected. Address search therefore remains unverified and requires Google permission/billing/API restriction diagnosis as well as the legacy-client migration; do not report it working.
 
 Both local Android and iOS Hermes bundles now export successfully. The legacy Places endpoint was also tested directly with a public Canberra query: both platform keys receive `REQUEST_DENIED` with Google's specific message that the legacy API is not enabled and the integration should switch to Places API (New). Google Cloud shows the iOS key restricted to the correct bundle and Places API (New); its value matches the saved Expo variable. Billing is linked to an existing free-trial account, with the console showing trial end on 9 December 2026; no billing changes were made.
+
+## Successful validation build
+
+Android build `0447ca97-cc85-45b0-91fb-f76b567b9f54` finished successfully on 18 November 2026 at 13:10:43 Sydney time (02:10:43 UTC), from code commit `b0fd1ff`.
+
+Build and APK: https://expo.dev/accounts/promax-it-solutions-pty-ltd/projects/promaxcare/builds/0447ca97-cc85-45b0-91fb-f76b567b9f54
+
+Downloaded APK size: 91,464,734 bytes. ZIP integrity passed; Android manifest and Hermes bundle are present. The certificate extracted from its APK v2 signing block has SHA-1 `FE:02:D5:A4:15:7A:D7:D1:19:52:69:BA:C2:DC:D3:39:33:71:71:0D`, matching the existing allowed Maps fingerprint. Certificate extraction is not independent cryptographic signature verification.
+
+APK SHA-256: `e28a47e388649d3e95afac9dfab02ce62d466a42b03ac5b56f22db220514b393`.
+
+This establishes a successful cloud build and intact downloadable artifact. No installation, login, map rendering, address search or notification delivery has been verified on a device. No store submission or update publication was performed.
