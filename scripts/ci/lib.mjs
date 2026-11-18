@@ -6,9 +6,9 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const repoRoot = path.resolve(scriptDir, "../..");
 
-export const EXPO_PROJECT_ID = "e2e19955-9a63-4002-803a-73fee46b337f";
-export const EXPO_OWNER = "promax-it-solutions";
-export const EXPO_SLUG = "promax-it-solutions";
+export const EXPO_PROJECT_ID = "d922d001-8858-4020-aa0d-b6f17f9139ad";
+export const EXPO_OWNER = "promax-it-solutions-pty-ltd";
+export const EXPO_SLUG = "promaxcare";
 export const PRODUCTION_API_BASE_URL = "https://api.promaxcare.com.au/api";
 
 /**
@@ -21,11 +21,11 @@ export const BUILD_UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const ANDROID_EAS_ENV_NAMES = [
-  "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY",
+  "GOOGLE_MAPS_ANDROID_API_KEY",
   "GOOGLE_SERVICES_JSON",
 ];
 
-export const IOS_EAS_ENV_NAMES = ["EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"];
+export const IOS_EAS_ENV_NAMES = ["GOOGLE_MAPS_IOS_API_KEY"];
 
 export function assertUuid(value, label = "EAS build ID") {
   const id = String(value ?? "").trim();

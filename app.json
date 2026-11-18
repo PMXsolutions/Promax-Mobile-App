@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Promax Care",
-    "slug": "promax-it-solutions",
+    "slug": "promaxcare",
     "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -15,7 +15,9 @@
     "newArchEnabled": true,
     "runtimeVersion": "1.0.0",
     "ios": {
-      "deviceFamilies": [1],
+      "deviceFamilies": [
+        1
+      ],
       "infoPlist": {
         "UIViewControllerBasedStatusBarAppearance": true,
         "NSCameraUsageDescription": "This app needs access to your camera to take and upload pictures.",
@@ -76,12 +78,12 @@
         "origin": false
       },
       "eas": {
-        "projectId": "e2e19955-9a63-4002-803a-73fee46b337f"
+        "projectId": "d922d001-8858-4020-aa0d-b6f17f9139ad"
       }
     },
-    "owner": "promax-it-solutions",
+    "owner": "promax-it-solutions-pty-ltd",
     "updates": {
-      "url": "https://u.expo.dev/e2e19955-9a63-4002-803a-73fee46b337f"
+      "url": "https://u.expo.dev/d922d001-8858-4020-aa0d-b6f17f9139ad"
     }
   }
 }

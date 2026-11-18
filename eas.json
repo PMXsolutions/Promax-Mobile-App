@@ -36,6 +36,21 @@
       "env": {
         "EXPO_PUBLIC_API_BASEURL": "https://api.promaxcare.com.au/api"
       }
+    },
+    "company-validation": {
+      "environment": "production",
+      "distribution": "internal",
+      "channel": "company-validation",
+      "autoIncrement": false,
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASEURL": "https://api.promaxcare.com.au/api"
+      }
     }
   },
   "submit": {

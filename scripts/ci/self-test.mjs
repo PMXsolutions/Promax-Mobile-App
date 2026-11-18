@@ -14,11 +14,11 @@ import {
 
 const baseConfig = {
   expo: {
-    owner: "promax-it-solutions",
-    slug: "promax-it-solutions",
+    owner: "promax-it-solutions-pty-ltd",
+    slug: "promaxcare",
     version: "1.1.0",
     extra: {
-      eas: { projectId: "e2e19955-9a63-4002-803a-73fee46b337f" },
+      eas: { projectId: "d922d001-8858-4020-aa0d-b6f17f9139ad" },
       apiBaseUrl: "https://api.promaxcare.com.au/api",
     },
     android: {
@@ -58,7 +58,7 @@ assert.match(ownerMismatch.errors.join("\n"), /promax-it-solutions/);
 const oldSlug = structuredClone(baseConfig);
 oldSlug.expo.slug = "promax-care";
 const slugMismatch = assessStoreIdentity(oldSlug);
-assert.match(slugMismatch.errors.join("\n"), /promax-it-solutions/);
+assert.match(slugMismatch.errors.join("\n"), /promaxcare/);
 
 const redacted = redactAssignments("EXPO_TOKEN=secret\nOK");
 assert.equal(redacted.includes("secret"), false);
@@ -80,7 +80,7 @@ assert.deepEqual(
 );
 
 const finished = {
-  id: "e2e19955-9a63-4002-803a-73fee46b337f",
+  id: "d922d001-8858-4020-aa0d-b6f17f9139ad",
   status: "FINISHED",
   platform: "ANDROID",
   buildProfile: "production",
@@ -91,7 +91,7 @@ const finished = {
   gitCommitHash: "abc123",
   expirationDate: "2999-01-01T00:00:00.000Z",
   artifacts: { applicationArchiveUrl: "https://example.invalid/app.aab" },
-  app: { id: "e2e19955-9a63-4002-803a-73fee46b337f" },
+  app: { id: "d922d001-8858-4020-aa0d-b6f17f9139ad" },
   updateChannel: { name: "production" },
   runtime: { version: "1.1.0" },
 };

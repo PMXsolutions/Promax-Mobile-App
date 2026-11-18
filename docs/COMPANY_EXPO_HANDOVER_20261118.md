@@ -1,0 +1,33 @@
+# Company Expo configuration — 18 November 2026
+
+Use the existing company project: https://expo.dev/accounts/promax-it-solutions-pty-ltd/projects/promaxcare
+
+- Owner: `promax-it-solutions-pty-ltd`
+- Slug: `promaxcare`
+- EAS project ID: `d922d001-8858-4020-aa0d-b6f17f9139ad`
+- Android package and iOS bundle: `au.com.promaxsolutions.promaxcare`
+
+## Configuration verified in Expo
+
+The production environment already contains `GOOGLE_SERVICES_JSON` as a sensitive file, `GOOGLE_MAPS_ANDROID_API_KEY`, `GOOGLE_MAPS_IOS_API_KEY`, both `EXPO_PUBLIC_GOOGLE_PLACES_*_API_KEY` variables, and `EXPO_PUBLIC_ANDROID_SIGNING_CERT_SHA1`.
+
+The downloaded EAS Firebase file is identical to the file downloaded from Firebase on 17 November. It identifies project `promaxcare-mobile-au`, project number `1050348979461`, and Android app `1:1050348979461:android:a01ed8e52287df4002a36c`. Do not put these files or key values in Git or shared email.
+
+The existing Expo Android upload certificate SHA-1 is `FE:02:D5:A4:15:7A:D7:D1:19:52:69:BA:C2:DC:D3:39:33:71:71:0D`, matching an existing Android Maps restriction. The other allowed fingerprint begins `97:9F`; its Play signing identity requires separate confirmation.
+
+## Changes in this branch
+
+App identity, update URL and CI identity checks point to the company project. Native Maps configuration consumes the existing separate platform variables instead of one shared key. Firebase continues to use the EAS file path. Existing bundle/package identifiers and store-release workflows are preserved.
+
+`company-validation` is a build-only profile using the existing production environment, an internal Android APK or iOS simulator build, a separate update channel and no version increment. It does not submit or publish. The API remains the production API; do not create or modify operational data during testing.
+
+Do not merge casually: the current main-branch push workflows automatically build and submit to Play internal testing and TestFlight. The user has not authorised store submissions for this setup task. Use build-only validation and coordinate that workflow change before merging.
+
+## Remaining engineering / access checks
+
+1. Damola is not currently listed as an Expo organisation member. Arrange an authorised individual role or approved CI access; do not email Joshua's personal token.
+2. Address autocomplete still uses the legacy Places client and `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`; trip summary still uses that variable for Static Maps. These web-service usages need separate implementation and API/restriction testing. A native SDK key is not a substitute. Existing iOS Places restriction was Places API (New), so merely changing the variable name does not establish compatibility.
+3. Expo shows no FCM V1 service-account credential and no Apple push key. Firebase FCM API enabled does not mean push delivery is configured. Complete least-privilege credentials through an approved secure path, and test delivery on devices.
+4. Validate a fresh build, then map rendering, address selection, trip summary and push notifications on real devices. Existing September builds are expired and do not establish current readiness.
+
+Google guidance for mobile web-service restrictions: https://developers.google.com/maps/api-security-best-practices
