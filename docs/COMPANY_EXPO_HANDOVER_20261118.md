@@ -31,3 +31,7 @@ Do not merge casually: the current main-branch push workflows automatically buil
 4. Validate a fresh build, then map rendering, address selection, trip summary and push notifications on real devices. Existing September builds are expired and do not establish current readiness.
 
 Google guidance for mobile web-service restrictions: https://developers.google.com/maps/api-security-best-practices
+
+## Cloud build investigation
+
+The first validation build reached the correct company project and reused `PromaxCare Android Upload 2026`, but failed before compilation because EAS selected a stale `bun.lockb`: `lockfile had changes, but lockfile is frozen`. The upload now excludes that legacy lockfile so EAS uses the same committed `package-lock.json` and npm workflow as GitHub CI. Frozen installation remains enabled.
