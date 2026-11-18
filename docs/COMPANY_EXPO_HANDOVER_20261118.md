@@ -55,3 +55,11 @@ Downloaded APK size: 91,464,734 bytes. ZIP integrity passed; Android manifest an
 APK SHA-256: `e28a47e388649d3e95afac9dfab02ce62d466a42b03ac5b56f22db220514b393`.
 
 This establishes a successful cloud build and intact downloadable artifact. No installation, login, map rendering, address search or notification delivery has been verified on a device. No store submission or update publication was performed.
+
+## Follow-up configuration work (18 November afternoon)
+
+The follow-up source changes enable the installed autocomplete library’s Places API (New) support, use the existing per-platform Places variables and application restriction headers, request only id/location/formattedAddress, and validate the new coordinate response. The internal validation profile sets the verified upload signing fingerprint. The trip summary now uses the existing native Maps SDK instead of the unconfigured Static Maps HTTP endpoint. TypeScript, 13 unit tests, CI policy self-test and Android/iOS bundle exports passed. These later source changes are NOT included in the successful APK linked above, and are not merged or deployed. A fresh build and device tests are needed after Google permissions are resolved.
+
+Direct valid-identifier autocomplete requests on Android and iOS, plus an iOS text-search request, still return HTTP 403 PERMISSION_DENIED. Places API (New) is enabled and the Android Places key allows the correct package and both recorded signing certificates. The precise Google-side cause remains unresolved; do not weaken key restrictions to bypass it.
+
+Joshua clarified scope: focus on the Expo/Firebase/Maps inputs Damola requested. No push service account or credential was created. Damola should handle push setup and identify any specific account-side help required from Joshua. Invitation remained pending at the afternoon check.

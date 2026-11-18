@@ -49,7 +49,8 @@
         "simulator": true
       },
       "env": {
-        "EXPO_PUBLIC_API_BASEURL": "https://api.promaxcare.com.au/api"
+        "EXPO_PUBLIC_API_BASEURL": "https://api.promaxcare.com.au/api",
+        "EXPO_PUBLIC_ANDROID_SIGNING_CERT_SHA1": "FE:02:D5:A4:15:7A:D7:D1:19:52:69:BA:C2:DC:D3:39:33:71:71:0D"
       }
     }
   },
