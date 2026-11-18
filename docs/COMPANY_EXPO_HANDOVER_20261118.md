@@ -35,3 +35,9 @@ Google guidance for mobile web-service restrictions: https://developers.google.c
 ## Cloud build investigation
 
 The first validation build reached the correct company project and reused `PromaxCare Android Upload 2026`, but failed before compilation because EAS selected a stale `bun.lockb`: `lockfile had changes, but lockfile is frozen`. The upload now excludes that legacy lockfile so EAS uses the same committed `package-lock.json` and npm workflow as GitHub CI. Frozen installation remains enabled.
+
+The second build passed npm install and native prebuild, then found an undeclared `query-string` dependency imported by Expo Router. Added compatible CommonJS `query-string` 7.1.3 explicitly; the Android Hermes bundle now exports locally. This is bundle validation, not a device acceptance test.
+
+Damola's Developer invitation was sent on 18 November after Joshua approved and completed Expo re-authentication; acceptance is pending.
+
+Direct Places API (New) probes using the stored Android/iOS Places keys and the configured application identifiers returned HTTP 403. Invalid identifiers were also rejected. Address search therefore remains unverified and requires Google permission/billing/API restriction diagnosis as well as the legacy-client migration; do not report it working.
