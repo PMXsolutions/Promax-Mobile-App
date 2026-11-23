@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: 20
+          node-version: 22
       - name: Verify robot authentication and existing company build access
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -20,6 +20,8 @@ jobs:
           CI: 'true'
         run: |
           npx --yes eas-cli@latest whoami
+          printf '%s' '{"name":"company-access-verification","version":"1.0.0"}' > package.json
+          printf '%s' '{"expo":{"name":"PromaxCare","slug":"promaxcare","owner":"promax-it-solutions-pty-ltd","extra":{"eas":{"projectId":"d922d001-8858-4020-aa0d-b6f17f9139ad"}}}}' > app.json
           npx --yes eas-cli@latest build:view 0447ca97-cc85-45b0-91fb-f76b567b9f54 --json > /tmp/company-build.json
           node -e 'const b=require("/tmp/company-build.json"); if(b.id!=="0447ca97-cc85-45b0-91fb-f76b567b9f54") process.exit(1); console.log("PASS: authenticated read of existing company build",b.id,"status",b.status);'
           echo 'Authentication and existing company build read passed. No build or submission was started.' >> "$GITHUB_STEP_SUMMARY"
