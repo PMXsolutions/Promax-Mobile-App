@@ -19,7 +19,7 @@ jobs:
           EXPO_NO_TELEMETRY: '1'
           CI: 'true'
         run: |
-          npx --yes eas-cli@27.0.0 whoami
-          npx --yes eas-cli@27.0.0 build:view 0447ca97-cc85-45b0-91fb-f76b567b9f54 --json > /tmp/company-build.json
+          npx --yes eas-cli@latest whoami
+          npx --yes eas-cli@latest build:view 0447ca97-cc85-45b0-91fb-f76b567b9f54 --json > /tmp/company-build.json
           node -e 'const b=require("/tmp/company-build.json"); if(b.id!=="0447ca97-cc85-45b0-91fb-f76b567b9f54") process.exit(1); console.log("PASS: authenticated read of existing company build",b.id,"status",b.status);'
           echo 'Authentication and existing company build read passed. No build or submission was started.' >> "$GITHUB_STEP_SUMMARY"
