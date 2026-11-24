@@ -6,9 +6,9 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const repoRoot = path.resolve(scriptDir, "../..");
 
-export const EXPO_PROJECT_ID = "e2e19955-9a63-4002-803a-73fee46b337f";
-export const EXPO_OWNER = "promax-it-solutions";
-export const EXPO_SLUG = "promax-it-solutions";
+export const EXPO_PROJECT_ID = "d922d001-8858-4020-aa0d-b6f17f9139ad";
+export const EXPO_OWNER = "promax-it-solutions-pty-ltd";
+export const EXPO_SLUG = "promaxcare";
 export const PRODUCTION_API_BASE_URL = "https://api.promaxcare.com.au/api";
 
 /**

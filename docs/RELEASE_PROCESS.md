@@ -197,8 +197,8 @@ A rollback that needs a code change is a new production-profile build, a new tes
 | What you see | What it means |
 | --- | --- |
 | `EXPO_TOKEN GitHub repository secret is not set` | Add the repository secret. Environment-only secrets are invisible to the build workflows. |
-| Expo returns 401 or "not logged in" | The token is revoked, belongs to the wrong account, or lacks access to owner `promax-it-solutions`. Create it at https://expo.dev/accounts/promax-it-solutions/settings/access-tokens and replace the `EXPO_TOKEN` secret. |
-| `Entity not authorized` for project `e2e19955-9a63-4002-803a-73fee46b337f` | The token authenticated, but that Expo user cannot open this project. The robot must belong to `promax-it-solutions`, and the project must be listed under that account. |
+| Expo returns 401 or "not logged in" | The token is revoked, belongs to the wrong account, or lacks access to owner `promax-it-solutions-pty-ltd`. Create it at https://expo.dev/accounts/promax-it-solutions-pty-ltd/settings/access-tokens and replace the `EXPO_TOKEN` secret. |
+| `Entity not authorized` for project `d922d001-8858-4020-aa0d-b6f17f9139ad` | The token authenticated, but that Expo user cannot open this project. The robot must belong to `promax-it-solutions-pty-ltd`, and the project must be listed under that account. |
 | Android package or iOS bundle is not `au.com.promaxsolutions.promaxcare` | The job stops before `eas build`. Both stores use that application ID. |
 | Credential lookup uses an old application ID | Credentials saved for `com.tobby95.pmaxapp` or `com.promax-app` are not used. Assign the Play upload key and Apple profile for `au.com.promaxsolutions.promaxcare` in EAS. |
 | Missing `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` or `GOOGLE_SERVICES_JSON` | Create them on the EAS production environment. The checker reports names only. |

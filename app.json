@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Promax Care",
-    "slug": "promax-it-solutions",
+    "slug": "promaxcare",
     "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -76,12 +76,12 @@
         "origin": false
       },
       "eas": {
-        "projectId": "e2e19955-9a63-4002-803a-73fee46b337f"
+        "projectId": "d922d001-8858-4020-aa0d-b6f17f9139ad"
       }
     },
-    "owner": "promax-it-solutions",
+    "owner": "promax-it-solutions-pty-ltd",
     "updates": {
-      "url": "https://u.expo.dev/e2e19955-9a63-4002-803a-73fee46b337f"
+      "url": "https://u.expo.dev/d922d001-8858-4020-aa0d-b6f17f9139ad"
     }
   }
 }
