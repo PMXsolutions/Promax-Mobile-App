@@ -1,0 +1,86 @@
+name: Company validation build
+
+# Build-only. This workflow does not submit to Google Play or App Store Connect.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promaxcare-company-validation
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash --noprofile --norc -eo pipefail {0}
+
+jobs:
+  android-candidate:
+    name: Build an Android validation APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      CI: true
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Configure Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Require Expo token
+        run: node scripts/ci/require-expo-token.mjs
+
+      - name: Require Android EAS environment variables
+        run: node scripts/ci/assert-eas-env.mjs android production
+
+      - name: Build the validation APK
+        run: |
+          npx eas-cli build \
+            --platform android \
+            --profile company-validation \
+            --non-interactive \
+            --wait \
+            --json \
+            --freeze-credentials \
+            > /tmp/eas-build.json
+
+      - name: Confirm the APK signing fingerprint
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const raw = fs.readFileSync("/tmp/eas-build.json", "utf8");
+          const start = raw.search(/[\[{]/);
+          const parsed = JSON.parse(raw.slice(start));
+          const build = Array.isArray(parsed) ? parsed[0] : parsed;
+          if (!build || build.status !== "FINISHED") {
+            console.error("Company validation build did not finish.");
+            process.exit(1);
+          }
+          const url = build.artifacts && (build.artifacts.applicationArchiveUrl || build.artifacts.buildUrl);
+          if (!url) {
+            console.error("Finished build has no APK URL.");
+            process.exit(1);
+          }
+          fs.writeFileSync("/tmp/apk-url.txt", url);
+          fs.writeFileSync("/tmp/build-id.txt", String(build.id));
+          console.log(`Build: ${build.id}`);
+          console.log(`Status: ${build.status}`);
+          console.log(`Profile: ${build.buildProfile}`);
+          console.log(`Distribution: ${build.distribution}`);
+          console.log(`Application ID: ${build.appIdentifier || ""}`);
+          NODE
+          curl --fail --location --silent --show-error --output /tmp/candidate.apk "$(cat /tmp/apk-url.txt)"
+          EXPECTED="$(node -e 'const eas=require("./eas.json"); process.stdout.write(eas.build["company-validation"].env.EXPO_PUBLIC_ANDROID_SIGNING_CERT_SHA1)')"
+          python3 scripts/ci/apk-cert-sha1.py /tmp/candidate.apk "$EXPECTED"
