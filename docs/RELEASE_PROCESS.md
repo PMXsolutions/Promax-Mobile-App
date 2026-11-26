@@ -65,7 +65,7 @@ The workflow is `.github/workflows/android-build.yml`.
 
 1. The Expo Android package is `au.com.promaxsolutions.promaxcare`. The workflow stops before `eas build` if the resolved package is anything else. EAS Android credentials and `google-services.json` must be for that same application ID.
 2. Configure the EAS keystore, Play service account, Maps key, and `GOOGLE_SERVICES_JSON` as described in the setup guide.
-3. Push to `main`, or run the workflow manually from `main`.
+3. Run the workflow manually from `main`. A push to `main` does not start it.
 4. The build command is:
 
    ```bash
@@ -103,8 +103,8 @@ The workflow is `.github/workflows/ios-build.yml`. The runner is `macos-latest` 
 
 1. The Expo iOS bundle identifier is `au.com.promaxsolutions.promaxcare`. The workflow stops before `eas build` if the resolved bundle identifier is anything else.
 2. Confirm the App Store Connect app and the EAS iOS credentials use that bundle ID. EAS submit does not create the Apple app.
-3. Set `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` on the EAS production environment. iOS does not currently load `GoogleService-Info.plist`.
-4. Push to `main` or run the workflow from `main`.
+3. Set `GOOGLE_MAPS_IOS_API_KEY` and `EXPO_PUBLIC_GOOGLE_PLACES_IOS_API_KEY` on the EAS production environment. iOS does not currently load `GoogleService-Info.plist`.
+4. Run the workflow manually from `main`. A push to `main` does not start it.
 5. The build command is:
 
    ```bash

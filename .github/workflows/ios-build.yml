@@ -1,9 +1,7 @@
 name: iOS build
 
+# Manual only. A push to main must not submit to TestFlight.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
