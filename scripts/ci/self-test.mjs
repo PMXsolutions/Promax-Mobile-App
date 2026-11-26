@@ -53,12 +53,12 @@ assert.deepEqual(iosConfirmed.errors, []);
 const oldOwner = structuredClone(baseConfig);
 oldOwner.expo.owner = "promax";
 const ownerMismatch = assessStoreIdentity(oldOwner);
-assert.match(ownerMismatch.errors.join("\n"), /promax-it-solutions/);
+assert.match(ownerMismatch.errors.join("\n"), /promax-it-solutions-pty-ltd/);
 
 const oldSlug = structuredClone(baseConfig);
 oldSlug.expo.slug = "promax-care";
 const slugMismatch = assessStoreIdentity(oldSlug);
-assert.match(slugMismatch.errors.join("\n"), /promaxcare/);
+assert.match(slugMismatch.errors.join("\n"), /uses slug promaxcare/);
 
 const redacted = redactAssignments("EXPO_TOKEN=secret\nOK");
 assert.equal(redacted.includes("secret"), false);
@@ -153,3 +153,21 @@ assert.equal(unsafe.errors.length, 3);
 assert.deepEqual(assessEasJson(loadEasJson()), []);
 
 console.log("CI policy self-test passed.");
+
+// The build gate must require the platform-specific native and Places inputs.
+const { ANDROID_EAS_ENV_NAMES, IOS_EAS_ENV_NAMES } = await import('./lib.mjs');
+assert.deepEqual(missingEnvironmentNames('EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=legacy', ANDROID_EAS_ENV_NAMES), ANDROID_EAS_ENV_NAMES);
+for (const required of [ANDROID_EAS_ENV_NAMES, IOS_EAS_ENV_NAMES]) {
+  const fixture = required.map(name => `${name}=fixture`).join('\n');
+  assert.deepEqual(missingEnvironmentNames(fixture, required), []);
+  for (const missing of required) {
+    assert.deepEqual(missingEnvironmentNames(required.filter(name => name !== missing).map(name => `${name}=fixture`).join('\n'), required), [missing]);
+  }
+}
+process.env.GOOGLE_MAPS_ANDROID_API_KEY = 'android-fixture';
+process.env.GOOGLE_MAPS_IOS_API_KEY = 'ios-fixture';
+const { default: resolveConfig } = await import('../../app.config.js');
+const resolved = resolveConfig().expo;
+assert.equal(resolved.android.config.googleMaps.apiKey, 'android-fixture');
+assert.equal(resolved.ios.config.googleMapsApiKey, 'ios-fixture');
+console.log('Platform Maps configuration and missing-variable regression checks passed.');

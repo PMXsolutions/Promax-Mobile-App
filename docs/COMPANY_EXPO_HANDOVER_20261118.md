@@ -1,3 +1,15 @@
+## Current update — 26 November 2026 (supersedes historical status below)
+
+Billing was reopened and both restricted platform Places API (New) autocomplete and details probes passed HTTP 200 with suggestions, formatted address and coordinates. Expo invitation accepted; company robot EXPO_TOKEN access verified on 24 November.
+
+This branch consolidates the earlier configuration corrections with company main c9cae85. CI now requires Android native Maps, Android Places, signing SHA-1 and Firebase file inputs; iOS requires its native Maps and Places keys. No shared EXPO_PUBLIC_GOOGLE_MAPS_API_KEY is required. The unused legacy constant and misleading environment example have been removed/replaced.
+
+Before release: verify the signing SHA-1 for each actual Android distribution; review the consolidated changes; use the build-only company-validation profile for a new candidate; test login, Maps, address selection and trip summary on devices. Push setup remains a developer task if required. Main push workflows automatically submit to stores: coordinate submission approval before merging, or separate the build-only validation from release. No store submission is authorized by these tests.
+
+Validation: TypeScript, all 13 Jest tests, CI policy/platform-key regression tests and EAS configuration checks passed locally. These do not constitute handset acceptance or a fresh EAS cloud build.
+
+---
+
 # Company Expo configuration — 18 November 2026
 
 Use the existing company project: https://expo.dev/accounts/promax-it-solutions-pty-ltd/projects/promaxcare
