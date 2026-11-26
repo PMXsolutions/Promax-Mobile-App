@@ -1,9 +1,7 @@
 name: Android build
 
+# Manual only. A push to main must not submit to Google Play.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:

@@ -1,17 +1,15 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Image,
   Pressable,
   ScrollView,
   ActivityIndicator,
   Alert,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { GOOGLE_MAPS_API_KEY } from "@/constants/api-key";
-import { generateStaticMapUrl } from "@/utils/generateStaticMap";
+import MapView, { Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import ScreenWrapper from "../wrapper/screen-wrapper";
 import { Coord } from "@/types/map";
 import { THEME } from "@/constants/theme";
@@ -37,10 +35,9 @@ export default function TripSummary({
   onSubmit,
   onCancel,
 }: TripSummaryProps) {
-  const [imageLoading, setImageLoading] = useState(true);
-  const [imageError, setImageError] = useState(false);
-
-  const imageUrl = generateStaticMapUrl(route, GOOGLE_MAPS_API_KEY);
+  const mapRef = useRef<MapView>(null);
+  const coordinates = route.filter(p => Number.isFinite(p.latitude) && Number.isFinite(p.longitude));
+  const first = coordinates[0];
 
   const formatDuration = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
@@ -53,15 +50,6 @@ export default function TripSummary({
   const calculateAverageSpeed = (): number => {
     if (duration === 0) return 0;
     return distance / (duration / 3600); // km/h
-  };
-
-  const handleImageLoad = () => {
-    setImageLoading(false);
-  };
-
-  const handleImageError = () => {
-    setImageLoading(false);
-    setImageError(true);
   };
 
   const showStopDetails = () => {
@@ -88,25 +76,32 @@ export default function TripSummary({
 
         {/* Map Preview */}
         <View style={styles.mapContainer}>
-          {imageLoading && !imageError && (
-            <View style={styles.mapPlaceholder}>
-              <ActivityIndicator size="large" color="#4CAF50" />
-              <Text style={styles.loadingText}>Loading map...</Text>
-            </View>
-          )}
-
-          {imageError ? (
+          {first ? (
+            <MapView
+              provider={PROVIDER_GOOGLE}
+              style={styles.mapImage}
+              initialRegion={{ ...first, latitudeDelta: 0.02, longitudeDelta: 0.02 }}
+              ref={mapRef}
+              onMapReady={() => {
+                if (mapRef.current && coordinates.length > 1) {
+                  mapRef.current.fitToCoordinates(coordinates, {
+                    edgePadding: { top: 30, right: 30, bottom: 30, left: 30 },
+                    animated: false,
+                  });
+                }
+              }}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+            >
+              <Polyline coordinates={coordinates} strokeColor="#0000ff" strokeWidth={4} />
+            </MapView>
+          ) : (
             <View style={styles.mapError}>
               <MaterialIcons name="map" size={48} color="#ccc" />
-              <Text style={styles.errorText}>Map preview unavailable</Text>
+              <Text style={styles.errorText}>No route recorded</Text>
             </View>
-          ) : (
-            <Image
-              source={{ uri: imageUrl }}
-              style={[styles.mapImage, imageLoading && styles.hidden]}
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-            />
           )}
         </View>
 

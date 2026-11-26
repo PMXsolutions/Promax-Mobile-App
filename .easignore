@@ -67,3 +67,7 @@ GoogleService-Info.plist
 *-adminsdk*.json
 eas-build.json
 eas-submit.json
+
+# Use the same package-lock.json / npm ci dependency graph as GitHub CI.
+# The legacy Bun lockfile is stale and fails EAS frozen-lockfile installs.
+bun.lockb

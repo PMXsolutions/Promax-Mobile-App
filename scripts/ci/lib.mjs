@@ -21,11 +21,13 @@ export const BUILD_UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const ANDROID_EAS_ENV_NAMES = [
-  "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY",
+  "GOOGLE_MAPS_ANDROID_API_KEY",
+  "EXPO_PUBLIC_GOOGLE_PLACES_ANDROID_API_KEY",
+  "EXPO_PUBLIC_ANDROID_SIGNING_CERT_SHA1",
   "GOOGLE_SERVICES_JSON",
 ];
 
-export const IOS_EAS_ENV_NAMES = ["EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"];
+export const IOS_EAS_ENV_NAMES = ["GOOGLE_MAPS_IOS_API_KEY", "EXPO_PUBLIC_GOOGLE_PLACES_IOS_API_KEY"];
 
 export function assertUuid(value, label = "EAS build ID") {
   const id = String(value ?? "").trim();
