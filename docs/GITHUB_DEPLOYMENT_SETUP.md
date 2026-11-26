@@ -26,7 +26,7 @@ Earlier identifiers `com.tobby95.pmaxapp` and `com.promax-app` are not used. EAS
 | --- | --- | --- |
 | `.github/workflows/android-build.yml` | Manual only | Validates the project, then builds an Android App Bundle with the EAS `production` profile and submits that build ID to the Play internal track. |
 | `.github/workflows/ios-build.yml` | Manual only | Same validation on a macOS runner. EAS builds the IPA. The job submits that build ID to App Store Connect for TestFlight. |
-| `.github/workflows/company-validation.yml` | Manual only | Builds the Android `company-validation` APK and checks its signing fingerprint. It does not submit. |
+| `.github/workflows/company-validation.yml` | Push to `main`, or manual | Builds the Android `company-validation` APK and checks its signing fingerprint. It does not submit. |
 | `.github/workflows/production-release.yml` | Manual only | Requires the `production` GitHub Environment, `main`, and an exact EAS build UUID. It submits that existing binary. It does not build another one. |
 
 `eas submit --latest` is not used. EAS CLI supports `--id`, and another finished build can become "latest" before submission. Each submit step checks the build record and then passes that UUID to `--id`.

@@ -1,7 +1,11 @@
 name: Company validation build
 
 # Build-only. This workflow does not submit to Google Play or App Store Connect.
+# A push to main starts this candidate build. The store workflows stay manual.
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
